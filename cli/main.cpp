@@ -1,5 +1,6 @@
 #include "abk/engine.h"
 #include "abk/utf8_util.h"
+#include "abk/legacy_converter.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -281,6 +282,46 @@ int main(int argc, char* argv[]) {
         if (arg == "--selftest" || arg == "-s" || arg == "--test") {
             return run_selftest(argc, argv);
         }
+        if (arg == "--convert-ansi" || arg == "-ca") {
+            std::string input;
+            if (i + 1 < argc) {
+                std::string target = argv[i + 1];
+                std::ifstream f(target);
+                if (f.is_open()) {
+                    std::stringstream ss;
+                    ss << f.rdbuf();
+                    input = ss.str();
+                } else {
+                    input = target;
+                }
+            } else {
+                std::stringstream ss;
+                ss << std::cin.rdbuf();
+                input = ss.str();
+            }
+            std::cout << abk::LegacyConverter::convert_ansi_to_unicode(input) << "\n";
+            return 0;
+        }
+        if (arg == "--convert-unicode" || arg == "-cu") {
+            std::string input;
+            if (i + 1 < argc) {
+                std::string target = argv[i + 1];
+                std::ifstream f(target);
+                if (f.is_open()) {
+                    std::stringstream ss;
+                    ss << f.rdbuf();
+                    input = ss.str();
+                } else {
+                    input = target;
+                }
+            } else {
+                std::stringstream ss;
+                ss << std::cin.rdbuf();
+                input = ss.str();
+            }
+            std::cout << abk::LegacyConverter::convert_unicode_to_ansi(input) << "\n";
+            return 0;
+        }
     }
 
     std::cout << "==========================================================\n";
@@ -330,6 +371,18 @@ int main(int argc, char* argv[]) {
             } else {
                 std::cout << "Error: Could not open dictionary file: " << path << "\n\n";
             }
+            continue;
+        }
+
+        if (line.rfind(":ansi ", 0) == 0) {
+            std::string text = line.substr(6);
+            std::cout << "Unicode: " << abk::LegacyConverter::convert_ansi_to_unicode(text) << "\n\n";
+            continue;
+        }
+
+        if (line.rfind(":unicode ", 0) == 0) {
+            std::string text = line.substr(9);
+            std::cout << "Bijoy ANSI: " << abk::LegacyConverter::convert_unicode_to_ansi(text) << "\n\n";
             continue;
         }
 

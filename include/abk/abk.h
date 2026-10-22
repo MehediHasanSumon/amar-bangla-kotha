@@ -99,6 +99,11 @@ ABK_API int abk_engine_export_personal_data(abk_engine_t engine, const char* fil
 ABK_API int abk_engine_import_personal_data(abk_engine_t engine, const char* filepath);
 ABK_API abk_suggestion_list_t* abk_engine_get_next_word_predictions(abk_engine_t engine, const char* prev_word);
 
+// Workstream 6: Legacy Font Converter (Bijoy / SutonnyMJ ANSI <-> Unicode UTF-8)
+ABK_API int abk_ansi_to_unicode(const char* ansi_text, char* out_buf, size_t out_cap);
+ABK_API int abk_unicode_to_ansi(const char* unicode_text, char* out_buf, size_t out_cap);
+ABK_API bool abk_is_likely_legacy_ansi(const char* text);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

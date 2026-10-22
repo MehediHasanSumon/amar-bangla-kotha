@@ -55,3 +55,13 @@ The following test items in `tests/data/golden.tsv` or vocabulary variants are d
 | `bhalo` | ভালো | ভাল | Both variants are common in modern standard Bangla (চলতি রীতি). |
 | `gaaN` | গাণ | গান | Phonetic transliteration yields retroflex ণ due to capital `N`; dictionary unigram prefers dental ন. |
 | `shundor` | সুন্দর | শুন্দর | Sibilant ambiguity (স vs শ). |
+
+---
+
+## 5. Legacy Font Mappings (Workstream 6)
+
+### `src/legacy_converter.cpp` & `tests/data/legacy_vectors.tsv`
+- **Origin**: Standard public domain layout specification for SutonnyMJ / Bijoy ANSI TrueType typography in Bangladesh and reference implementation patterns from `Mad-FOX/bijoy2unicode` (MPL 2.0).
+- **Description**: Mapping tables translating CP1252/ANSI character indices to Unicode UTF-8 Bengali codepoints, accompanied by orthographic pre-kar and reph reordering algorithms.
+- **Licensing**: Permissive / MPL-2.0 compatible.
+- **Verification**: Hand-verified against 22 real-world Bengali vectors covering complex conjuncts, pre-kars, compound vowels, and reph ordering.

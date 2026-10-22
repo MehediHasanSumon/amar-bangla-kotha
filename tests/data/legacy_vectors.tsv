@@ -1,0 +1,24 @@
+# SutonnyMJ / Bijoy ANSI to Unicode Test Vectors
+# Format: Legacy_ANSI<TAB>Expected_Unicode<TAB>Category
+Dfq cv‡k av‡bi kx‡l †ewóZ cvwb‡Z fvmgvb RvZxq dyj kvcjv|	উভয় পাশে ধানের শীষে বেষ্টিত পানিতে ভাসমান জাতীয় ফুল শাপলা।	classic_sentence
+Avgvi †mvbvi evsjv, Avwg †Zvgvq fv‡jvevwm|	আমার সোনার বাংলা, আমি তোমায় ভালোবাসি।	national_anthem
+Kg©	কর্ম	reph_basic
+ea©gvb	বর্ধমান	reph_conjunct
+myeY©	সুবর্ণ	reph_nasal
+eY©bv	বর্ণনা	reph_nasal
+a‡g©i	ধর্মের	reph_kar
+gywZ©	মুর্তি	reph_kar
+g~wZ©	মূর্তি	reph_kar
+†mvbvi	সোনার	compound_o_kar
+‡Kv_vq	কোথায়	compound_o_kar
+†gŠjfx	মৌলভী	compound_ou_kar
+hy³ivóª	যুক্তরাষ্ট্র	complex_conjunct
+weÁvb	বিজ্ঞান	complex_conjunct
+e¨e¯’v	ব্যবস্থা	complex_conjunct
+wk¶v	শিক্ষা	complex_conjunct
+wbweo	নিবিড়	rra_sound
+mshy³	সংযুক্ত	anusvara_conjunct
+Avcb&	আপন্	hasant
+12345	১২৩৪৫	numerals
+2024 mv‡j	২০২৪ সালে	mixed_date
+RvZxq|	জাতীয়।	dari_punctuation

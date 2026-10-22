@@ -1,6 +1,7 @@
 #include "abk/abk.h"
 #include "abk/engine.h"
 #include "abk/utf8_util.h"
+#include "abk/legacy_converter.h"
 #include <cstring>
 #include <cstdlib>
 #include <exception>
@@ -523,6 +524,49 @@ abk_suggestion_list_t* abk_engine_get_next_word_predictions(abk_engine_t handle,
         return res;
     } catch (...) {
         return nullptr;
+    }
+}
+
+int abk_ansi_to_unicode(const char* ansi_text, char* out_buf, size_t out_cap) {
+    if (!ansi_text || !out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::LegacyConverter::convert_ansi_to_unicode(ansi_text);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_unicode_to_ansi(const char* unicode_text, char* out_buf, size_t out_cap) {
+    if (!unicode_text || !out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::LegacyConverter::convert_unicode_to_ansi(unicode_text);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+bool abk_is_likely_legacy_ansi(const char* text) {
+    if (!text) return false;
+    try {
+        return abk::LegacyConverter::is_likely_legacy_ansi(text);
+    } catch (...) {
+        return false;
     }
 }
 
