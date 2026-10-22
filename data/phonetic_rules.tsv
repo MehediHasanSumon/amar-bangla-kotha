@@ -1,0 +1,249 @@
+# Amar Bangla Kotha (আমার বাংলা কথা) - Data-Driven Phonetic Rules
+# Format: pattern<TAB>output<TAB>context<TAB>category<TAB>priority<TAB>description
+
+# ==============================================================================
+# 1. EXPLICIT OVERRIDES & MODIFIERS (Priority: 350 - 500)
+# ==============================================================================
+r``y	র‍্য	ANY	CONJUNCT	750	zwj_reph_ya_ligature
+r_y	র‍্য	ANY	CONJUNCT	750	zwj_reph_ya_ligature_alt
+t`	ৎ	ANY	MODIFIER	450	khanda_ta_explicit
+T`	ৎ	ANY	MODIFIER	450	khanda_ta_explicit_alt
+th`	ৎ	ANY	MODIFIER	450	khanda_ta_explicit_th
+
+OI	ৈ	AFTER_CONSONANT	KAR	450	explicit_oi_kar_override
+OU	ৌ	AFTER_CONSONANT	KAR	450	explicit_ou_kar_override
+OI	ঐ	START	INDEPENDENT_VOWEL	450	explicit_initial_oi_override
+OU	ঔ	START	INDEPENDENT_VOWEL	450	explicit_initial_ou_override
+OI	ঐ	AFTER_VOWEL	INDEPENDENT_VOWEL	430	explicit_vowel_oi_override
+OU	ঔ	AFTER_VOWEL	INDEPENDENT_VOWEL	430	explicit_vowel_ou_override
+
+^	ঁ	ANY	MODIFIER	300	chandrabindu
+:	ঃ	ANY	MODIFIER	300	visarga
+,,	্	ANY	MODIFIER	300	explicit_hasant
+`		ANY	MODIFIER	200	escape_char
+
+# ==============================================================================
+# 2. NUMERALS & PUNCTUATION
+# ==============================================================================
+0	০	ANY	DIGIT	150	digit_0
+1	১	ANY	DIGIT	150	digit_1
+2	২	ANY	DIGIT	150	digit_2
+3	৩	ANY	DIGIT	150	digit_3
+4	৪	ANY	DIGIT	150	digit_4
+5	৫	ANY	DIGIT	150	digit_5
+6	৬	ANY	DIGIT	150	digit_6
+7	৭	ANY	DIGIT	150	digit_7
+8	৮	ANY	DIGIT	150	digit_8
+9	৯	ANY	DIGIT	150	digit_9
+
+..	।	ANY	PUNCTUATION	300	explicit_dari
+.	।	END	PUNCTUATION	180	bengali_dari_at_end
+
+# ==============================================================================
+# 3. JUKTAKKHOR (CONJUNCTS) (Priority: 250 - 450)
+# ==============================================================================
+shT	ষ্ট	ANY	CONJUNCT	360	shT_retroflex_conjunct
+shTh	ষ্ঠ	ANY	CONJUNCT	360	shTh_retroflex_conjunct
+
+hotat	হঠাৎ	START	CONJUNCT	480	phrase_hotat
+utshob	উৎসব	START	CONJUNCT	480	phrase_utshob
+biddut	বিদ্যুৎ	START	CONJUNCT	480	phrase_biddut
+motsho	মৎস্য	START	CONJUNCT	480	phrase_motsho
+jotpat	উৎপাত	START	CONJUNCT	480	phrase_utpat
+
+computer	কম্পিউটার	START	CONJUNCT	500	loanword_computer
+office	অফিস	START	CONJUNCT	500	loanword_office
+doctor	ডাক্তার	START	CONJUNCT	500	loanword_doctor
+school	স্কুল	START	CONJUNCT	500	loanword_school
+bus	বাস	START	CONJUNCT	500	loanword_bus
+phone	ফোন	START	CONJUNCT	500	loanword_phone
+
+dhonnobad	ধন্যবাদ	START	CONJUNCT	1200	dhonnobad_phrase
+dhonyobad	ধন্যবাদ	START	CONJUNCT	1200	dhonyobad_phrase
+dhonno	ধন্য	START	CONJUNCT	800	dhonno_phrase
+nno	ন্য	AFTER_CONSONANT	CONJUNCT	300	nno_to_nya
+
+kkhm	ক্ষ্ম	ANY	CONJUNCT	460	kkhm_conjunct
+shchh	শ্ছ	ANY	CONJUNCT	460	shchh_conjunct
+
+kkh	ক্ষ	ANY	CONJUNCT	360	kkh_conjunct
+jny	জ্ঞ	ANY	CONJUNCT	360	jny_conjunct
+jnh	জ্ঞ	ANY	CONJUNCT	350	jnh_conjunct
+gyan	জ্ঞান	START	CONJUNCT	480	gyan_root
+gy	জ্ঞ	ANY	CONJUNCT	260	gy_conjunct
+cch	চ্ছ	ANY	CONJUNCT	360	cch_conjunct
+jjh	জ্ঝ	ANY	CONJUNCT	360	jjh_conjunct
+tth	ত্থ	ANY	CONJUNCT	350	tth_conjunct
+TTh	ট্ঠ	ANY	CONJUNCT	350	TTh_conjunct
+t-t	ত্ত	ANY	CONJUNCT	360	t_t_conjunct
+tt	ত্ত	ANY	CONJUNCT	260	tt_conjunct
+TT	ট্ট	ANY	CONJUNCT	260	TT_conjunct
+ddh	দ্ধ	ANY	CONJUNCT	350	ddh_conjunct
+DDh	ড্ঢ	ANY	CONJUNCT	350	DDh_conjunct
+nth	ন্থ	ANY	CONJUNCT	350	nth_conjunct
+ndh	ন্ধ	ANY	CONJUNCT	350	ndh_conjunct
+nt	ন্ত	ANY	CONJUNCT	260	nt_conjunct
+nd	ন্দ	ANY	CONJUNCT	260	nd_conjunct
+ntr	ন্ত্র	ANY	CONJUNCT	360	ntr_conjunct
+ndr	ন্দ্র	ANY	CONJUNCT	360	ndr_conjunct
+nch	ঞ্চ	ANY	CONJUNCT	350	nch_conjunct
+nchh	ঞ্ছ	ANY	CONJUNCT	360	nchh_conjunct
+njh	ঞ্ঝ	ANY	CONJUNCT	350	njh_conjunct
+nj	ঞ্জ	ANY	CONJUNCT	260	nj_conjunct
+ngk	ঙ্ক	ANY	CONJUNCT	360	ngk_conjunct
+ngkh	ঙ্খ	ANY	CONJUNCT	360	ngkh_conjunct
+nggh	ঙ্ঘ	ANY	CONJUNCT	360	nggh_conjunct
+ngg	ঙ্গ	ANY	CONJUNCT	360	ngg_conjunct
+mph	ম্ফ	ANY	CONJUNCT	350	mph_conjunct
+mbh	ম্ভ	ANY	CONJUNCT	350	mbh_conjunct
+mp	ম্প	ANY	CONJUNCT	260	mp_conjunct
+mb	ম্ব	ANY	CONJUNCT	260	mb_conjunct
+mm	ম্ম	ANY	CONJUNCT	260	mm_conjunct
+bd	ব্দ	ANY	CONJUNCT	260	bd_conjunct
+shch	শ্চ	ANY	CONJUNCT	360	shch_conjunct
+shth	ষ্ঠ	ANY	CONJUNCT	360	shth_conjunct
+sht	ষ্ট	ANY	CONJUNCT	350	sht_conjunct
+shn	ষ্ণ	ANY	CONJUNCT	350	shn_conjunct
+shm	ষ্ম	ANY	CONJUNCT	350	shm_conjunct
+skh	স্খ	ANY	CONJUNCT	350	skh_conjunct
+sph	স্ফ	ANY	CONJUNCT	350	sph_conjunct
+str	স্ত্র	ANY	CONJUNCT	360	str_conjunct
+sth	স্থ	ANY	CONJUNCT	350	sth_conjunct
+st	স্ত	ANY	CONJUNCT	260	st_conjunct
+sp	স্প	ANY	CONJUNCT	260	sp_conjunct
+sk	স্ক	ANY	CONJUNCT	260	sk_conjunct
+sm	স্ম	ANY	CONJUNCT	260	sm_conjunct
+sl	স্ল	ANY	CONJUNCT	260	sl_conjunct
+hm	হ্ম	ANY	CONJUNCT	260	hm_conjunct
+hy	হ্য	ANY	CONJUNCT	260	hy_conjunct
+hr	হ্র	ANY	CONJUNCT	260	hr_conjunct
+hl	হ্ল	ANY	CONJUNCT	260	hl_conjunct
+hn	হ্ন	ANY	CONJUNCT	260	hn_conjunct
+ghonTa	ঘণ্টা	START	CONJUNCT	480	ghonta_conjunct
+
+# ==============================================================================
+# 4. DIPHTHONGS & MULTIPLE OUTPUTS PER PATTERN (Priority: 220 - 280)
+# ==============================================================================
+# "oi" diphthong:
+oi	ই	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_inherent_o_plus_i
+oi	ৈ	AFTER_CONSONANT	KAR	220	diphthong_oi_kar
+oi	ঐ	START	INDEPENDENT_VOWEL	260	initial_oi
+oi	ঐ	AFTER_VOWEL	INDEPENDENT_VOWEL	240	vowel_oi
+
+# "ou" diphthong:
+ou	উ	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_inherent_o_plus_u
+ou	ৌ	AFTER_CONSONANT	KAR	220	diphthong_ou_kar
+ou	ঔ	START	INDEPENDENT_VOWEL	260	initial_ou
+ou	ঔ	AFTER_VOWEL	INDEPENDENT_VOWEL	240	vowel_ou
+
+# Other common diphthongs:
+ai	াই	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_ai
+ui	ুই	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_ui
+ao	াও	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_ao
+ei	েই	AFTER_CONSONANT	DIPHTHONG_SPLIT	250	diphthong_ei
+
+# ==============================================================================
+# 5. DEPENDENT VOWEL SIGNS (KARS - After Consonants)
+# ==============================================================================
+rri	ৃ	AFTER_CONSONANT	KAR	240	rri_kar
+aa	া	AFTER_CONSONANT	KAR	230	aa_kar
+a	া	AFTER_CONSONANT	KAR	100	a_kar
+ee	ী	AFTER_CONSONANT	KAR	230	ee_kar
+ii	ী	AFTER_CONSONANT	KAR	230	ii_kar
+I	ী	AFTER_CONSONANT	KAR	120	I_kar
+i	ি	AFTER_CONSONANT	KAR	100	i_kar
+i	ী	AFTER_CONSONANT	KAR	85	i_to_long_ee_alt
+oo	ূ	AFTER_CONSONANT	KAR	230	oo_kar
+uu	ূ	AFTER_CONSONANT	KAR	230	uu_kar
+U	ূ	AFTER_CONSONANT	KAR	120	U_kar
+u	ু	AFTER_CONSONANT	KAR	100	u_kar
+e	ে	AFTER_CONSONANT	KAR	100	e_kar
+O	ো	AFTER_CONSONANT	KAR	120	O_kar_capital
+o	ো	AFTER_CONSONANT	KAR	95	o_kar_vowel
+
+# Word-end Khanda-Ta contextual:
+t	ৎ	END	MODIFIER	120	terminal_t_khanda_ta
+
+# ==============================================================================
+# 6. INITIAL & INDEPENDENT VOWELS
+# ==============================================================================
+rri	ঋ	START	INDEPENDENT_VOWEL	240	initial_rri
+rri	ঋ	AFTER_VOWEL	INDEPENDENT_VOWEL	220	vowel_rri
+aa	আ	START	INDEPENDENT_VOWEL	230	initial_aa
+aa	আ	AFTER_VOWEL	INDEPENDENT_VOWEL	210	vowel_aa
+a	আ	START	INDEPENDENT_VOWEL	100	initial_a
+a	আ	AFTER_VOWEL	INDEPENDENT_VOWEL	90	vowel_a
+o	অ	START	INDEPENDENT_VOWEL	100	initial_o
+o	অ	AFTER_VOWEL	INDEPENDENT_VOWEL	90	vowel_o
+O	ও	START	INDEPENDENT_VOWEL	120	initial_O_cap
+O	ও	AFTER_VOWEL	INDEPENDENT_VOWEL	110	vowel_O_cap
+ee	ঈ	START	INDEPENDENT_VOWEL	230	initial_ee
+ee	ঈ	AFTER_VOWEL	INDEPENDENT_VOWEL	210	vowel_ee
+ii	ঈ	START	INDEPENDENT_VOWEL	230	initial_ii
+ii	ঈ	AFTER_VOWEL	INDEPENDENT_VOWEL	210	vowel_ii
+I	ঈ	START	INDEPENDENT_VOWEL	120	initial_I_cap
+I	ঈ	AFTER_VOWEL	INDEPENDENT_VOWEL	110	vowel_I_cap
+i	ই	START	INDEPENDENT_VOWEL	100	initial_i
+i	ই	AFTER_VOWEL	INDEPENDENT_VOWEL	95	vowel_i
+oo	ঊ	START	INDEPENDENT_VOWEL	230	initial_oo
+oo	ঊ	AFTER_VOWEL	INDEPENDENT_VOWEL	210	vowel_oo
+uu	ঊ	START	INDEPENDENT_VOWEL	230	initial_uu
+uu	ঊ	AFTER_VOWEL	INDEPENDENT_VOWEL	210	vowel_uu
+U	ঊ	START	INDEPENDENT_VOWEL	120	initial_U_cap
+U	ঊ	AFTER_VOWEL	INDEPENDENT_VOWEL	110	vowel_U_cap
+u	উ	START	INDEPENDENT_VOWEL	100	initial_u
+u	উ	AFTER_VOWEL	INDEPENDENT_VOWEL	95	vowel_u
+e	এ	START	INDEPENDENT_VOWEL	100	initial_e
+e	এ	AFTER_VOWEL	INDEPENDENT_VOWEL	95	vowel_e
+
+# ==============================================================================
+# 7. CONSONANTS (Multi-char first with priority 240-260, then single with 100)
+# ==============================================================================
+kh	খ	ANY	CONSONANT	250	kh_consonant
+gh	ঘ	ANY	CONSONANT	250	gh_consonant
+Ng	ঙ	ANY	CONSONANT	260	Ng_consonant
+ng	ং	ANY	MODIFIER	240	ng_anusvara
+chh	ছ	ANY	CONSONANT	260	chh_consonant
+Ch	ছ	ANY	CONSONANT	250	Ch_consonant
+ch	চ	ANY	CONSONANT	250	ch_consonant
+jh	ঝ	ANY	CONSONANT	250	jh_consonant
+NG	ঞ	ANY	CONSONANT	260	NG_consonant
+Th	ঠ	ANY	CONSONANT	250	Th_consonant
+th	থ	ANY	CONSONANT	250	th_consonant
+Dh	ঢ	ANY	CONSONANT	250	Dh_consonant
+dh	ধ	ANY	CONSONANT	250	dh_consonant
+ph	ফ	ANY	CONSONANT	250	ph_consonant
+bh	ভ	ANY	CONSONANT	250	bh_consonant
+sh	শ	ANY	CONSONANT	250	sh_consonant
+Sh	ষ	ANY	CONSONANT	255	Sh_consonant
+Rh	ঢ়	ANY	CONSONANT	260	Rh_consonant
+
+k	ক	ANY	CONSONANT	100	k_consonant
+g	গ	ANY	CONSONANT	100	g_consonant
+c	চ	ANY	CONSONANT	90	c_consonant
+j	জ	ANY	CONSONANT	100	j_consonant
+j	য	ANY	CONSONANT	85	j_to_ya_alt
+T	ট	ANY	CONSONANT	105	T_consonant
+t	ত	ANY	CONSONANT	100	t_consonant
+D	ড	ANY	CONSONANT	105	D_consonant
+d	দ	ANY	CONSONANT	100	d_consonant
+N	ণ	ANY	CONSONANT	105	N_consonant
+n	ন	ANY	CONSONANT	100	n_consonant
+n	ণ	ANY	CONSONANT	85	n_to_retroflex_n
+p	প	ANY	CONSONANT	100	p_consonant
+f	ফ	ANY	CONSONANT	95	f_consonant
+b	ব	ANY	CONSONANT	100	b_consonant
+v	ভ	ANY	CONSONANT	95	v_consonant
+m	ম	ANY	CONSONANT	100	m_consonant
+z	য	ANY	CONSONANT	100	z_consonant
+r	র	ANY	CONSONANT	100	r_consonant
+r	ড়	ANY	CONSONANT	85	r_to_r_sound_variant
+R	ড়	ANY	CONSONANT	110	R_retroflex_flap
+l	ল	ANY	CONSONANT	100	l_consonant
+s	স	ANY	CONSONANT	100	s_consonant
+s	শ	ANY	CONSONANT	85	s_to_sh_variant
+sh	স	ANY	CONSONANT	85	sh_to_s_variant
+h	হ	ANY	CONSONANT	100	h_consonant
+y	য়	ANY	CONSONANT	100	y_bengali_ya
+y	্য	AFTER_CONSONANT	CONJUNCT	220	y_ya_phala
+w	ও	ANY	CONSONANT	90	w_bengali_o

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>AmarBanglaKotha</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.freedesktop.AmarBanglaKotha.macos</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Amar Bangla Kotha</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.13</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>InputMethodConnectionName</key>
+    <string>AmarBanglaKotha_1_Connection</string>
+    <key>InputMethodServerControllerClass</key>
+    <string>AmarBanglaKothaController</string>
+    <key>InputMethodServerDelegateClass</key>
+    <string>AmarBanglaKothaController</string>
+    <key>ComponentInputModeDict</key>
+    <dict>
+        <key>tsInputModeListKey</key>
+        <dict>
+            <key>org.freedesktop.inputmethod.AmarBanglaKotha.Bangla</key>
+            <dict>
+                <key>tsInputModeIsVisibleKey</key>
+                <true/>
+                <key>tsInputModeKeyAgreementReplacementKey</key>
+                <string>org.freedesktop.inputmethod.AmarBanglaKotha.Bangla</string>
+                <key>tsInputModePaletteIconFileKey</key>
+                <string>AppIcon.icns</string>
+                <key>tsInputModeScriptKey</key>
+                <string>smBengali</string>
+            </dict>
+        </dict>
+        <key>tsVisibleInputModeOrderedArrayKey</key>
+        <array>
+            <string>org.freedesktop.inputmethod.AmarBanglaKotha.Bangla</string>
+        </array>
+    </dict>
+</dict>
+</plist>

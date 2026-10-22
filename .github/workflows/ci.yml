@@ -1,0 +1,124 @@
+name: Amar Bangla Kotha CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  linux-gcc:
+    name: Linux (GCC 12+ / Sanitizers)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3 python3-pip
+
+      - name: Build release binaries (Makefile)
+        run: make all
+
+      - name: Run Catch2 Unit Tests
+        run: make test
+
+      - name: Run Performance Benchmark
+        run: make benchmark
+
+      - name: Run Host E2E Smoke Test
+        run: make smoke-test
+
+      - name: Run Fuzz Testing (50,000 iterations)
+        run: make fuzz-test
+
+      - name: Run AddressSanitizer & UndefinedBehaviorSanitizer
+        run: make sanitize-test
+
+  linux-clang:
+    name: Linux (Clang)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Clang & Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang ninja-build cmake
+
+      - name: Configure CMake with Clang
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with Clang
+        run: cmake --build build --config Release
+
+      - name: Run Tests with Clang
+        run: |
+          ./build/abk_tests
+          ./build/abk_fuzz
+
+  macos:
+    name: macOS (${{ matrix.os }} / Clang)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-latest] # Intel (x86_64) and Apple Silicon (arm64)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Core Engine & Tests (CMake)
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+
+      - name: Run Catch2 Unit Tests
+        run: ./build/abk_tests
+
+      - name: Run Fuzz Test
+        run: ./build/abk_fuzz
+
+      - name: Run Performance Benchmark
+        run: ./build/abk_benchmark tests/data/golden.tsv data/bangla_wordlist.txt
+
+      - name: Build macOS InputMethodKit Bundle (.app)
+        run: |
+          cd bindings/macos
+          ./build_macos.sh
+
+  windows:
+    name: Windows (MSVC 2022)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake (Visual Studio 2022 x64)
+        run: cmake -B build -A x64
+
+      - name: Build Core Engine & Tests
+        run: cmake --build build --config Release
+
+      - name: Run Catch2 Unit Tests
+        run: .\build\Release\abk_tests.exe
+
+      - name: Run Fuzz Test
+        run: .\build\Release\abk_fuzz.exe
+
+      - name: Run Performance Benchmark
+        run: .\build\Release\abk_benchmark.exe tests\data\golden.tsv data\bangla_wordlist.txt
+
+      - name: Build Windows TSF Frontend (abk_tsf.dll)
+        run: |
+          cd bindings\windows
+          cmake -B build_tsf -A x64
+          cmake --build build_tsf --config Release

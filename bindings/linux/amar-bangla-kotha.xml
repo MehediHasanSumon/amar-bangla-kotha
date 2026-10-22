@@ -1,0 +1,23 @@
+<component>
+	<name>org.freedesktop.IBus.AmarBanglaKotha</name>
+	<description>Amar Bangla Kotha (আমার বাংলা কথা) - C++ Phonetic Bengali Engine</description>
+	<version>1.0.0</version>
+	<license>GPL</license>
+	<author>Amar Bangla Kotha Team</author>
+	<homepage>https://github.com/amar-bangla-kotha</homepage>
+	<exec>/home/sumon/.local/bin/abk-ibus-daemon --ibus</exec>
+	<textdomain>amar-bangla-kotha</textdomain>
+	<engines>
+		<engine>
+			<name>amar-bangla-kotha</name>
+			<language>bn</language>
+			<license>GPL</license>
+			<author>Amar Bangla Kotha Team</author>
+			<icon>input-keyboard</icon>
+			<layout>us</layout>
+			<longname>Amar Bangla Kotha (আমার বাংলা কথা)</longname>
+			<description>Phonetic Bengali Keyboard with Autocorrect and Dictionary</description>
+			<rank>99</rank>
+		</engine>
+	</engines>
+</component>

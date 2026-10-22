@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Amar Bangla Kotha (আমার বাংলা কথা)
+GenericName=Bengali Phonetic Keyboard
+Comment=Type in Bengali easily like Avro Keyboard
+Exec=/home/sumon/.local/bin/amar-bangla-kotha
+Icon=/home/sumon/.local/share/icons/hicolor/scalable/apps/amar-bangla-kotha.svg
+Terminal=false
+Type=Application
+Categories=Utility;TextEditor;System;
+Keywords=bengali;bangla;keyboard;avro;phonetic;typing;
+StartupNotify=true

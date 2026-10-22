@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006A4E"/>
+      <stop offset="100%" stop-color="#004D38"/>
+    </linearGradient>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F42A41"/>
+      <stop offset="100%" stop-color="#D01B30"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer rounded plate -->
+  <rect x="6" y="6" width="116" height="116" rx="28" fill="url(#bgGrad)" stroke="#003324" stroke-width="3"/>
+  
+  <!-- Keyboard outline at bottom -->
+  <rect x="20" y="74" width="88" height="36" rx="8" fill="#FFFFFF" fill-opacity="0.15" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+  
+  <!-- Keyboard keys -->
+  <rect x="26" y="80" width="12" height="10" rx="3" fill="#FFFFFF" fill-opacity="0.3"/>
+  <rect x="42" y="80" width="12" height="10" rx="3" fill="#FFFFFF" fill-opacity="0.3"/>
+  <rect x="58" y="80" width="12" height="10" rx="3" fill="#FFFFFF" fill-opacity="0.3"/>
+  <rect x="74" y="80" width="12" height="10" rx="3" fill="#FFFFFF" fill-opacity="0.3"/>
+  <rect x="90" y="80" width="12" height="10" rx="3" fill="#FFFFFF" fill-opacity="0.3"/>
+  
+  <rect x="34" y="94" width="60" height="10" rx="4" fill="#FFFFFF" fill-opacity="0.4"/>
+  
+  <!-- Red Sun / Circle in center -->
+  <circle cx="64" cy="46" r="26" fill="url(#btnGrad)"/>
+  
+  <!-- Bengali Character 'বা' / 'ক' in white -->
+  <text x="64" y="56" font-family="'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', sans-serif" font-size="30" font-weight="bold" fill="#FFFFFF" text-anchor="middle">বা</text>
+</svg>

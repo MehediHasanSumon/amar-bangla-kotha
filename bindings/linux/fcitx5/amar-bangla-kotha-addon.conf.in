@@ -1,0 +1,11 @@
+[Addon]
+Name=Amar Bangla Kotha
+Comment=Bengali Phonetic Input Method using libabk
+Category=InputMethod
+Type=SharedLibrary
+OnDemand=True
+Configurable=True
+Library=amar-bangla-kotha
+
+[Addon/Dependencies]
+0=core
