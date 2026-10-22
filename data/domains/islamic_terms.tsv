@@ -1,0 +1,462 @@
+# Islamic Terms, Greetings, and Religious Vocabulary
+# Key<TAB>Word<TAB>Frequency<TAB>Category
+assalamu_alaikum	আসসালামু আলাইকুম	3200	greeting
+walaikum_assalam	ওয়ালাইকুম আসসালাম	3000	greeting
+bismillah	বিসমিল্লাহ	3000	greeting
+inshaallah	ইনশাআল্লাহ	3100	phrase
+alhamdulillah	আলহামদুলিল্লাহ	3100	phrase
+subhanallah	সুবহানাল্লাহ	2800	phrase
+mashallah	মাশাআল্লাহ	2800	phrase
+jazakallah	জাজাকাল্লাহ	2600	phrase
+astagfirullah	আস্তাগফিরুল্লাহ	2700	phrase
+allahu_akbar	আল্লাহু আকবার	3000	phrase
+la_ilaha_illallah	লা ইলাহা ইল্লাল্লাহ	2900	phrase
+allah	আল্লাহ	3500	theology
+mohammad	মুহাম্মদ	3200	theology
+prophet	নবী	2600	theology
+rasul	রাসূল	2700	theology
+quran	কুরআন	3000	scripture
+hadith	হাদিস	2900	scripture
+sunnah	সুন্নাহ	2600	theology
+namaz	নামাজ	3000	practice
+salat	সালাত	2800	practice
+roza	রোজা	2900	practice
+siam	সিয়াম	2600	practice
+hajj	হজ	2800	practice
+umrah	ওমরাহ	2500	practice
+zakat	যাকাত	2700	practice
+fitra	ফিতরা	2500	practice
+qurbani	কোরবানি	2800	practice
+eid	ঈদ	3100	festival
+eid_ul_fitr	ঈদুল ফিতর	2900	festival
+eid_ul_azha	ঈদুল আজহা	2900	festival
+ramadan	রমজান	3000	calendar
+muharram	মহরম	2600	calendar
+shaban	শাবান	2400	calendar
+shawwal	শাওয়াল	2400	calendar
+rabiul_awal	রবিউল আউয়াল	2500	calendar
+shobe_borat	শবে বরাত	2700	night
+shobe_qadr	শবে কদর	2800	night
+shobe_meraj	শবে মেরাজ	2600	night
+jummah	জুম্মা	2900	day
+khutba	খুতবা	2600	practice
+mosque	মসজিদ	2900	place
+eidgah	ঈদগাহ	2600	place
+madrasa	মাদ্রাসা	2700	institution
+imam	ইমাম	2800	office
+muazzin	মুয়াজ্জিন	2600	office
+azan	আজান	2900	practice
+iqamat	ইকামত	2500	practice
+wudu	ওজু	2800	purification
+tayammum	তায়াম্মুম	2300	purification
+ghusl	গোসল	2700	purification
+fajr	ফজর	2900	prayer
+dhuhr	যোহর	2900	prayer
+asr	আসর	2900	prayer
+maghrib	মাগরিব	2900	prayer
+isha	এশা	2900	prayer
+tahajjud	তাহাজ্জুদ	2700	prayer
+tarabi	তারাবিহ	2800	prayer
+witr	বিতর	2600	prayer
+janaza	জানাযা	2700	prayer
+monajat	মোনাজাত	2800	prayer
+dua	দোয়া	3000	prayer
+tasbeeh	তাসবীহ	2600	devotion
+zikr	জিকির	2700	devotion
+dargah	দরগাহ	2400	place
+pir	পীর	2500	cleric
+oliyallah	ওলিউল্লাহ	2400	cleric
+kaaba	কাবা	2900	holy_site
+makkah	মক্কা	2900	holy_site
+madinah	মদিনা	2900	holy_site
+quds	বায়তুল মুকাদ্দাস	2600	holy_site
+sahabi	সাহাবী	2600	history
+farz	ফরজ	2800	jurisprudence
+wajib	ওয়াজিব	2700	jurisprudence
+sunnat	সুন্নত	2800	jurisprudence
+mustahabb	মুস্তাহাব	2400	jurisprudence
+makruh	মাকরূহ	2500	jurisprudence
+haram	হারাম	2800	jurisprudence
+halal	হালাল	2900	jurisprudence
+fatwa	ফতোয়া	2600	jurisprudence
+sharia	শরিয়াহ	2700	jurisprudence
+fiqh	ফিকহ	2500	jurisprudence
+jihad	জিহাদ	2500	theology
+shahadat	শাহাদাত	2600	theology
+jannat	জান্নাত	2900	eschatology
+jahannam	জাহান্নাম	2800	eschatology
+qiyamah	কিয়ামত	2800	eschatology
+hasher	হাশর	2700	eschatology
+mizan	মিজান	2500	eschatology
+pulserat	পুলসিরাত	2600	eschatology
+fereshta	ফেরেশতা	2700	creation
+jinn	জ্বীন	2500	creation
+shaitan	শয়তান	2700	creation
+tauba	তওবা	2700	repentance
+kaffara	কাফফারা	2400	atonement
+sadaqah	সদকা	2700	charity
+waqf	ওয়াকফ	2500	charity
+tabligh	তাবলীগ	2600	organization
+ijtema	ইজতেমা	2800	gathering
+bishwa_ijtema	বিশ্ব ইজতেমা	2900	gathering
+akika	আকিকা	2500	ceremony
+khatam	খতম	2600	ceremony
+milad	মিলাদ	2600	ceremony
+qirat	কেরাত	2600	recitation
+hafez	হাফেজ	2700	title
+maulana	মাওলানা	2800	title
+mufti	মুফতি	2700	title
+allama	আল্লামা	2600	title
+alim	আলেম	2700	title
+ulema	ওলামা	2600	title
+qazi	কাজী	2600	office
+nikah	নিকাহ	2600	contract
+denmohor	দেনমোহর	2700	marriage
+talak	তালাক	2600	divorce
+iddat	ইদ্দত	2400	jurisprudence
+meeras	মিরাস	2400	inheritance
+surah	সূরা	2900	scripture
+ayat	আয়াত	2800	scripture
+para	পারা	2700	scripture
+ruku	রুকু	2700	prayer
+sijdah	সিজদা	2800	prayer
+tashahhud	তাশাহহুদ	2600	prayer
+darood	দরূদ	2800	prayer
+salam	সালাম	3100	greeting
+koli	কলমা	2800	creed
+shahada	শাহাদাহ	2700	creed
+tawheed	তাওহীদ	2700	theology
+risalat	রিসালাত	2600	theology
+akhira	আখেরাত	2700	theology
+taqwa	তাকওয়া	2700	virtue
+ikhlas	ইখলাস	2600	virtue
+sabr	সবর	2800	virtue
+shukr	শুকর	2800	virtue
+adl	আদল	2400	virtue
+ehsan	এহসান	2500	virtue
+amanat	আমানত	2600	virtue
+khianat	খেয়ানত	2500	vice
+riba	সুদ	2800	finance
+islamic_banking	ইসলামী ব্যাংকিং	2600	finance
+mudaraba	মুদারাবা	2400	finance
+musharaka	মুশারাকা	2300	finance
+murabaha	মুরাবাহা	2300	finance
+sukuk	সুকুক	2200	finance
+takaful	তাকাফুল	2200	finance
+bismillahir_rahmanir_rahim	বিসমিল্লাহির রাহমানির রাহিম	3200	phrase
+sallallahu_alaihi_wa_sallam	সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম	3100	honorific
+radiallahu_anhu	রাদিয়াল্লাহু আনহু	2900	honorific
+rahmatullah_alaihi	রহমাতুল্লাহি আলাইহি	2800	honorific
+alaihissalam	আলাইহিস সালাম	2900	honorific
+ameen	আমিন	3000	supplication
+rabbi_zidni_ilma	রব্বি জিদনি ইলমা	2700	supplication
+rabbi_yassir	রব্বি ইয়াসসির	2600	supplication
+hasbunallahu_wa_nimal_wakeel	হাসবুনাল্লাহু ওয়া নি'মাল ওয়াকিল	2800	supplication
+innalillahi	ইন্না লিল্লাহি ওয়া ইন্না ইলাইহি রাজিউন	3100	condolence
+toba	তওবা আস্তাগফিরুল্লাহ	2700	repentance
+subhanallahi_wa_bihamdihi	সুবহানাল্লাহি ওয়া বিহামদিহি	2900	tasbeeh
+la_hawla_wala_quwwata	লা হাওলা ওয়ালা কুওয়াতা ইল্লা বিল্লাহ	2900	tasbeeh
+aytul_kursi	আয়াতুল কুরসী	2900	scripture
+surah_fatiha	সূরা ফাতিহা	2900	scripture
+surah_yasin	সূরা ইয়াসিন	2900	scripture
+surah_ikhlas	সূরা ইখলাস	2900	scripture
+surah_mulk	সূরা মুলক	2800	scripture
+surah_kahf	সূরা কাহাফ	2800	scripture
+surah_baqarah	সূরা বাকারা	2800	scripture
+surah_rahman	সূরা আর-রহমান	2900	scripture
+qurbani_eid	কোরবানির ঈদ	3000	festival
+rojar_eid	রোজার ঈদ	3000	festival
+chand_raat	চাঁদ রাত	2800	festival
+sehri	সেহরি	2900	ramadan
+iftar	ইফতার	3000	ramadan
+itekaf	ইতিকাফ	2600	ramadan
+fitrah	ফিতরা প্রদান	2600	charity
+zakatul_fitr	যাকাতুল ফিতর	2600	charity
+sadqaye_jariya	সদকায়ে জারিয়া	2700	charity
+masnoon_dua	মাসনুন দোয়া	2700	prayer
+munajat_dua	মোনাজাত ও দোয়া	2800	prayer
+dini_talim	দ্বীনি তালিম	2600	education
+qawmi	কওমি মাদ্রাসা	2600	institution
+alia	আলিয়া মাদ্রাসা	2600	institution
+hifz	হিফজখানা	2600	institution
+yateemkhana	এতিমখানা	2700	charity
+masjid_o_madrasa	মসজিদ ও মাদ্রাসা	2800	institution
+kabristan	কবরস্থান	2800	place
+janaza_namaz	জানাযার নামাজ	2800	prayer
+khatme_quran	খতমে কুরআন	2700	ceremony
+khatme_shifa	খতমে শিফা	2500	ceremony
+khatme_yunus	খতমে ইউনুস	2600	ceremony
+milad_mahfil	মিলাদ মাহফিল	2700	ceremony
+waz_mahfil	ওয়াজ মাহফিল	2800	ceremony
+dharmiyo_jolosha	ধর্মীয় জলসা	2600	gathering
+islami_shommilan	ইসলামী সম্মেলন	2600	gathering
+shariah_council	শরীয়াহ কাউন্সিল	2500	institution
+islamic_foundation	ইসলামিক ফাউন্ডেশন	2800	institution
+baitul_mukkaram	বায়তুল মোকাররম জাতীয় মসজিদ	2900	landmark
+chawkbazar_shahi_masjid	চকবাজার শাহী মসজিদ	2500	landmark
+tara_masjid	তারা মসজিদ	2600	landmark
+shat_gombuj_masjid	ষাট গম্বুজ মসজিদ	2800	landmark
+bagha_masjid	বাঘা মসজিদ	2500	landmark
+sonargaon_masjid	পানাম নগর মসজিদ	2400	landmark
+shah_jalal_dargah	শাহজালাল মাজার শরীফ	2800	landmark
+shah_paran_dargah	শাহপরান মাজার	2700	landmark
+khan_jahan_ali_dargah	খানজাহান আলী মাজার	2700	landmark
+bayejid_bostami	বায়েজীদ বোস্তামী মাজার	2600	landmark
+gorib_newaz	গরীব নেওয়াজ	2500	title
+mujaddid	মুজাদ্দিদ	2400	title
+qutub	কুতুব	2300	title
+abdal	আবদাল	2200	title
+khelafat	খেলাফত	2500	history
+khalifa	খলিফা	2600	history
+sahaba_ekram	সাহাবায়ে কেরাম	2700	history
+tabeyi	তাFrontendবেয়ী	2400	history
+tabe_tabeyi	তাবে-তাবেয়ী	2300	history
+muhaddith	মুহাদ্দিস	2600	scholar
+mufassir	মুফাসসির	2600	scholar
+faqih	ফকিহ	2500	scholar
+mutakallim	মুস্তাকাল্লিম	2300	scholar
+sufi	সুফি	2500	scholar
+tasawwuf	তাসাউফ	2500	spirituality
+tariqa	তরিকা	2500	spirituality
+khanqah	খানকাহ	2400	spirituality
+murid	মুরিদ	2500	spirituality
+murshid	মুর্শিদ	2600	spirituality
+silsila	সিলসিলা	2400	spirituality
+chishtia	চিশতিয়া	2400	tariqa
+qadria	কাদেরিয়া	2400	tariqa
+naqshbandia	নকশবন্দিয়া	2400	tariqa
+mujaddidia	মুজাদ্দিদিয়া	2400	tariqa
+sohrawardia	সোহরাওয়ার্দিয়া	2300	tariqa
+furfura	ফুরফুরা শরীফ	2500	tradition
+sarsina	ছারছীনা দরবার	2500	tradition
+charmonai	চরমোনাই দরবার	2600	tradition
+atwroshi	আটরশি দরবার	2500	tradition
+maizbhandar	মাইজভান্ডার দরবার	2600	tradition
+dewanbagh	দেওয়ানবাগ	2300	tradition
+darul_uloom	দারুল উলুম	2600	institution
+deoband	দেওবন্দ	2600	tradition
+hathazari	হাটহাজারী মাদ্রাসা	2700	institution
+patiya	পটিয়া মাদ্রাসা	2500	institution
+lalbagh_madrasa	লালবাগ জামিয়া কোরআনিয়া	2600	institution
+shaikhul_hadith	শায়খুল হাদিস	2700	title
+muhtamim	মুহতামিম	2600	office
+nazim	নাজিম	2500	office
+khatib	খতিব	2700	office
+peshimam	পেশ ইমাম	2600	office
+kayem_maqam	কায়েম মাকাম	2300	office
+mutawalli	মোতোয়াল্লি	2500	office
+khadem	খাদেম	2600	office
+chilla	চিল্লা	2500	tabligh
+gasht	গাশত	2500	tabligh
+bayan	বয়ান	2700	tabligh
+mushawarah	মুশাওয়ারা	2500	tabligh
+karguzari	কারগুজারি	2400	tabligh
+tashkil	তাশকিল	2400	tabligh
+hidayati_bayan	হেদায়াতি বয়ান	2600	tabligh
+akhri_munajat	আখেরী মোনাজাত	2900	gathering
+tongir_ijtema	টঙ্গী বিশ্ব ইজতেমা	2900	gathering
+pabitra_shobe_qadr	পবিত্র শবে কদর	2800	night
+pabitra_ashura	পবিত্র আশুরা	2800	observance
+karbala	কারবালা	2700	history
+imam_hussain	ইমাম হোসাইন	2800	history
+imam_hasan	ইমাম হাসান	2800	history
+ahle_bayt	আহলে বাইত	2700	theology
+khulafaye_rashedin	খোলাফায়ে রাশেদিন	2800	history
+abu_bakr	হযরত আবু বকর সিদ্দিক (রা.)	2800	person
+umar_farooq	হযরত ওমর ফারুক (রা.)	2800	person
+usman_ghani	হযরত ওসমান গণি (রা.)	2800	person
+ali_murtaza	হযরত আলী (রা.)	2800	person
+fatima_zohra	হযরত ফাতেমা (রা.)	2700	person
+khadijatul_kubra	হযরত খাদিজা (রা.)	2700	person
+aisha_siddiqa	হযরত আয়েশা (রা.)	2700	person
+bilal_habashi	হযরত বেলাল (রা.)	2700	person
+khalid_bin_walid	হযরত খালিদ বিন ওয়ালিদ (রা.)	2600	person
+tareeq_bin_ziyad	তারেক বিন জিয়াদ	2400	person
+salahuddin_ayyubi	সুলতান সালাহউদ্দিন আইয়ুবী	2600	person
+muhammad_al_fateh	সুলতান মুহাম্মদ আল ফাতিহ	2500	person
+harun_al_rashid	খলিফা হারুনুর রশিদ	2400	person
+umar_bin_abdul_aziz	খলিফা ওমর বিন আব্দুল আজিজ	2500	person
+imam_abu_hanifa	ইমাম আবু হানিফা (রহ.)	2700	scholar
+imam_shafi	ইমাম শাফেয়ী (রহ.)	2600	scholar
+imam_malik	ইমাম মালেক (রহ.)	2600	scholar
+imam_ahmad_bin_hanbal	ইমাম আহমদ বিন হাম্বল (রহ.)	2600	scholar
+imam_bukhari	ইমাম বুখারী (রহ.)	2800	scholar
+imam_muslim	ইমাম মুসলিম (রহ.)	2700	scholar
+imam_tirmidhi	ইমাম তিরমিযী (রহ.)	2600	scholar
+imam_abu_dawood	ইমাম আবু দাউদ (রহ.)	2600	scholar
+imam_nasayi	ইমাম নাসায়ী (রহ.)	2500	scholar
+imam_ibn_majah	ইমাম ইবনে মাজাহ (রহ.)	2500	scholar
+sihah_sittah	সিহাহ সিত্তাহ	2600	scripture
+sahih_bukhari	সহীহ বুখারী শরীফ	2800	scripture
+sahih_muslim	সহীহ মুসলিম শরীফ	2700	scripture
+sunan_at_tirmidhi	জামে তিরমিযী	2600	scripture
+sunan_abi_dawood	সুনানে আবু দাউদ	2600	scripture
+sunan_an_nasayi	সুনানে নাসায়ী	2500	scripture
+sunan_ibn_majah	সুনানে ইবনে মাজাহ	2500	scripture
+mishkatul_masabih	মিশকাতুল মাসাবীহ	2600	scripture
+riyadus_saliheen	রিয়াদুস সালেহীন	2600	scripture
+tafsir_ibn_kathir	তাফসীরে ইবনে কাসীর	2700	scripture
+tafsir_maariful_quran	মাআরিফুল কুরআন	2700	scripture
+tafsir_jalalayn	তাফসীরে জালালাইন	2600	scripture
+tafsir_tabari	তাফসীরে তাবারী	2500	scripture
+tafsir_qurtubi	তাফসীরে কুরতুবী	2500	scripture
+tafsir_fi_zilalil_quran	ফি যিলালিল কুরআন	2500	scripture
+tafheemul_quran	তাফহীমুল কুরআন	2600	scripture
+quran_tilawat	কুরআন তিলাওয়াত	2900	practice
+tarjuma	কুরআনের তরজমা	2800	scripture
+tafsir	তাফসীর	2800	scripture
+tajweed	তাজবীদ	2700	study
+makhraj	মাখরাজ	2600	study
+sifat	সিফাত	2500	study
+waqf_ramooz	ওয়াকফের চিহ্ন	2500	study
+hizb	হিযব	2400	scripture
+juz	জুয	2500	scripture
+manzil	মঞ্জিল	2500	scripture
+sujood_at_tilawah	সিজদায়ে তিলাওয়াত	2600	prayer
+darood_ibrahim	দরূদে ইব্রাহিম	2900	prayer
+dua_masura	দোয়ায়ে মাসুরা	2800	prayer
+dua_qunoot	দোয়ায়ে কুনুত	2800	prayer
+attahiyyat	আত্তাহিয়্যাতু	2900	prayer
+subhana_rabbial_azeem	সুবহানা রাব্বিয়াল আজিম	2900	prayer
+subhana_rabbial_aala	সুবহানা রাব্বিয়াল আলা	2900	prayer
+samiallahu_liman_hamidah	সামিয়াল্লাহু লিমান হামিদাহ	2900	prayer
+rabbana_lakal_hamd	রব্বানা লাকাল হামদ	2900	prayer
+allahu_akbar_kabira	আল্লাহু আকবার কাবিরা	2800	prayer
+la_ilaha_illallahu_wahdahu	লা ইলাহা ইল্লাল্লাহু ওয়াহদাহু	2800	prayer
+subhanallahi_walhamdulillahi	সুবহানাল্লাহি ওয়ালহামদুলিল্লাহি	2800	prayer
+astagfirullahal_azeem	আস্তাগফিরুল্লাহাল আজিম	2800	prayer
+allahumma_antassalam	আল্লাহুম্মা আনতাস সালাম	2800	prayer
+allahumma_ajirni_minan_nar	আল্লাহুম্মা আজিরনি মিনান নার	2800	prayer
+rabbi_innee_limaa_anzalta	রব্বি ইন্নি লিমা আনযালতা	2700	prayer
+rabbana_atina_fid_dunya	রব্বানা আতিনা ফিদ দুনিয়া	3000	prayer
+rabbanagfirli	রব্বানাগফিরলি	2900	prayer
+rabbi_irhamhuma	রব্বির হামহুমা কামা রব্বায়ানি সগিরা	2900	prayer
+hasbiyallahu_la_ilaha	হাসবিয়াল্লাহু লা ইলাহা ইল্লা হুয়া	2800	prayer
+ya_hayyu_ya_qayyum	ইয়া হাইয়্যু ইয়া কাইয়্যুম	2800	prayer
+bismillahi_tawakkaltu	বিসমিল্লাহি তাওয়াক্কালতু আলাল্লাহ	2800	prayer
+subhanallazi_sakhara_lana	সুবহানাল্লাজি সাখখারা লানা হাজা	2700	prayer
+allahumma_innee_as_aluka	আল্লাহুম্মা ইন্নি আসআলুকাল জান্নাহ	2800	prayer
+allahumma_innaka_afuwwun	আল্লাহুম্মা ইন্নাকা আফুওয়ুন তুহিব্বুল আফওয়া ফাফু আন্নি	2900	prayer
+sayyidul_istighfar	সাইয়্যেদুল ইস্তেগফার	2900	prayer
+iman	ঈমান	3000	creed
+amantu_billahi	আমানতু বিল্লাহি	2800	creed
+kalima_tayyiba	কালিমা তাইয়্যেবা	2900	creed
+kalima_shahadat	কালিমা শাহাদাত	2900	creed
+kalima_tamjeed	কালিমা তামজীদ	2700	creed
+kalima_tawheed	কালিমা তাওহীদ	2700	creed
+kalima_radd_al_kufr	কালিমা রদ্দে কুফর	2600	creed
+iman_e_mujmal	ঈমানে মুজমাল	2700	creed
+iman_e_mufassal	ঈমানে মুফাসসাল	2700	creed
+shirk	শিরক	2800	theology
+kufur	কুফর	2800	theology
+nifaq	নিফাক	2700	theology
+bidat	বিদআত	2700	theology
+fasiq	ফাসিক	2600	theology
+munafiq	মুনাফিক	2800	theology
+murtad	মুরতাদ	2500	theology
+kafir	কাফের	2700	theology
+mushrik	মুশরিক	2700	theology
+momin	মুমিন	2900	theology
+muttaqi	মুত্তাকী	2800	theology
+saleh	সালেহ	2700	theology
+shuhada	শুহাদা	2600	theology
+siddiq	সিদ্দিকীন	2600	theology
+awliya	আউলিয়া	2600	theology
+anbiya	আম্বিয়া	2700	theology
+malaika	মালাইকা	2600	theology
+qadr	তাকদীর	2800	theology
+barzakh	আলমে বরজখ	2600	eschatology
+munkar_nakir	মুনকার ও নাকির	2700	eschatology
+azab_e_qabr	কবরের আজাব	2800	eschatology
+naim_e_qabr	কবরের নেয়ামত	2600	eschatology
+shafaat	শাফায়াত	2700	eschatology
+kawsar	হওযে কাউসার	2700	eschatology
+maqam_e_mahmood	মাকামে মাহমুদ	2700	eschatology
+tuba	তুবা	2500	eschatology
+sidratul_muntaha	সিদরাতুল মুনতাহা	2700	miraj
+arsh	আরশে আজিম	2800	theology
+kursi	কুরসি	2700	theology
+lawh_al_mahfuz	লাওহে মাহফুজ	2700	theology
+qalam	কলম	2600	theology
+ruh	রুহ	2700	theology
+nafs	নফস	2700	spirituality
+qalb	কলব	2700	spirituality
+sirat	সিরাত	2700	history
+seeratun_nabi	সীরাতুন্নবী (সা.)	2900	history
+miladun_nabi	মিলাদুন্নবী (সা.)	2900	celebration
+hijrah	হিজরত	2800	history
+badr	বদর যুদ্ধ	2700	history
+uhud	উহুদ যুদ্ধ	2700	history
+khandaq	খন্দক যুদ্ধ	2600	history
+sulh_e_hudaybiyyah	হুদায়বিয়ার সন্ধি	2600	history
+fath_e_makkah	মক্কা বিজয়	2700	history
+hajjatul_wida	বিদায় হজ	2800	history
+khutbatul_wida	বিদায় হজের ভাষণ	2800	history
+ansar_o_muhajir	আনসার ও মুহাজির	2700	history
+bayat	বায়াত	2600	contract
+bayatur_rizwan	বায়াতে রিদওয়ান	2500	history
+ashara_e_mubashshara	আশারায়ে মুবাশশারা	2700	history
+ahlus_sunnah	আহলুস সুন্নাহ ওয়াল জামায়াত	2800	theology
+salaf_e_salehin	সালাফে সালেহীন	2700	theology
+madhhab	মাজহাব	2800	jurisprudence
+hanafi	হানাফী মাজহাব	2800	jurisprudence
+shafii	শাফেয়ী মাজহাব	2600	jurisprudence
+maliki	মালেকী মাজহাব	2500	jurisprudence
+hanbali	হাম্বলী মাজহাব	2500	jurisprudence
+ijtihad	ইজতিহাদ	2600	jurisprudence
+taqlid	তাকলীদ	2600	jurisprudence
+ijma	ইজমা	2600	jurisprudence
+qiyas	কিয়াস	2600	jurisprudence
+usul_al_fiqh	উসূলে ফিকহ	2600	jurisprudence
+fatwa_e_alamgiri	ফতোয়ায়ে আলমগীরী	2500	jurisprudence
+raddul_muhtar	রদ্দুল মুহতার	2400	jurisprudence
+hedaya	হিদায়া	2500	jurisprudence
+quduri	কুদূরী	2400	jurisprudence
+nurul_eezah	নূরুল ইজাহ	2400	jurisprudence
+bahishti_zewar	বেহেশতী জেওর	2600	literature
+fazail_e_amal	ফাযায়েলে আমল	2700	literature
+qasasul_anbiya	কাসাসুল আম্বিয়া	2700	literature
+muntakhab_hadith	মুন্তাখাব হাদিস	2600	literature
+talimul_islam	তালিমুল ইসলাম	2600	literature
+ar_raheeq_al_makhtum	আর-রাহীকুল মাখতূম	2800	literature
+islamic_book	ইসলামিক বই ও সাহিত্য	2700	literature
+bangladesh_islamic_foundation	বাংলাদেশ ইসলামিক ফাউন্ডেশন	2800	institution
+masjid_mission	মসজিদ মিশন	2500	organization
+tablighi_jamaat	তাবলীগ জামাত	2800	organization
+ahle_hadith	আহলে হাদিস আন্দোলন	2600	movement
+khelafat_majlish	খেলাফত মজলিস	2500	organization
+islami_andolon	ইসলামী আন্দোলন	2600	organization
+hefazat	হেফাজতে ইসলাম	2700	organization
+jamia	জামিয়া আরাবিয়া	2600	institution
+chormonai_mahfil	চরমোনাই মাহফিল	2700	gathering
+sharsina_mahfil	ছারছীনা মাহফিল	2600	gathering
+dharmiyo_anushthan	ধর্মীয় অনুষ্ঠান ও মিলাদ	2700	ceremony
+eid_mubarak	ঈদ মোবারক	3200	greeting
+kullu_am_wa_antum_bi_khair	কুল্লু আমিন ওয়া আনতুম বিখায়ের	2700	greeting
+taqabbalallahu_minna_wa_minkum	তাক্বাব্বালাল্লাহু মিন্না ওয়া মিনকুম	2800	greeting
+shubho_eid	শুভ ঈদ ও মোবারকবাদ	2800	greeting
+ramadan_mubarak	রমজান মোবারক	3000	greeting
+ramadan_kareem	রমজান কারীম	2900	greeting
+jummah_mubarak	জুম্মা মোবারক	3000	greeting
+shab_e_barat_mubarak	শবে বরাত মোবারক	2700	greeting
+shab_e_qadr_mubarak	শবে কদর মোবারক	2800	greeting
+dini_shubhechha	দ্বীনি শুভেচ্ছা ও সালাম	2800	greeting
+salam_o_shubhechha	সালাম ও শুভেচ্ছা	2900	greeting
+allah_hafez	আল্লাহ হাফেজ	3100	farewell
+fee_amanillah	ফি আমানিল্লাহ	3000	farewell
+maas_salamah	মাআস সালামাহ	2800	farewell
+ila_liqaa	ইলাল লিকা	2600	farewell
+shukran	শুকরান জাযিলান	2800	thanks
+jazakumullah_khair	জাযাকুমুল্লাহু খায়রান	2900	thanks
+barakallahu_feekum	বারাকাল্লাহু ফিকুম	2800	blessing
+hayyakallahu	হাইয়্যাকাল্লাহ	2500	greeting
+ahlan_wa_sahlan	আহলান ওয়া সাহলান	2800	welcome
+marhaban	মারহাবা	2800	welcome
+taqabbal_ya_rab	তাকাব্বাল ইয়া রব	2700	supplication
+allahumma_ameen	আল্লাহুম্মা আমিন	3000	supplication
+rabbana_taqabbal_minna	রব্বানা তাকাব্বাল মিন্না	2900	supplication
+innaka_antas_samiul_aleem	ইন্নাকা আনতাস সামিউল আলিম	2900	supplication
+wa_tub_alaina	ওয়া তুব আলাইনা	2800	supplication
+innaka_antat_tawwabur_raheem	ইন্নাকা আনতাত তাওয়াবুর রাহীম	2800	supplication
+bi_rahmatika_ya_arhamar_rahimin	বিরাহমাতিকা ইয়া আরহামার রাহিমীন	2900	supplication
+walhamdu_lillahi_rabbil_alameen	ওয়ালহামদুলিল্লাহি রব্বিল আলামীন	3000	supplication

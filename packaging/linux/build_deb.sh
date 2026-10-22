@@ -41,6 +41,8 @@ cp "${REPO_ROOT}/include/abk/"*.h "${DIST_DIR}/usr/include/abk/"
 cp "${REPO_ROOT}/bin/abk_cli" "${DIST_DIR}/usr/bin/"
 cp "${REPO_ROOT}/tools/abk_settings.py" "${DIST_DIR}/usr/bin/amar-bangla-kotha-settings"
 chmod +x "${DIST_DIR}/usr/bin/amar-bangla-kotha-settings"
+cp "${REPO_ROOT}/tools/abk_legacy_clipboard.py" "${DIST_DIR}/usr/bin/abk-legacy-clipboard"
+chmod +x "${DIST_DIR}/usr/bin/abk-legacy-clipboard"
 
 cp "${REPO_ROOT}/bindings/linux/abk_ibus_engine.py" "${DIST_DIR}/usr/bin/amar-bangla-kotha-ibus"
 chmod +x "${DIST_DIR}/usr/bin/amar-bangla-kotha-ibus"
@@ -52,6 +54,8 @@ cp "${REPO_ROOT}/bindings/linux/amar-bangla-kotha.xml" "${DIST_DIR}/usr/share/ib
 cp "${REPO_ROOT}/data/bangla_wordlist.txt" "${DIST_DIR}/usr/share/amar-bangla-kotha/"
 cp "${REPO_ROOT}/data/bangla_bigrams.tsv" "${DIST_DIR}/usr/share/amar-bangla-kotha/"
 cp "${REPO_ROOT}/tests/data/golden.tsv" "${DIST_DIR}/usr/share/amar-bangla-kotha/"
+mkdir -p "${DIST_DIR}/usr/share/amar-bangla-kotha/domains"
+cp "${REPO_ROOT}/data/domains/"*.tsv "${DIST_DIR}/usr/share/amar-bangla-kotha/domains/"
 
 # 8. Copy desktop entry
 cp "${REPO_ROOT}/packaging/linux/amar-bangla-kotha.desktop" "${DIST_DIR}/usr/share/applications/"

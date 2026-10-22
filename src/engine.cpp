@@ -23,6 +23,27 @@ AmarBanglaKothaEngine::AmarBanglaKothaEngine(const EngineConfig& cfg)
         personal_dictionary.load_from_file(config.personal_dictionary_file_path);
     }
     bigram_model.set_enable_trigram(config.enable_trigram);
+
+    // Workstream 7: Initialize built-in Bangladeshi shortcuts (Currency 'tk' -> '৳', greetings)
+    for (const auto& sc : BangladeshHelpers::get_builtin_shortcuts()) {
+        if (!personal_dictionary.has_shortcut(sc.first)) {
+            personal_dictionary.add_shortcut(sc.first, sc.second);
+        }
+    }
+
+    // Load domain dictionary packs from standard paths
+    const std::vector<std::pair<DomainPackType, std::vector<std::string>>> default_packs = {
+        {DomainPackType::BANGLADESH_PLACES, {"data/domains/bangladesh_places.tsv", "/usr/share/amar-bangla-kotha/domains/bangladesh_places.tsv"}},
+        {DomainPackType::ISLAMIC_TERMS, {"data/domains/islamic_terms.tsv", "/usr/share/amar-bangla-kotha/domains/islamic_terms.tsv"}},
+        {DomainPackType::LEGAL_MEDICAL_BANKING, {"data/domains/legal_medical_banking.tsv", "/usr/share/amar-bangla-kotha/domains/legal_medical_banking.tsv"}}
+    };
+    for (const auto& dp : default_packs) {
+        for (const auto& p : dp.second) {
+            if (domain_pack_manager.load_pack(dp.first, p)) {
+                break;
+            }
+        }
+    }
 }
 
 void AmarBanglaKothaEngine::add_candidate_unique(std::vector<Candidate>& list, const Candidate& candidate) {
@@ -95,6 +116,13 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         if (!expansion.empty()) {
             Candidate sc_cand(expansion, 15000.0, CandidateType::SHORTCUT_EXPANSION, "Personal shortcut");
             add_candidate_unique(result.candidates, sc_cand);
+        }
+    }
+
+    // Workstream 7: Domain Dictionary Pack matching
+    for (const auto& d_entry : domain_pack_manager.get_active_entries()) {
+        if (d_entry.key == trimmed_input) {
+            add_candidate_unique(result.candidates, Candidate(d_entry.word, 11000.0, CandidateType::DICTIONARY_EXACT, "Domain Pack: " + d_entry.category));
         }
     }
 
@@ -499,6 +527,18 @@ bool AmarBanglaKothaEngine::export_personal_data(const std::string& filepath) co
 
 bool AmarBanglaKothaEngine::import_personal_data(const std::string& filepath) {
     return personal_dictionary.import_from_tsv(filepath);
+}
+
+bool AmarBanglaKothaEngine::load_domain_pack(DomainPackType type, const std::string& filepath) {
+    return domain_pack_manager.load_pack(type, filepath);
+}
+
+void AmarBanglaKothaEngine::set_domain_pack_enabled(DomainPackType type, bool enabled) {
+    domain_pack_manager.set_pack_enabled(type, enabled);
+}
+
+bool AmarBanglaKothaEngine::is_domain_pack_enabled(DomainPackType type) const {
+    return domain_pack_manager.is_pack_enabled(type);
 }
 
 } // namespace abk

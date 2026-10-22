@@ -1,0 +1,198 @@
+# Bangladesh Administrative Divisions, Districts and Prominent Upazilas
+# Key<TAB>Word<TAB>Frequency<TAB>Category
+dhaka	ঢাকা	3000	division
+chittagong	চট্টগ্রাম	2800	division
+rajshahi	রাজশাহী	2500	division
+khulna	খুলনা	2500	division
+barisal	বরিশাল	2400	division
+sylhet	সিলেট	2500	division
+rangpur	রংপুর	2400	division
+mymensingh	ময়মনসিংহ	2400	division
+gazipur	গাজীপুর	2000	district
+narayanganj	নারায়ণগঞ্জ	2000	district
+narsingdi	নরসিংদী	1800	district
+faridpur	ফরিদপুর	1800	district
+gopalganj	গোপালগঞ্জ	1800	district
+madaripur	মাদারীপুর	1700	district
+manikganj	মানিকগঞ্জ	1700	district
+munshiganj	মুন্সীগঞ্জ	1700	district
+rajbari	রাজবাড়ী	1600	district
+shariatpur	শরীয়তপুর	1600	district
+tangail	টাঙ্গাইল	1900	district
+kishoreganj	কিশোরগঞ্জ	1800	district
+coxsbazar	কক্সবাজার	2200	district
+comilla	কুমিল্লা	2100	district
+feni	ফেনী	1900	district
+brahmanbaria	ব্রাহ্মণবাড়িয়া	1900	district
+rangamati	রাঙ্গামাটি	1700	district
+noakhali	নোয়াখালী	1900	district
+chandpur	চাঁদপুর	1800	district
+lakshmipur	লক্ষ্মীপুর	1700	district
+khagrachhari	খাগড়াছড়ি	1600	district
+bandarban	বান্দরবান	1700	district
+bogura	বগুড়া	2000	district
+joypurhat	জয়পুরহাট	1600	district
+naogaon	নওগাঁ	1700	district
+natore	নাটোর	1700	district
+chapai	চাঁপাইনবাবগঞ্জ	1600	district
+pabna	পাবনা	1800	district
+sirajganj	সিরাজগঞ্জ	1800	district
+jashore	যশোর	2000	district
+satkhira	সাতক্ষীরা	1700	district
+jhenaidah	ঝিনাইদহ	1700	district
+magura	মাগুরা	1600	district
+narail	নড়াইল	1600	district
+bagerhat	বাগেরহাট	1700	district
+kushtia	কুষ্টিয়া	1800	district
+chuadanga	চুয়াডাঙ্গা	1600	district
+meherpur	মেহেরপুর	1600	district
+bhola	ভোলা	1700	district
+jhalakathi	ঝালকাঠি	1600	district
+patuakhali	পটুয়াখালী	1700	district
+pirojpur	পিরোজপুর	1600	district
+barguna	বরগুনা	1600	district
+moulvibazar	মৌলভীবাজার	1800	district
+habiganj	হবিগঞ্জ	1700	district
+sunamganj	সুনামগঞ্জ	1700	district
+dinajpur	দিনাজপুর	1900	district
+kurigram	কুড়িগ্রাম	1700	district
+gaibandha	গাইবান্ধা	1700	district
+lalmonirhat	লালমনিরহাট	1600	district
+nilphamari	নীলফামারী	1600	district
+panchagarh	পঞ্চগড়	1600	district
+thakurgaon	ঠাকুরগাঁও	1600	district
+jamalpur	জামালপুর	1700	district
+netrokona	নেত্রকোণা	1700	district
+sherpur	শেরপুর	1600	district
+savar	সাভার	1900	upazila
+mirpur	মিরপুর	2000	location
+gulshan	গুলশান	2000	location
+dhanmondi	ধানমন্ডি	2000	location
+uttara	উত্তরা	2000	location
+sreemangal	শ্রীমঙ্গল	1800	upazila
+teknaf	টেকনাফ	1800	upazila
+saintmartin	সেন্টমার্টিন	1800	location
+kuakata	কুয়াকাটা	1800	location
+sundarban	সুন্দরবন	2200	location
+bangladesh	বাংলাদেশ	3500	country
+padma	পদ্মা	2200	river
+meghna	মেঘনা	2200	river
+jamuna	যমুনা	2200	river
+karnaphuli	কর্ণফুলী	2000	river
+surma	সুরমা	1900	river
+teesta	তিস্তা	1900	river
+bangabandhu	বঙ্গবন্ধু	2500	historical
+muktijuddho	মুক্তিযুদ্ধ	2400	historical
+birshreshtho	বীরশ্রেষ্ঠ	2000	historical
+kobi	কবি	1800	culture
+shahid	শহীদ	2000	historical
+smarok	স্মারক	1600	historical
+bhasha	ভাষা	2400	culture
+amarshe	অমর	2000	culture
+ekushey	একুশে	2200	culture
+boishakh	বৈশাখ	2200	calendar
+noboborsho	নববর্ষ	2000	calendar
+shadhinota	স্বাধীনতা	2400	historical
+bijoy	বিজয়	2400	historical
+shohid	শহীদ	2000	historical
+জাতীয়	জাতীয়	2200	state
+shongshod	সংসদ	2100	state
+shongbidhan	সংবিধান	2000	state
+projashtontro	প্রজাতন্ত্র	1900	state
+rajdhani	রাজধানী	2100	state
+biman	বিমান	1900	transport
+railway	রেলওয়ে	1800	transport
+sharak	সড়ক	1800	transport
+setu	সেতু	2000	transport
+bhaban	ভবন	1800	civic
+chottor	চত্বর	1800	civic
+nagar	নগর	1800	civic
+shohor	শহর	1900	civic
+union	ইউনিয়ন	1800	administrative
+pourashava	পৌরসভা	1800	administrative
+shochibaloy	সচিবালয়	1900	administrative
+proshashon	প্রশাসন	1800	administrative
+shorkar	সরকার	2400	state
+montri	মন্ত্রী	2000	state
+montronaloy	মন্ত্রণালয়	1900	state
+adhidoptor	অধিদপ্তর	1700	administrative
+poridoptor	পরিদপ্তর	1600	administrative
+ayukto	আযুক্ত	1500	administrative
+commissioner	কমিশনার	1700	administrative
+upazila	উপজেলা	1900	administrative
+zila	জেলা	2000	administrative
+bibhag	বিভাগ	2000	administrative
+gram	গ্রাম	2000	administrative
+thana	থানা	1900	administrative
+fari	ফাঁড়ি	1600	administrative
+court	আদালত	2000	judiciary
+thana	পুলিশ	2000	law_enforcement
+rab	র‍্যাব	1900	law_enforcement
+ansar	আনসার	1800	law_enforcement
+bgb	বিজিবি	1900	law_enforcement
+mukti	মুক্তিযোদ্ধা	2200	historical
+razakar	যুদ্ধাপরাধী	1700	historical
+smritishoudho	স্মৃতিসৌধ	2000	monument
+shaheedminar	শহীদ মিনার	2200	monument
+lalbaghkella	লালবাগ কেল্লা	1800	heritage
+ahsanmanzil	আহসান মঞ্জিল	1800	heritage
+shatgombuj	ষাট গম্বুজ	1800	heritage
+paharpur	পাহাড়পুর	1800	heritage
+mahasthangarh	মহাস্থানগড়	1800	heritage
+kantajimondir	কান্তজীউ মন্দির	1700	heritage
+somapura	সোমপুর মহাবিহার	1700	heritage
+bagerhat	বাগেরহাট পৌরসভা	1600	heritage
+coxsbazar_beach	কক্সবাজার সমুদ্র সৈকত	2000	tourism
+sajek	সাজেক	1900	tourism
+inani	ইনানী	1700	tourism
+jaflong	জাফলং	1800	tourism
+ratargul	রাতারগুল	1800	tourism
+bichnakandi	বিছনাকান্দি	1800	tourism
+tanguar	টাঙ্গুয়ার হাওর	1800	tourism
+nilgiri	নীলগিরি	1800	tourism
+keokradong	কেওক্রাডং	1700	geography
+tajingdong	তাজিংডং	1700	geography
+modhupur	মধুপুর	1700	geography
+barendra	বরেন্দ্র	1700	geography
+bhaowal	ভাওয়াল	1700	geography
+chalanbeel	চলনবিল	1800	geography
+hakaluki	হাকালুকি হাওর	1700	geography
+kaptai	কাপ্তাই	1800	geography
+saintmartin	সেন্টমার্টিন দ্বীপ	1800	geography
+nijhumdwip	নিঝুম দ্বীপ	1700	geography
+manpura	মনপুরা	1600	geography
+sandwip	সন্দ্বীপ	1700	geography
+hatia	হাতিয়া	1700	geography
+kutubdia	কুতুবদিয়া	1700	geography
+moheshkhali	মহেশখালী	1700	geography
+bhasanchar	ভাসানচর	1700	geography
+mongla	মোংলা	1800	port
+payra	পায়রা	1800	port
+matarbari	মাতারবাড়ি	1800	port
+benapole	বেনাপোল	1800	land_port
+tamabil	তামাবিল	1700	land_port
+burimari	বুড়িমারী	1700	land_port
+hili	হিলি	1700	land_port
+akhoora	আখাউড়া	1700	land_port
+banglabandha	বাংলাবান্ধা	1800	land_port
+sonamasjid	সোনামসজিদ	1700	land_port
+bhomra	ভোমরা	1700	land_port
+teesta_barrage	তিস্তা ব্যারেজ	1700	infrastructure
+rooppur	রূপপুর পারমাণবিক কেন্দ্র	1900	infrastructure
+padmabridge	পদ্মা সেতু	2300	infrastructure
+bangabandhutunnel	বঙ্গবন্ধু টানেল	2100	infrastructure
+metrorail	মেট্রোরেল	2200	transport
+elevatedexpressway	উড়াল সড়ক	2000	transport
+shahjalalairport	শাহজালাল আন্তর্জাতিক বিমানবন্দর	2100	transport
+shahamanatairport	শাহ আমানত বিমানবন্দর	1900	transport
+osmaniairport	ওসমানী বিমানবন্দর	1900	transport
+coxsbazarairport	কক্সবাজার বিমানবন্দর	1800	transport
+sayedabad	সায়েদাবাদ	1800	bus_terminal
+gabtoli	গাবতলী	1800	bus_terminal
+mohakhali	মহাখালী	1800	bus_terminal
+kamalapur	কমলাপুর রেলওয়ে স্টেশন	2000	railway
+airportstation	বিমানবন্দর স্টেশন	1900	railway
+chittagongstation	চট্টগ্রাম রেলওয়ে স্টেশন	1900	railway
+sadarghat	সদরঘাট লঞ্চ টার্মিনাল	2000	waterway
+chandpurterminal	চাঁদপুর নৌ টার্মিনাল	1800	waterway
+barisalterminal	বরিশাল নদী বন্দর	1800	waterway

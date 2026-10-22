@@ -7,6 +7,8 @@
 #include "abk/token_classifier.h"
 #include "abk/bigram_model.h"
 #include "abk/personal_dictionary.h"
+#include "abk/domain_packs.h"
+#include "abk/bangladesh_helpers.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -86,6 +88,13 @@ public:
     const std::string& get_last_committed_word() const { return last_committed_word; }
     void set_last_committed_word(const std::string& word) { last_committed_word = word; }
 
+    // Workstream 7: Domain Dictionary Packs
+    bool load_domain_pack(DomainPackType type, const std::string& filepath);
+    void set_domain_pack_enabled(DomainPackType type, bool enabled);
+    bool is_domain_pack_enabled(DomainPackType type) const;
+    const DomainPackManager& get_domain_pack_manager() const { return domain_pack_manager; }
+    DomainPackManager& get_domain_pack_manager() { return domain_pack_manager; }
+
     // Workstream 1: Per-event diagnostic logging
     void set_debug_logging(bool enable) { debug_logging = enable; }
     bool is_debug_logging() const { return debug_logging; }
@@ -111,6 +120,7 @@ private:
     UndoRecord last_commit;
     BigramModel bigram_model;
     PersonalDictionary personal_dictionary;
+    DomainPackManager domain_pack_manager;
     std::string last_committed_word;
     std::string second_last_committed_word;
     bool debug_logging = false;

@@ -104,6 +104,14 @@ ABK_API int abk_ansi_to_unicode(const char* ansi_text, char* out_buf, size_t out
 ABK_API int abk_unicode_to_ansi(const char* unicode_text, char* out_buf, size_t out_cap);
 ABK_API bool abk_is_likely_legacy_ansi(const char* text);
 
+// Workstream 7: Bangladesh-Specific Language Helpers
+ABK_API int abk_format_lakh_crore(long long number, bool bengali_digits, char* out_buf, size_t out_cap);
+ABK_API int abk_number_to_bangla_words(long long number, char* out_buf, size_t out_cap);
+ABK_API int abk_gregorian_to_bangabda(int year, int month, int day, char* out_buf, size_t out_cap);
+ABK_API int abk_convert_sadhu_to_cholito(const char* text, char* out_buf, size_t out_cap);
+ABK_API int abk_convert_cholito_to_sadhu(const char* text, char* out_buf, size_t out_cap);
+ABK_API int abk_engine_set_domain_pack_enabled(abk_engine_t engine, int domain_type, bool enabled);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

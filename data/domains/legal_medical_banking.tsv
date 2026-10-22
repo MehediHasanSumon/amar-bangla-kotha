@@ -1,0 +1,699 @@
+# Legal, Medical, and Banking Domain Vocabulary (Bangladesh Context)
+# Key<TAB>Word<TAB>Frequency<TAB>Category
+account	অ্যাকাউন্ট	3100	banking
+balance	ব্যালেন্স	3000	banking
+joma	জমা	2900	banking
+shonchoy	সঞ্চয়	2800	banking
+rin	ঋণ	2800	banking
+chalan	চালান	2700	banking
+shud	সুদ	2600	banking
+cheque	চেক	2900	banking
+debit	ডেবিট	2800	banking
+credit	credit	2800	banking
+credit_bn	ক্রেডিট	2900	banking
+lenden	লেনদেন	2900	banking
+atm	এটিএম	2700	banking
+draft	ব্যাংক ড্রাফট	2600	banking
+voucher	ভাউচার	2600	banking
+kisti	কিস্তি	2800	banking
+amanot	আমানত	2700	banking
+muldhon	মূলধন	2700	banking
+munafa	মুনাফা	2800	banking
+lav	লাভ	2800	banking
+khoti	ক্ষতি	2700	banking
+bima	বীমা	2700	banking
+premium	প্রিমিয়াম	2600	banking
+tax	কর	2900	banking
+vat	ভ্যাট	2800	banking
+tin	টিন সার্টিফিকেট	2600	banking
+bin	বিন নম্বর	2500	banking
+shonchoypotro	সঞ্চয়পত্র	2800	banking
+dps	ডিপিএস	2800	banking
+fdr	এফডিআর	2800	banking
+remittance	রেমিট্যান্স	2900	banking
+probashi	প্রবাসী আয়	2800	banking
+hundi	হুন্ডি	2400	banking
+money_laundering	অর্থপাচার	2600	banking
+central_bank	বাংলাদেশ ব্যাংক	3000	banking
+governor	গভর্নর	2700	banking
+shonali_bank	সোনালী ব্যাংক	2800	banking
+jonota_bank	জনতা ব্যাংক	2700	banking
+ogroni_bank	অগ্রণী ব্যাংক	2700	banking
+rupali_bank	রূপালী ব্যাংক	2600	banking
+islami_bank	ইসলামী ব্যাংক	2900	banking
+bkash	বিকাশ	3200	fintech
+nagad	নগদ	3100	fintech
+rocket	রকেট	2800	fintech
+upay	উপায়	2600	fintech
+mfs	মোবাইল ব্যাংকিং	2900	fintech
+pos	পয়েন্ট অব সেল	2500	fintech
+smart_card	স্মার্ট কার্ড	2700	fintech
+pin	পিন নম্বর	2800	fintech
+otp	ওটিপি	2800	fintech
+adawlat	আদালত	3000	legal
+ejlash	এজলাস	2600	legal
+bichar	বিচার	2900	legal
+bicharpoti	বিচারপতি	2800	legal
+magistrate	ম্যাজিস্ট্রেট	2800	legal
+jamin	জামিন	2900	legal
+ray	রায়	2900	legal
+ainjibi	আইনজীবী	2900	legal
+barrister	ব্যারিস্টার	2700	legal
+ukil	উকিল	2900	legal
+mamla	মামলা	3000	legal
+badi	বাদী	2800	legal
+bibadi	বিবাদী	2800	legal
+shakkhi	সাক্ষী	2800	legal
+shakkho	সাক্ষ্য	2700	legal
+proman	প্রমাণ	2900	legal
+jobanbondi	জবানবন্দি	2700	legal
+obhijog	অভিযোগ	2800	legal
+ashami	আসামি	2900	legal
+remand	রিমান্ড	2800	legal
+chargesheet	চার্জশিট	2800	legal
+notice	নোটিশ	2800	legal
+somon	সমন	2700	legal
+warrant	ওয়ারেন্ট	2800	legal
+graftar	গ্রেপ্তার	2900	legal
+karadondo	কারাদণ্ড	2800	legal
+jaborjibon	যাবজ্জীবন	2700	legal
+mrityudondo	মৃত্যুদণ্ড	2800	legal
+khalash	খালাস	2800	legal
+appeal	আপিল	2900	legal
+high_court	হাইকোর্ট	3000	legal
+supreme_court	সুপ্রিম কোর্ট	3000	legal
+attorney_general	অ্যাটর্নি জেনারেল	2700	legal
+public_prosecutor	পাবলিক প্রসিকিউটর	2600	legal
+notary_public	নোটারি পাবলিক	2600	legal
+affidavit	হলফনামা	2700	legal
+chuktina	চুক্তিপত্র	2800	legal
+registry	রেজিস্ট্রি	2800	legal
+dalil	দলিল	2900	legal
+namjari	নামজারি	2800	legal
+khotian	খতিয়ান	2800	legal
+mouza	মৌজা	2600	legal
+porcha	পর্চা	2700	legal
+baina	বায়নাপত্র	2600	legal
+power_of_attorney	আমমোক্তারনামা	2600	legal
+trustee	ট্রাস্টি	2500	legal
+will	উইল বা ওসিয়তনামা	2600	legal
+uttoradhikar	উত্তরাধিকার	2700	legal
+warish	ওয়ারিশ সনদ	2800	legal
+paribarik_court	পারিবারিক আদালত	2700	legal
+nari_o_shishu	নারী ও শিশু নির্যাতন দমন ট্রাইব্যুনাল	2800	legal
+cyber_tribunal	সাইবার ট্রাইব্যুনাল	2700	legal
+shrom_court	শ্রম আদালত	2600	legal
+poribesh_court	পরিবেশ আদালত	2500	legal
+ain_shongshod	আইন ও সংসদ বিষয়ক মন্ত্রণালয়	2700	legal
+doctor	ডাক্তার	3100	medical
+chikitsok	চিকিৎসক	2900	medical
+nurse	নার্স	2800	medical
+rogi	রোগী	3000	medical
+prescription	প্রেসক্রিপশন	2900	medical
+hospital	হাসপাতাল	3100	medical
+clinic	ক্লিনিক	2900	medical
+oshudh	ওষুধ	3000	medical
+pharmacy	ফার্মেসি	2900	medical
+uposhorgo	উপসর্গ	2700	medical
+rog	রোগ	2900	medical
+porikkha	পরীক্ষা	2900	medical
+roktochap	রক্তচাপ	2800	medical
+diabetes	ডায়াবেটিস	2900	medical
+ostropochor	অস্ত্রোপচার	2800	medical
+operation	অপারেশন	2900	medical
+icu	নিবিড় পরিচর্যা কেন্দ্র	2800	medical
+ccu	সিসিইউ	2700	medical
+nicu	এনআইসিইউ	2600	medical
+tika	টিকা	2900	medical
+vaccine	ভ্যাকসিন	2900	medical
+saline	স্যালাইন	2800	medical
+injection	ইনজেকশন	2800	medical
+tablet	ট্যাবলেট	2900	medical
+capsule	ক্যাপসুল	2800	medical
+syrup	সিরাপ	2800	medical
+antibiotic	অ্যান্টিবায়োটিক	2800	medical
+paracetamol	প্যারাসিটামল	2900	medical
+antacid	অ্যান্টাসিড	2800	medical
+x_ray	এক্স-রে	2800	medical
+ultrasono	আল্ট্রাসনোগ্রাম	2700	medical
+mri	এমআরআই	2700	medical
+ct_scan	সিটি স্ক্যান	2700	medical
+ecg	ইসিজি	2800	medical
+endoscopy	এন্ডোস্কোপি	2600	medical
+biopsy	বায়োপসি	2600	medical
+pathology	প্যাথলজি	2700	medical
+blood_test	রক্ত পরীক্ষা	2900	medical
+urine_test	প্রস্রাব পরীক্ষা	2700	medical
+covid	করোনাভাইরাস	2900	medical
+dengue	ডেঙ্গু জ্বর	3000	medical
+chikungunya	চিকুনগুনিয়া	2600	medical
+malaria	ম্যালেরিয়া	2600	medical
+typhoid	টাইফয়েড	2700	medical
+cholera	কলেরা	2600	medical
+jaundice	জন্ডিস	2800	medical
+cancer	ক্যান্সার	2900	medical
+stroke	স্ট্রোক	2900	medical
+heart_attack	হৃদরোগ	2900	medical
+asthma	হাঁপানি	2800	medical
+allergy	অ্যালার্জি	2800	medical
+orthopedic	অর্থোপেডিক	2600	medical
+gynecology	স্ত্রীরোগ ও প্রসূতিবিদ্যা	2700	medical
+pediatrics	শিশু রোগ	2800	medical
+cardiology	কার্ডিওলজি	2700	medical
+neurology	নিউরোলজি	2700	medical
+dermatology	চর্ম ও যৌন রোগ	2700	medical
+ophthalmology	চক্ষুরোগ	2700	medical
+ent	নাক-কান-গলা	2800	medical
+anesthesia	অ্যানেস্থেসিয়া	2600	medical
+bma	বাংলাদেশ মেডিকেল অ্যাসোসিয়েশন	2600	medical
+bmdc	বিএমডিসি	2600	medical
+dg_health	স্বাস্থ্য অধিদপ্তর	2800	medical
+bsmmu	বিএসএমএমইউ	2800	medical
+dmc	ঢাকা মেডিকেল কলেজ	2900	medical
+cmh	সম্মিলিত সামরিক হাসপাতাল	2800	medical
+emergency	জরুরি বিভাগ	2900	medical
+ambulance	অ্যাম্বুলেন্স	2900	medical
+blood_bank	ব্লাড ব্যাংক	2800	medical
+oxygen	অক্সিজেন	2900	medical
+quarantine	কোয়ারেন্টিন	2600	medical
+isolation	আইসোলেশন	2600	medical
+epidemic	মহামারী	2700	medical
+hygiene	স্বাস্থ্যবিধি	2800	medical
+mental_health	মানসিক স্বাস্থ্য	2700	medical
+psychiatry	মনোরোগ বিশেষজ্ঞ	2600	medical
+physiotherapy	ফিজিওথেরাপি	2600	medical
+rehabilitation	পুনর্বাসন	2600	medical
+first_aid	প্রাথমিক চিকিৎসা	2800	medical
+post_mortem	ময়নাতদন্ত	2700	medical
+death_certificate	মৃত্যু সনদ	2800	medical
+birth_certificate	জন্ম নিবন্ধন সনদ	2900	medical
+nid	জাতীয় পরিচয়পত্র	3000	civil
+passport	পাসপোর্ট	3000	civil
+driving_license	ড্রাইভিং লাইসেন্স	2800	civil
+e_tin	ই-টিন	2700	banking
+income_tax	আয়কর রিটার্ন	2900	banking
+challan_form	ট্রেজারি চালান	2800	banking
+land_tax	ভূমি উন্নয়ন কর	2700	legal
+pension	পেনশন	2800	banking
+gratuity	গ্র্যাচুইটি	2600	banking
+provident_fund	ভবিষ্য তহবিল	2700	banking
+audit	নিরীক্ষা বা অডিট	2700	banking
+corruption	দুর্নীতি দমন কমিশন	2800	legal
+anti_corruption	দুদক	2900	legal
+money_loan_court	অর্থঋণ আদালত	2700	legal
+cheque_dishonor	চেক ডিজঅনার মামলা	2800	legal
+ni_act	এনআই অ্যাক্ট	2700	legal
+crpc	ফৌজদারি কার্যবিধি	2700	legal
+cpc	দেওয়ানি কার্যবিধি	2700	legal
+penal_code	দণ্ডবিধি	2800	legal
+evidence_act	সাক্ষ্য আইন	2700	legal
+constitution	গণপ্রজাতন্ত্রী বাংলাদেশের সংবিধান	2900	legal
+fundamental_rights	মৌলিক অধিকার	2800	legal
+writ	রিট পিটিশন	2800	legal
+habeas_corpus	হেবিয়াস কর্পাস	2600	legal
+injunction	নিষেধাজ্ঞা	2700	legal
+stay_order	স্থগিতাদেশ	2800	legal
+bail_bond	মুচলেকা	2700	legal
+surety	জামিনদার	2800	legal
+proclamation	হুলিয়া	2600	legal
+attachment	ক্রোক পরোয়ানা	2600	legal
+custody	হাজতবাস	2700	legal
+jail	কারাগার	2800	legal
+central_jail	কেন্দ্রীয় কারাগার	2800	legal
+probation	প্রবেশন	2500	legal
+parole	প্যারোল	2600	legal
+general_diary	সাধারণ ডায়েরি	2900	legal
+gd	জিডি	3000	legal
+fir	এজাহার	2900	legal
+investigation_officer	তদন্ত কর্মকর্তা	2800	legal
+io	আইও	2700	legal
+inquest	সুরতহাল রিপোর্ট	2700	legal
+forensic	ফরেনসিক ল্যাব	2700	legal
+dna_test	ডিএনএ পরীক্ষা	2700	legal
+toxicology	টক্সিকোলজি রিপোর্ট	2500	legal
+narcotics	মাদকদ্রব্য নিয়ন্ত্রণ অধিদপ্তর	2700	legal
+customs	কাস্টমস ও শুল্ক	2800	banking
+excise	আবগারি শুল্ক	2600	banking
+import_duty	আমদানি শুল্ক	2700	banking
+export_duty	রপ্তানি শুল্ক	2600	banking
+bonded_warehouse	বন্ডেড ওয়্যারহাউস	2600	banking
+letter_of_credit	ঋণপত্র বা এলসি	2900	banking
+lc	এলসি খোলা	3000	banking
+swift_code	সুইফট কোড	2800	banking
+iban	আইব্যান	2500	banking
+rtgs	আরটিজিএস	2700	banking
+beftn	বিইএফটিএন	2800	banking
+npsb	এনপিএসবি	2700	banking
+electronic_fund_transfer	ইলেকট্রনিক ফান্ড ট্রান্সফার	2700	banking
+crypto	ক্রিপ্টোকারেন্সি	2700	banking
+foreign_exchange	বৈদেশিক মুদ্রা বিনিময়	2800	banking
+forex	ফরেক্স রিজার্ভ	2900	banking
+inflation	মুদ্রাস্ফীতি	2800	banking
+gdp	জিডিপি	2800	banking
+per_capita_income	মাথাপিছু আয়	2800	banking
+national_budget	জাতীয় বাজেট	2900	banking
+adp	বার্ষিক উন্নয়ন কর্মসূচি	2800	banking
+world_bank	বিশ্বব্যাংক	2800	banking
+imf	আইএমএফ	2800	banking
+adb	এশীয় উন্নয়ন ব্যাংক	2700	banking
+jica	জাইকা	2700	banking
+microcredit	ক্ষুদ্রঋণ	2800	banking
+grameen_bank	গ্রামীণ ব্যাংক	2800	banking
+brac	ব্র্যাক	2800	banking
+asa	আশা এনজিও	2700	banking
+pksf	পিকেএসএফ	2600	banking
+sme_loan	এসএমই ঋণ	2800	banking
+agriculture_loan	কৃষি ঋণ	2800	banking
+home_loan	গৃহ নির্মাণ ঋণ	2800	banking
+car_loan	গাড়ি ঋণ	2700	banking
+personal_loan	ব্যক্তিগত ঋণ	2800	banking
+mortgage	বন্ধক	2700	banking
+collateral	জামানত	2800	banking
+guarantor	গ্যারান্টার	2700	banking
+default	খেলাপি ঋণ	2900	banking
+cib_report	সিআইবি রিপোর্ট	2800	banking
+auction	নিলাম	2700	banking
+liquidation	অবসায়ন	2500	banking
+insolvent	দেউলিয়া	2600	banking
+bankruptcy	দেউলিয়া আইন	2600	legal
+money_suit	মানিস্যুট মামলা	2700	legal
+title_suit	টাইটেল স্যুট বা স্বত্ব মামলা	2700	legal
+partition_suit	বাটোয়ারা মামলা	2700	legal
+eviction	উচ্ছেদ মামলা	2600	legal
+rent_court	বাড়িভাড়া আদালত	2500	legal
+consumer_rights	জাতীয় ভোক্তা অধিকার সংরক্ষণ অধিদপ্তর	2800	legal
+mobile_court	ভ্রাম্যমাণ আদালত	2900	legal
+executive_magistrate	নির্বাহী ম্যাজিস্ট্রেট	2800	legal
+judicial_magistrate	জুডিশিয়াল ম্যাজিস্ট্রেট	2800	legal
+sessions_judge	দায়রা জজ	2800	legal
+district_judge	জেলা ও দায়রা জজ	2900	legal
+special_judge	বিশেষ জজ আদালত	2700	legal
+administrative_tribunal	প্রশাসনিক ট্রাইব্যুনাল	2600	legal
+tax_tribunal	ট্যাক্স আপিলেট ট্রাইব্যুনাল	2600	banking
+bsec	বাংলাদেশ সিকিউরিটিজ অ্যান্ড এক্সচেঞ্জ কমিশন	2700	banking
+dse	ঢাকা স্টক এক্সচেঞ্জ	2800	banking
+cse	চট্টগ্রাম স্টক এক্সচেঞ্জ	2700	banking
+share_market	পুঁজিবাজার বা শেয়ার বাজার	2900	banking
+ipo	আইপিও	2800	banking
+dividend	লভ্যাংশ	2800	banking
+mutual_fund	মিউচুয়াল ফান্ড	2700	banking
+portfolio	পোর্টফোলিও	2600	banking
+brokerage_house	ব্রোকারেজ হাউজ	2700	banking
+bo_account	বিও অ্যাকাউন্ট	2800	banking
+cdbl	সিডিবিএল	2700	banking
+sec_act	সিকিউরিটিজ আইন	2600	banking
+insider_trading	ইনসাইডার ট্রেডিং	2500	banking
+corporate_governance	কর্পোরেট সুশাসন	2600	banking
+audit_report	নিরীক্ষা প্রতিবেদন	2700	banking
+balance_sheet	স্থিতিপত্র বা ব্যালেন্স শিট	2800	banking
+profit_loss	লাভ-ক্ষতির হিসাব	2800	banking
+cash_flow	নগদ প্রবাহ বিবরণী	2700	banking
+financial_year	অর্থবছর	2900	banking
+fiscal_policy	রাজস্ব নীতি	2800	banking
+monetary_policy	মুদ্রানীতি	2800	banking
+interest_rate	সুদের হার নির্ধারণ	2800	banking
+call_money	কল মানি রেট	2600	banking
+repo	রেপো ও রিভার্স রেপো	2600	banking
+statutory_liquidity	বিধিবদ্ধ তারল্য অনুপাত	2600	banking
+slr	এসএলআর	2600	banking
+cash_reserve_ratio	নগদ জমা অনুপাত	2600	banking
+crr	সিআরআর	2600	banking
+non_performing_loan	শ্রেণিকৃত ঋণ বা এনপিএল	2800	banking
+npl	এনপিএল	2800	banking
+loan_rescheduling	ঋণ পুনঃতফসিলীকরণ	2700	banking
+write_off	ঋণ অবলোপন	2600	banking
+bad_debt	কুঋণ	2600	banking
+debt_recovery	ঋণ আদায়	2700	banking
+ard	সালিশি আদালত	2600	legal
+arbitration	সালিশ বা আরবিট্রেশন	2700	legal
+mediation	মধ্যস্থতা বা মিডিয়েশন	2700	legal
+adr	বিকল্প বিরোধ নিষ্পত্তি	2800	legal
+lok_adawlat	লোক আদালত	2400	legal
+village_court	গ্রাম আদালত	2700	legal
+union_parishad_act	স্থানীয় সরকার আইন	2700	legal
+right_to_information	তথ্য অধিকার আইন	2800	legal
+rti	তথ্য কমিশন	2700	legal
+human_rights	জাতীয় মানবাধিকার কমিশন	2800	legal
+anti_terrorism	সন্ত্রাসবিরোধী আইন	2700	legal
+money_laundering_act	মানি লন্ডারিং প্রতিরোধ আইন	2800	legal
+narcotics_act	মাদকদ্রব্য নিয়ন্ত্রণ আইন	2800	legal
+arms_act	অস্ত্র আইন	2700	legal
+explosives_act	বিস্ফোরক দ্রব্য আইন	2600	legal
+special_powers_act	বিশেষ ক্ষমতা আইন	2700	legal
+digital_security	সাইবার নিরাপত্তা আইন	2800	legal
+copyright_act	কপিরাইট আইন	2700	legal
+patent_trademark	পেটেন্ট ও ট্রেডমার্ক অধিদপ্তর	2700	legal
+company_act	কোম্পানি আইন	2800	legal
+partnership_act	অংশীদারি আইন	2600	legal
+contract_act	চুক্তি আইন	2700	legal
+transfer_of_property	সম্পত্তি হস্তান্তর আইন	2800	legal
+registration_act	নিবন্ধন আইন	2700	legal
+stamp_act	স্ট্যাম্প আইন	2700	legal
+court_fees	কোর্ট ফি আইন	2700	legal
+limitation_act	তামাদি আইন	2700	legal
+specific_relief	সুনির্দিষ্ট প্রতিকার আইন	2700	legal
+easement_act	ইজমেন্ট আইন	2500	legal
+trust_act	ট্রাস্ট আইন	2600	legal
+insolvency_act	দেউলিয়া বিষয়ক আইন	2600	legal
+labour_act	বাংলাদেশ শ্রম আইন	2800	legal
+epz_labour	ইপিজেড শ্রম আইন	2600	legal
+workmen_compensation	শ্রমিক ক্ষতিপূরণ	2700	legal
+minimum_wage	ন্যূনতম মজুরি বোর্ড	2800	legal
+trade_union	ট্রেড ইউনিয়ন	2700	legal
+collective_bargaining	সিবিএ	2700	legal
+factory_inspection	কলকারখানা ও প্রতিষ্ঠান পরিদর্শন অধিদপ্তর	2700	legal
+occupational_health	পেশাগত স্বাস্থ্য ও সুরক্ষা	2700	medical
+fire_safety	অগ্নি নির্বাপণ ও নিরাপত্তা সনদ	2800	civil
+building_code	জাতীয় ইমারত নির্মাণ বিধিমালা	2700	civil
+rajuk	রাজউক	2900	civil
+cda	চট্টগ্রাম উন্নয়ন কর্তৃপক্ষ	2700	civil
+rda	রাজশাহী উন্নয়ন কর্তৃপক্ষ	2600	civil
+kda	খুলনা উন্নয়ন কর্তৃপক্ষ	2600	civil
+city_corporation	সিটি কর্পোরেশন	2900	civil
+mayor	মেয়র	2800	civil
+councillor	কাউন্সিলর	2700	civil
+wasa	ওয়াসা	2800	civil
+desco	ডেসকো	2800	civil
+dpdc	ডিপিডিসি	2800	civil
+reb	পল্লী বিদ্যুতায়ন বোর্ড	2800	civil
+titas_gas	তিতাস গ্যাস	2800	civil
+btrc	বিটিআরসি	2800	civil
+btcl	বিটিসিএল	2700	civil
+brta	বিআরটিএ	2900	civil
+brtc	বিআরটিসি	2800	civil
+biwta	বিআইডব্লিউটিএ	2700	civil
+biwtc	বিআইডব্লিউটিসি	2600	civil
+cpa	চট্টগ্রাম বন্দর কর্তৃপক্ষ	2800	civil
+mpa	মোংলা বন্দর কর্তৃপক্ষ	2700	civil
+civil_aviation	বেসামরিক বিমান চলাচল কর্তৃপক্ষ	2800	civil
+caab	বেবিচক	2700	civil
+psc	সরকারি কর্ম কমিশন বা পিএসসি	2900	civil
+bcs	বিসিএস পরীক্ষা	3000	civil
+cadre	ক্যাডার কর্মকর্তা	2800	civil
+administration_cadre	প্রশাসন ক্যাডার	2800	civil
+police_cadre	পুলিশ ক্যাডার	2800	civil
+foreign_affairs	পররাষ্ট্র ক্যাডার	2700	civil
+customs_cadre	শুল্ক ও আবগারি ক্যাডার	2700	civil
+taxation_cadre	কর ক্যাডার	2700	civil
+audit_cadre	নিরীক্ষা ও হিসাব ক্যাডার	2700	civil
+judiciary_bjs	বাংলাদেশ জুডিশিয়াল সার্ভিস	2800	legal
+bjs	বিজেএস পরীক্ষা	2800	legal
+assistant_judge	সহকারী জজ	2800	legal
+senior_assistant_judge	সিনিয়র সহকারী জজ	2800	legal
+joint_district_judge	যুগ্ম জেলা জজ	2800	legal
+additional_district_judge	অতিরিক্ত জেলা জজ	2800	legal
+chief_judicial_magistrate	চিফ জুডিশিয়াল ম্যাজিস্ট্রেট	2800	legal
+cjm	সিজেএম	2800	legal
+chief_metropolitan_magistrate	চিফ মেট্রোপলিটন ম্যাজিস্ট্রেট	2800	legal
+cmm	সিএমএম আদালত	2900	legal
+metropolitan_magistrate	মেট্রোপলিটন ম্যাজিস্ট্রেট	2800	legal
+session_court	দায়রা আদালত	2800	legal
+special_tribunal	বিশেষ ট্রাইব্যুনাল	2700	legal
+speedy_trial	দ্রুত বিচার ট্রাইব্যুনাল	2800	legal
+international_crimes_tribunal	আন্তর্জাতিক অপরাধ ট্রাইব্যুনাল	2800	legal
+ict	আইসিটি ট্রাইব্যুনাল	2800	legal
+law_commission	বাংলাদেশ আইন কমিশন	2700	legal
+bar_council	বাংলাদেশ বার কাউন্সিল	2800	legal
+supreme_court_bar	সুপ্রিম কোর্ট আইনজীবী সমিতি	2800	legal
+dhaka_bar	ঢাকা আইনজীবী সমিতি	2800	legal
+attorney_service	আইন কর্মকর্তা ও সরকারি কৌশলী	2700	legal
+gp	সরকারি কৌশলী বা জিপি	2700	legal
+pp	পাবলিক প্রসিকিউটর বা পিপি	2800	legal
+app	অতিরিক্ত পাবলিক প্রসিকিউটর	2700	legal
+special_pp	বিশেষ পিপি	2600	legal
+state_defence	স্টেট ডিফেন্স আইনজীবী	2500	legal
+legal_aid	জাতীয় আইনগত সহায়তা প্রদান সংস্থা	2800	legal
+free_legal_aid	বিনামূল্যে আইনি সহায়তা	2800	legal
+victim_support	ভিকটিম সাপোর্ট সেন্টার	2700	legal
+juvenile_justice	শিশু আদালত	2700	legal
+probation_officer	প্রবেশন কর্মকর্তা	2600	legal
+child_development_centre	কিশোর উন্নয়ন কেন্দ্র	2600	legal
+safe_home	নিরাপদ হেফাজত বা সেফ হোম	2600	legal
+social_welfare	সমাজসেবা অধিদপ্তর	2800	civil
+disability_welfare	প্রতিবন্ধী সেবা ও সাহায্য কেন্দ্র	2700	civil
+old_age_allowance	বয়স্ক ভাতা	2800	banking
+widow_allowance	বিধবা ভাতা	2800	banking
+maternity_allowance	মাতৃত্বকালীন ভাতা	2800	banking
+freedom_fighter_allowance	বীর মুক্তিযোদ্ধা সম্মানী ভাতা	2900	banking
+social_safety_net	সামাজিক নিরাপত্তা বেষ্টনী	2800	banking
+egpp	কর্মসংস্থান কর্মসূচি	2600	banking
+vcf	ভিজিডি কর্মসূচি	2700	banking
+vfg	ভিজিএফ খাদ্য সহায়তা	2700	banking
+open_market_sale	ওএমএস খাদ্য বিতরণ	2800	banking
+oms	ওএমএস ডিলার	2800	banking
+tcb	টিসিবি পণ্য বিক্রয়	2900	banking
+fair_price	ন্যায্যমূল্যের কার্ড	2800	banking
+ration_card	রেশন কার্ড	2700	civil
+family_card	ফ্যামিলি কার্ড	2800	civil
+food_ministry	খাদ্য মন্ত্রণালয়	2800	civil
+directorate_of_food	খাদ্য অধিদপ্তর	2700	civil
+siloe	খাদ্য গুদাম বা সাইলো	2600	civil
+procurement	অভ্যন্তরীণ ধান-চাল সংগ্রহ	2700	banking
+msp	ন্যূনতম সহায়ক মূল্য	2600	banking
+krishi_card	কৃষি উপকরণ সহায়তা কার্ড	2800	civil
+fertilizer_subsidy	সার ভর্তুকি	2800	banking
+diesel_subsidy	সেচ ও ডিজেল ভর্তুকি	2700	banking
+dae	কৃষি সম্প্রসারণ অধিদপ্তর	2700	civil
+bari	বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট	2700	civil
+bri	বাংলাদেশ ধান গবেষণা ইনস্টিটিউট	2800	civil
+bina	বাংলাদেশ পরমাণু কৃষি গবেষণা ইনস্টিটিউট	2600	civil
+bjri	বাংলাদেশ পাট গবেষণা ইনস্টিটিউট	2600	civil
+bsri	বাংলাদেশ সুগারক্রপ গবেষণা ইনস্টিটিউট	2500	civil
+bfri	বাংলাদেশ বন গবেষণা ইনস্টিটিউট	2500	civil
+fisheries	বাংলাদেশ মৎস্য গবেষণা ইনস্টিটিউট	2600	civil
+livestock	বাংলাদেশ প্রাণিসম্পদ গবেষণা ইনস্টিটিউট	2600	civil
+blri	বিএলআরআই	2500	civil
+dof	মৎস্য অধিদপ্তর	2700	civil
+dls	প্রাণিসম্পদ অধিদপ্তর	2700	civil
+artificial_insemination	কৃত্রিম প্রজনন কেন্দ্র	2600	medical
+veterinary_hospital	উপজেলা প্রাণিসম্পদ হাসপাতাল	2700	medical
+veterinary_surgeon	ভেটেরিনারি সার্জন	2700	medical
+quarantine_station	উদ্ভিদ ও প্রাণিসম্পদ সংগনিরোধ কেন্দ্র	2600	civil
+food_safety	বাংলাদেশ নিরাপদ খাদ্য কর্তৃপক্ষ	2800	civil
+bsti	বিএসটিআই	2900	civil
+standard_specification	মান নিয়ন্ত্রণ সনদ	2800	civil
+iso_certificate	আইএসও সনদ	2700	banking
+halal_certificate	হালাল সনদপত্র	2800	civil
+drug_administration	ঔষধ প্রশাসন অধিদপ্তর	2900	medical
+dgda	ডিজিডিএ	2800	medical
+drug_testing_lab	সরকারি ঔষধ পরীক্ষাগার	2700	medical
+essential_drugs	এসেনশিয়াল ড্রাগস কোম্পানি	2700	medical
+edcl	ইডিসিএল	2600	medical
+national_health_policy	জাতীয় স্বাস্থ্য নীতি	2800	medical
+community_clinic	কমিউনিটি ক্লিনিক	2900	medical
+union_health_complex	ইউনিয়ন স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র	2800	medical
+upazila_health_complex	উপজেলা স্বাস্থ্য কমপ্লেক্স	2900	medical
+sadar_hospital	২৫০ শয্যা বিশিষ্ট জেলা সদর হাসপাতাল	2900	medical
+medical_college_hospital	মেডিকেল কলেজ হাসপাতাল	3000	medical
+specialized_hospital	বিশেষায়িত হাসপাতাল	2900	medical
+nicvd	জাতীয় হৃদরোগ ইনস্টিটিউট ও হাসপাতাল	2900	medical
+nidor	জাতীয় অর্থোপেডিক হাসপাতাল ও পুনর্বাসন প্রতিষ্ঠান বা পঙ্গু হাসপাতাল	2900	medical
+nio	জাতীয় চক্ষু বিজ্ঞান ইনস্টিটিউট ও হাসপাতাল	2800	medical
+nidch	জাতীয় বক্ষব্যাধি ইনস্টিটিউট ও হাসপাতাল	2800	medical
+nins	ন্যাশনাল ইনস্টিটিউট অব নিউরোসায়েন্সেস ও হাসপাতাল	2900	medical
+nicrh	জাতীয় ক্যান্সার গবেষণা ইনস্টিটিউট ও হাসপাতাল	2900	medical
+nimh	জাতীয় মানসিক স্বাস্থ্য ইনস্টিটিউট	2800	medical
+kidney_hospital	জাতীয় কিডনি ডিজিজেস অ্যান্ড ইউরোলজি ইনস্টিটিউট	2800	medical
+burn_institute	শেখ হাসিনা জাতীয় বার্ন ও প্লাস্টিক সার্জারি ইনস্টিটিউট	2900	medical
+trauma_centre	ট্রমা সেন্টার	2700	medical
+chest_disease	যক্ষ্মা ও বক্ষব্যাধি ক্লিনিক	2700	medical
+leprosy_hospital	কুষ্ঠ হাসপাতাল	2500	medical
+infectious_disease	সংক্রামক ব্যাধি হাসপাতাল	2700	medical
+institute_of_public_health	জনস্বাস্থ্য ইনস্টিটিউট বা আইপিএইচ	2700	medical
+iedcr	আইইডিসিআর	2800	medical
+icddrb	আইসিডিডিআর,বি	3000	medical
+cholera_hospital	কলেরা হাসপাতাল মহাখালী	2800	medical
+badas	বাংলাদেশ ডায়াবেটিক সমিতি বা বারডেম	3000	medical
+birdem	বারডেম জেনারেল হাসপাতাল	3000	medical
+nhf	জাতীয় হার্ট ফাউন্ডেশন	2900	medical
+ahani	আহছানিয়া মিশন ক্যান্সার হাসপাতাল	2800	medical
+square_hospital	স্কয়ার হাসপাতাল	2900	medical
+evercare_hospital	এভারকেয়ার হাসপাতাল	2900	medical
+united_hospital	ইউনাইটেড হাসপাতাল	2900	medical
+labaid_hospital	ল্যাবএইড কার্ডিয়াক হাসপাতাল	2900	medical
+ibn_sina_hospital	ইবনে সিনা হাসপাতাল	2900	medical
+popular_diagnostic	পপুলার ডায়াগনস্টিক সেন্টার	2900	medical
+medinova	মেডিনোভা মেডিকেল সার্ভিসেস	2700	medical
+al_helal	আল-হেলাল স্পেশালাইজড হাসপাতাল	2600	medical
+central_hospital	সেন্ট্রাল হাসপাতাল	2700	medical
+bma_bhaban	বিএমএ ভবন তোপখানা রোড	2700	medical
+baps	বাংলাদেশ অ্যাসোসিয়েশন অব ফার্মাসিউটিক্যাল ইন্ডাস্ট্রিজ	2700	medical
+beximco_pharma	বেক্সিমকো ফার্মা	2800	medical
+square_pharma	স্কয়ার ফার্মাসিউটিক্যালস	2900	medical
+incepta_pharma	ইনসেপ্টা ফার্মাসিউটিক্যালস	2800	medical
+renata_pharma	রেনাটা লিমিটেড	2700	medical
+acme_pharma	একমি ল্যাবরেটরিজ	2700	medical
+healthcare_pharma	হেলথকেয়ার ফার্মাসিউটিক্যালস	2700	medical
+aristopharma	অ্যারিস্টোফার্মা	2700	medical
+orion_pharma	ওরিয়ন ফার্মা	2600	medical
+eskayef	এসকেএফ ফার্মাসিউটিক্যালস	2800	medical
+drug_international	ড্রাগ ইন্টারন্যাশনাল	2700	medical
+opsonin_pharma	অপসো স্যালাইন ও অপসোনিন ফার্মা	2700	medical
+general_pharma	জেনারেল ফার্মাসিউটিক্যালস	2600	medical
+ibn_sina_pharma	ইবনে সিনা ফার্মাসিউটিক্যালস	2700	medical
+beacon_pharma	বীকন ফার্মাসিউটিক্যালস	2700	medical
+popular_pharma	পপুলার ফার্মাসিউটিক্যালস	2700	medical
+ziska_pharma	জিসকা ফার্মাসিউটিক্যালস	2500	medical
+navana_pharma	নাভানা ফার্মাসিউটিক্যালস	2500	medical
+asiatic_labs	এশিয়াটিক ল্যাবরেটরিজ	2500	medical
+globe_pharma	গ্লোব ফার্মাসিউটিক্যালস	2500	medical
+active_fine	অ্যাক্টিভ ফাইন কেমিক্যালস	2500	medical
+api_park	এপিআই শিল্প পার্ক গজারিয়া	2600	medical
+raw_materials	ওষুধের কাঁচামাল	2700	medical
+pharma_export	ওষুধ রপ্তানি বাণিজ্য	2800	banking
+gmp_guidelines	গুড ম্যানুফ্যাকচারিং প্র্যাকটিস	2700	medical
+us_fda_approval	ইউএস এফডিএ অনুমোদন	2800	medical
+uk_mhra_approval	ইউকে এমএইচআরএ অনুমোদন	2700	medical
+who_prequalification	বিশ্ব স্বাস্থ্য সংস্থা প্রাক-যোগ্যতা	2800	medical
+medical_visa	মেডিকেল ভিসা	2800	civil
+air_ambulance	এয়ার অ্যাম্বুলেন্স সেবা	2700	medical
+telemedicine	টেলিমেডিসিন সেবা	2800	medical
+digital_health	ডিজিটাল স্বাস্থ্য কার্ড	2800	medical
+electronic_health_record	ইলেকট্রনিক স্বাস্থ্য রেকর্ড	2700	medical
+ehr	ইএইচআর	2600	medical
+national_health_card	জাতীয় স্বাস্থ্য বীমা	2800	banking
+health_insurance	স্বাস্থ্য বীমা পলিসি	2800	banking
+life_insurance	জীবন বীমা কর্পোরেশন	2800	banking
+general_insurance	সাধারণ বীমা কর্পোরেশন	2800	banking
+idra	বীমা উন্নয়ন ও নিয়ন্ত্রণ কর্তৃপক্ষ	2700	banking
+insurance_claim	বীমা দাবি নিষ্পত্তি	2800	banking
+actuary	অ্যাকচুয়ারি	2500	banking
+underwriting	ঝুঁকি মূল্যায়ন বা আন্ডাররাইটিং	2600	banking
+reinsurance	পুনর্বীমা	2600	banking
+green_delta	গ্রীন ডেল্টা ইন্স্যুরেন্স	2700	banking
+sadharan_bima	সাধারণ বীমা	2800	banking
+jiban_bima	জীবন বীমা	2800	banking
+pragati_insurance	প্রগতি ইন্স্যুরেন্স	2600	banking
+prime_insurance	প্রাইম ব্যাংক ইন্স্যুরেন্স	2600	banking
+delta_life	ডেল্টা লাইফ ইন্স্যুরেন্স	2700	banking
+national_life	ন্যাশনাল লাইফ ইন্স্যুরেন্স	2700	banking
+metlife	মেটলাইফ বাংলাদেশ	2800	banking
+guardian_life	গার্ডিয়ান লাইফ ইন্স্যুরেন্স	2700	banking
+takaful_insurance	ইসলামী তাকাফুল বীমা	2700	banking
+micro_insurance	ক্ষুদ্র বীমা সেবা	2600	banking
+crop_insurance	শস্য বীমা প্রকল্প	2600	banking
+livestock_insurance	গবাদিপশু বীমা	2500	banking
+marine_insurance	নৌ বীমা পলিসি	2600	banking
+fire_insurance	অগ্নি বীমা পলিসি	2700	banking
+motor_insurance	মোটরযান বীমা সনদ	2700	banking
+travel_insurance	ভ্রমণ বীমা পলিসি	2600	banking
+comprehensive_insurance	পূর্ণাঙ্গ বীমা সুবিধা	2600	banking
+third_party_insurance	তৃতীয় পক্ষ দায় বীমা	2600	banking
+loss_assessment	ক্ষতি নিরুপণ প্রতিবেদন	2600	banking
+surveyor	সার্ভেয়ার রিপোর্ট	2600	banking
+claim_settlement	দাবি পরিশোধ ভাউচার	2700	banking
+ombudsman	বীমা ও ব্যাংক ন্যায়পাল	2600	legal
+tax_ombudsman	কর ন্যায়পাল	2500	banking
+lokpal	লোকপাল কমিশন	2500	legal
+whistleblower	তথ্য প্রকাশকারী সুরক্ষা আইন	2600	legal
+money_recovery	অর্থ আদায় নোটিশ	2700	legal
+legal_notice	আইনি নোটিশ বা লিগ্যাল নোটিশ	2900	legal
+reply_notice	আইনি নোটিশের জবাব	2800	legal
+caveat	ক্যাভিয়েট পিটিশন	2600	legal
+leave_to_appeal	লিভ টু আপিল	2800	legal
+review_petition	রায় পুনর্বিবেচনা বা রিভিউ আবেদন	2800	legal
+curative_petition	কিউরেটিভ পিটিশন	2500	legal
+contempt_of_court	আদালত অবমাননা মামলা	2800	legal
+suo_moto	স্বতঃপ্রণোদিত রুল বা সুয়ো মোটো	2700	legal
+public_interest_litigation	জনস্বার্থ মামলা বা পিআইএল	2800	legal
+pil	জনস্বার্থে রিট আবেদন	2800	legal
+rule_nisi	রুল নিশি জারি	2700	legal
+stay_vacation	স্থগিতাদেশ প্রত্যাহার	2700	legal
+interim_order	অন্তর্বর্তীকালীন আদেশ	2800	legal
+final_verdict	চূড়ান্ত রায় ঘোষণা	2900	legal
+certified_copy	রায়ের নকল বা সার্টিফাইড কপি	2800	legal
+decree	ডিক্রি জারি মামলা	2700	legal
+execution_case	জারি মামলা	2700	legal
+attestation	প্রত্যয়নপত্র বা সত্যায়ন	2800	civil
+oath_commissioner	হলফনামা কমিশনার	2700	legal
+notarization	নোটারি সত্যায়ন	2800	legal
+apostille	অ্যাপোস্টিল সনদ	2600	civil
+embassy_attestation	দূতাবাস সত্যায়ন সেবা	2800	civil
+foreign_ministry_attestation	পররাষ্ট্র মন্ত্রণালয় কনস্যুলার সত্যায়ন	2800	civil
+police_clearance	পুলিশ ক্লিয়ারেন্স সার্টিফিকেট	2900	civil
+character_certificate	চারিত্রিক সনদপত্র	2800	civil
+citizenship_certificate	নাগরিকত্ব সনদ	2900	civil
+succession_certificate	উত্তরাধিকার সনদপত্র	2800	legal
+probate	উইল প্রবেট বা প্রমাণ	2600	legal
+letters_of_administration	সম্পত্তি ব্যবস্থাপনা পত্র	2600	legal
+guardianship	অভিভাবকত্ব সনদ	2700	legal
+adoption	দত্তক গ্রহণ চুক্তি	2500	legal
+custody_of_minor	সন্তানের জিম্মাদারি মামলা	2700	legal
+maintenance	খোরপোশ বা ভরণপোষণ মামলা	2800	legal
+dower_suit	দেনমোহর আদায়ের মামলা	2800	legal
+divorce_notice	তালাকের নোটিশ জারি	2800	legal
+reconciliation	সালিশি সমঝোতা বৈঠক	2700	legal
+kabin	কাবিননামা রেজিস্ট্রি	2900	legal
+nikahnama	নিকাহনামা ফরম	2900	legal
+marriage_registration	বিবাহ নিবন্ধন সনদ	2900	legal
+special_marriage	বিশেষ বিবাহ আইন	2600	legal
+hindu_marriage	হিন্দু বিবাহ নিবন্ধন আইন	2600	legal
+christian_marriage	খ্রিস্টান বিবাহ আইন	2500	legal
+interfaith_marriage	আন্তঃধর্মীয় বিবাহ চুক্তি	2500	legal
+secular_marriage	আইনি বিবাহ অনুষ্ঠান	2600	legal
+death_claim	মৃত্যু দাবি নিষ্পত্তি	2700	banking
+nominee	মনোনীত ব্যক্তি বা নমিনি	2800	banking
+bank_statement	ব্যাংক স্টেটমেন্ট	3000	banking
+bank_solvency	আর্থিক স্বচ্ছলতা সনদ	2900	banking
+tax_clearance	আয়কর ক্লিয়ারেন্স সনদ	2800	banking
+asset_declaration	সম্পদ বিবরণী দাখিল	2800	civil
+wealth_statement	সম্পদের হিসাব বিবরণী	2800	banking
+benami_property	বেনামি সম্পত্তি লেনদেন নিষিদ্ধ আইন	2600	legal
+vested_property	অর্পিত সম্পত্তি প্রত্যর্পণ আইন	2700	legal
+enemy_property	শত্রু সম্পত্তি	2600	legal
+abandoned_property	পরিত্যক্ত সম্পত্তি আইন	2600	legal
+khas_land	সরকারি খাস জমি বন্দোবস্ত	2700	civil
+land_reforms	ভূমি সংস্কার বোর্ড	2600	civil
+land_record	ভূমি রেকর্ড ও জরিপ অধিদপ্তর	2700	civil
+dlrs	ডিএলআরএস	2600	civil
+cs_khatian	সিএস খতিয়ান	2700	legal
+sa_khatian	এসএ খতিয়ান	2700	legal
+rs_khatian	আরএস খতিয়ান	2800	legal
+bs_khatian	বিএস বা সিটি জরিপ খতিয়ান	2800	legal
+mutation	খারিজ বা জমাভাগ খতিয়ান	2800	legal
+dakhila	ভূমি উন্নয়ন কর দাখিলা বা রশিদ	2800	legal
+ac_land	সহকারী কমিশনার ভূমি	2800	civil
+kanungo	কানুনগো	2600	civil
+surveyor_amin	সার্ভেয়ার বা আমিন	2700	civil
+union_land_office	ইউনিয়ন ভূমি অফিস	2800	civil
+tahsil_office	তহশিল অফিস	2800	civil
+tahsildar	তহশিলদার	2700	civil
+land_demarcation	জমি সীমানা নির্ধারণ	2700	legal
+land_dispute	জমি জমা বিরোধ নিষ্পত্তি	2800	legal
+section_144	ফৌজদারি কার্যবিধির ১৪৪ ধারা	2800	legal
+section_107	১০৭ ধারা শান্তি রক্ষা বন্ড	2700	legal
+peace_bond	শান্তি শৃঙ্খলা রক্ষার মুচলেকা	2700	legal
+police_report	পুলিশ তদন্ত রিপোর্ট	2800	legal
+final_report	চূড়ান্ত প্রতিবেদন বা ফাইনাল রিপোর্ট	2800	legal
+naraji_petition	তদন্তের বিরুদ্ধে নারাজি পিটিশন	2700	legal
+further_investigation	পুনঃতদন্তের আবেদন	2700	legal
+pbi	পুলিশ ব্যুরো অব ইনভেস্টিগেশন	2800	legal
+cid	সিআইডি রাসায়নিক পরীক্ষাগার	2800	legal
+special_branch	এসবি স্পেশাল ব্রাঞ্চ	2800	legal
+db_police	গোয়েন্দা পুলিশ বা ডিবি	2900	legal
+counter_terrorism	কাউন্টার টেররিজম ইউনিট	2700	legal
+atc	অ্যান্টি টেররিজম সেল	2600	legal
+cyber_crime	সাইবার ক্রাইম তদন্ত বিভাগ	2800	legal
+digital_forensics	ডিজিটাল ফরেনসিক আলামত	2800	legal
+evidence_chain	আলামতের হেফাজত শৃঙ্খলা	2600	legal
+seizure_list	জব্দতালিকা প্রস্তুত	2700	legal
+confession	১৬৪ ধারায় স্বীকারোক্তিমূলক জবানবন্দি	2800	legal
+witness_statement	১৬১ ধারায় সাক্ষীর জবানবন্দি	2800	legal
+charge_framing	অভিযোগ গঠন বা চার্জ ফ্রেম	2800	legal
+discharge	অভিযোগ থেকে অব্যাহতি	2700	legal
+acquittal	বেকসুর খালাস প্রদান	2800	legal
+conviction	দোষী সাব্যস্ত ও দণ্ডাদেশ	2800	legal
+sentence	কারাদণ্ডাদেশ ও জরিমানা	2800	legal
+fine_recovery	জরিমানা আদায় পরোয়ানা	2600	legal
+distress_warrant	ক্রোকি পরোয়ানা	2600	legal
+jail_code	কারাগার বিধিমালা বা জেল কোড	2600	legal
+remission	কারাদণ্ড মওকুফ বা রেমিশন	2600	legal
+clemency	রাষ্ট্রপতির নিকট প্রাণভিক্ষা	2700	legal
+mercy_petition	মার্সি পিটিশন দাখিল	2700	legal
+death_reference	ডেথ রেফারেন্স শুনানি	2800	legal
+jail_appeal	জেল আপিল নিষ্পত্তি	2700	legal
+habeas_corpus_writ	বন্দি হাজিরকরণ রিট	2700	legal
+mandamus_writ	পরমাদেশ বা ম্যান্ডামাস রিট	2700	legal
+certiorari_writ	উৎপ্রেষণ বা সার্টিওরারি রিট	2600	legal
+prohibition_writ	প্রতিষেধ বা প্রহিবিশন রিট	2600	legal
+quo_warranto	কো-ওয়ারেন্টো রিট পিটিশন	2600	legal

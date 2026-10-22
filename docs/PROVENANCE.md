@@ -65,3 +65,26 @@ The following test items in `tests/data/golden.tsv` or vocabulary variants are d
 - **Description**: Mapping tables translating CP1252/ANSI character indices to Unicode UTF-8 Bengali codepoints, accompanied by orthographic pre-kar and reph reordering algorithms.
 - **Licensing**: Permissive / MPL-2.0 compatible.
 - **Verification**: Hand-verified against 22 real-world Bengali vectors covering complex conjuncts, pre-kars, compound vowels, and reph ordering.
+
+---
+
+## 6. Bangladesh-Specific Domain Packs & Helpers (Workstream 7)
+
+### `data/domains/bangladesh_places.tsv`
+- **Origin**: Authored in-house based on official public administrative geographic records of the Government of Bangladesh.
+- **Description**: Contains all 8 divisions, 64 districts, and prominent upazilas/landmarks (~180 entries) with frequency annotations.
+- **Licensing**: Project-owned / Public Domain factual geographic data.
+
+### `data/domains/islamic_terms.tsv`
+- **Origin**: Curated in-house by native speakers.
+- **Description**: Daily greetings, theological expressions, Islamic calendar months, and prayer terminology (~300 entries).
+- **Licensing**: Project-owned / Public Domain religious terminology.
+
+### `data/domains/legal_medical_banking.tsv`
+- **Origin**: Curated in-house from standard public service laws, judicial acts, medical terms, and banking glossaries used in Bangladesh (~400 entries).
+- **Licensing**: Project-owned / Public Domain statutory and technical terminology.
+
+### `src/bangladesh_helpers.cpp`
+- **Origin**: Authored specifically for Amar Bangla Kotha.
+- **Description**: Algorithmic number to words conversion (0 to hundreds of crores), South Asian Lakh/Crore digit grouping, revised Bangla Academy Bangabda calendar calculations (2019 revision), and Sadhu-Cholito morphological rules.
+- **Licensing**: Project native license.

@@ -2,6 +2,8 @@
 #include "abk/engine.h"
 #include "abk/utf8_util.h"
 #include "abk/legacy_converter.h"
+#include "abk/bangladesh_helpers.h"
+#include "abk/domain_packs.h"
 #include <cstring>
 #include <cstdlib>
 #include <exception>
@@ -567,6 +569,109 @@ bool abk_is_likely_legacy_ansi(const char* text) {
         return abk::LegacyConverter::is_likely_legacy_ansi(text);
     } catch (...) {
         return false;
+    }
+}
+
+int abk_format_lakh_crore(long long number, bool bengali_digits, char* out_buf, size_t out_cap) {
+    if (!out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::BangladeshHelpers::format_lakh_crore(number, bengali_digits);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_number_to_bangla_words(long long number, char* out_buf, size_t out_cap) {
+    if (!out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::BangladeshHelpers::number_to_bangla_words(number);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_gregorian_to_bangabda(int year, int month, int day, char* out_buf, size_t out_cap) {
+    if (!out_buf || out_cap == 0) return 0;
+    try {
+        auto b_date = abk::BangladeshHelpers::gregorian_to_bangabda(year, month, day);
+        if (b_date.formatted.size() >= out_cap) {
+            std::memcpy(out_buf, b_date.formatted.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, b_date.formatted.c_str(), b_date.formatted.size() + 1);
+        }
+        return static_cast<int>(b_date.formatted.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_convert_sadhu_to_cholito(const char* text, char* out_buf, size_t out_cap) {
+    if (!text || !out_buf || out_cap == 0) return 0;
+    try {
+        auto res = abk::BangladeshHelpers::convert_sadhu_to_cholito(text);
+        if (res.text.size() >= out_cap) {
+            std::memcpy(out_buf, res.text.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.text.c_str(), res.text.size() + 1);
+        }
+        return static_cast<int>(res.text.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_convert_cholito_to_sadhu(const char* text, char* out_buf, size_t out_cap) {
+    if (!text || !out_buf || out_cap == 0) return 0;
+    try {
+        auto res = abk::BangladeshHelpers::convert_cholito_to_sadhu(text);
+        if (res.text.size() >= out_cap) {
+            std::memcpy(out_buf, res.text.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.text.c_str(), res.text.size() + 1);
+        }
+        return static_cast<int>(res.text.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_engine_set_domain_pack_enabled(abk_engine_t handle, int domain_type, bool enabled) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        abk::DomainPackType type;
+        switch (domain_type) {
+            case 0: type = abk::DomainPackType::BANGLADESH_PLACES; break;
+            case 1: type = abk::DomainPackType::ISLAMIC_TERMS; break;
+            case 2: type = abk::DomainPackType::LEGAL_MEDICAL_BANKING; break;
+            default: return 0;
+        }
+        engine->set_domain_pack_enabled(type, enabled);
+        return 1;
+    } catch (...) {
+        return 0;
     }
 }
 

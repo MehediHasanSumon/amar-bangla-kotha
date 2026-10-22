@@ -1,6 +1,8 @@
 #include "abk/engine.h"
 #include "abk/utf8_util.h"
 #include "abk/legacy_converter.h"
+#include "abk/bangladesh_helpers.h"
+#include "abk/domain_packs.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -322,6 +324,46 @@ int main(int argc, char* argv[]) {
             std::cout << abk::LegacyConverter::convert_unicode_to_ansi(input) << "\n";
             return 0;
         }
+        if (arg == "--number" || arg == "--words") {
+            if (i + 1 < argc) {
+                try {
+                    long long n = std::stoll(argv[i + 1]);
+                    std::cout << "Lakh/Crore (Bengali): " << abk::BangladeshHelpers::format_lakh_crore(n, true) << "\n";
+                    std::cout << "Lakh/Crore (ASCII):   " << abk::BangladeshHelpers::format_lakh_crore(n, false) << "\n";
+                    std::cout << "In Bengali Words:    " << abk::BangladeshHelpers::number_to_bangla_words(n) << "\n";
+                } catch (...) {
+                    std::cerr << "Invalid number: " << argv[i + 1] << "\n";
+                }
+            }
+            return 0;
+        }
+        if (arg == "--bangabda") {
+            int y = 2026, m = 10, d = 22;
+            if (i + 3 < argc) {
+                try {
+                    y = std::stoi(argv[i + 1]);
+                    m = std::stoi(argv[i + 2]);
+                    d = std::stoi(argv[i + 3]);
+                } catch (...) {}
+            }
+            auto b_date = abk::BangladeshHelpers::gregorian_to_bangabda(y, m, d);
+            std::cout << b_date.formatted << "\n";
+            return 0;
+        }
+        if (arg == "--sadhu") {
+            if (i + 1 < argc) {
+                auto res = abk::BangladeshHelpers::convert_sadhu_to_cholito(argv[i + 1]);
+                std::cout << res.text << "\n";
+            }
+            return 0;
+        }
+        if (arg == "--cholito") {
+            if (i + 1 < argc) {
+                auto res = abk::BangladeshHelpers::convert_cholito_to_sadhu(argv[i + 1]);
+                std::cout << res.text << "\n";
+            }
+            return 0;
+        }
     }
 
     std::cout << "==========================================================\n";
@@ -383,6 +425,37 @@ int main(int argc, char* argv[]) {
         if (line.rfind(":unicode ", 0) == 0) {
             std::string text = line.substr(9);
             std::cout << "Bijoy ANSI: " << abk::LegacyConverter::convert_unicode_to_ansi(text) << "\n\n";
+            continue;
+        }
+
+        if (line.rfind(":num ", 0) == 0) {
+            try {
+                long long n = std::stoll(line.substr(5));
+                std::cout << "Lakh/Crore: " << abk::BangladeshHelpers::format_lakh_crore(n, true) << "\n";
+                std::cout << "In Words:   " << abk::BangladeshHelpers::number_to_bangla_words(n) << "\n\n";
+            } catch (...) {
+                std::cout << "Invalid number.\n\n";
+            }
+            continue;
+        }
+
+        if (line == ":date" || line.rfind(":date ", 0) == 0) {
+            auto b_date = abk::BangladeshHelpers::gregorian_to_bangabda(2026, 10, 22);
+            std::cout << "Bangabda Date: " << b_date.formatted << "\n\n";
+            continue;
+        }
+
+        if (line.rfind(":sadhu ", 0) == 0) {
+            std::string text = line.substr(7);
+            auto res = abk::BangladeshHelpers::convert_sadhu_to_cholito(text);
+            std::cout << "Cholito: " << res.text << "\n\n";
+            continue;
+        }
+
+        if (line.rfind(":cholito ", 0) == 0) {
+            std::string text = line.substr(9);
+            auto res = abk::BangladeshHelpers::convert_cholito_to_sadhu(text);
+            std::cout << "Sadhu: " << res.text << "\n\n";
             continue;
         }
 
