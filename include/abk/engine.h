@@ -9,6 +9,7 @@
 #include "abk/personal_dictionary.h"
 #include "abk/domain_packs.h"
 #include "abk/bangladesh_helpers.h"
+#include "abk/quality_of_life.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -95,6 +96,12 @@ public:
     const DomainPackManager& get_domain_pack_manager() const { return domain_pack_manager; }
     DomainPackManager& get_domain_pack_manager() { return domain_pack_manager; }
 
+    // Workstream 8: Quality of Life & Correction Logger
+    const CorrectionLogger& get_correction_logger() const { return correction_logger; }
+    CorrectionLogger& get_correction_logger() { return correction_logger; }
+    void set_correction_logging(bool enable) { correction_logger.set_enabled(enable); }
+    bool is_correction_logging_enabled() const { return correction_logger.is_enabled(); }
+
     // Workstream 1: Per-event diagnostic logging
     void set_debug_logging(bool enable) { debug_logging = enable; }
     bool is_debug_logging() const { return debug_logging; }
@@ -121,6 +128,7 @@ private:
     BigramModel bigram_model;
     PersonalDictionary personal_dictionary;
     DomainPackManager domain_pack_manager;
+    CorrectionLogger correction_logger;
     std::string last_committed_word;
     std::string second_last_committed_word;
     bool debug_logging = false;

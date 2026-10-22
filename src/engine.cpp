@@ -126,6 +126,12 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         }
     }
 
+    // Workstream 8: Emoji & Symbol Suggestions
+    auto emojis = QualityOfLife::get_emoji_suggestions(trimmed_input);
+    for (const auto& em : emojis) {
+        add_candidate_unique(result.candidates, em);
+    }
+
     // 1. Beam-search transliteration powered by lattice
     auto beam_candidates = transliterator.transliterate_beam(trimmed_input, &dictionary, config.max_suggestions * 2);
 
@@ -397,6 +403,11 @@ void AmarBanglaKothaEngine::record_commit(const std::string& raw_input, const st
 
     std::string clean_word = utf8::normalize_nfc(utf8::trim(committed_text));
     if (!clean_word.empty()) {
+        // Workstream 8: Opt-in Correction Logger
+        if (was_autocorrected || raw_input != clean_word) {
+            correction_logger.record_correction(raw_input, clean_word, secure_mode);
+        }
+
         if (config.enable_dynamic_learning) {
             learn_word(clean_word, 200);
             personal_dictionary.learn_word(clean_word, 200);

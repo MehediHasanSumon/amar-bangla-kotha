@@ -112,6 +112,15 @@ ABK_API int abk_convert_sadhu_to_cholito(const char* text, char* out_buf, size_t
 ABK_API int abk_convert_cholito_to_sadhu(const char* text, char* out_buf, size_t out_cap);
 ABK_API int abk_engine_set_domain_pack_enabled(abk_engine_t engine, int domain_type, bool enabled);
 
+// Workstream 8: Quality of Life (Quick Convert, Smart Punctuation, Correction Log & Feedback)
+ABK_API int abk_convert_banglish_to_bangla(abk_engine_t engine, const char* text, char* out_buf, size_t out_cap);
+ABK_API int abk_convert_bangla_to_banglish(const char* text, char* out_buf, size_t out_cap);
+ABK_API int abk_apply_smart_punctuation(const char* text, char* out_buf, size_t out_cap);
+ABK_API void abk_engine_set_correction_logging(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_correction_logging_enabled(abk_engine_t engine);
+ABK_API void abk_engine_clear_correction_log(abk_engine_t engine);
+ABK_API int abk_save_local_feedback(const char* raw, const char* received, const char* expected, const char* app, const char* custom_path);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

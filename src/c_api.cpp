@@ -675,6 +675,102 @@ int abk_engine_set_domain_pack_enabled(abk_engine_t handle, int domain_type, boo
     }
 }
 
+int abk_convert_banglish_to_bangla(abk_engine_t handle, const char* text, char* out_buf, size_t out_cap) {
+    if (!text || !out_buf || out_cap == 0) return 0;
+    try {
+        const abk::Dictionary* dict = nullptr;
+        if (handle) {
+            auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+            dict = &engine->get_dictionary();
+        }
+        std::string res = abk::QualityOfLife::convert_banglish_to_bangla(text, dict);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_convert_bangla_to_banglish(const char* text, char* out_buf, size_t out_cap) {
+    if (!text || !out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::QualityOfLife::convert_bangla_to_banglish(text);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+int abk_apply_smart_punctuation(const char* text, char* out_buf, size_t out_cap) {
+    if (!text || !out_buf || out_cap == 0) return 0;
+    try {
+        std::string res = abk::QualityOfLife::apply_smart_punctuation(text);
+        if (res.size() >= out_cap) {
+            std::memcpy(out_buf, res.c_str(), out_cap - 1);
+            out_buf[out_cap - 1] = '\0';
+        } else {
+            std::memcpy(out_buf, res.c_str(), res.size() + 1);
+        }
+        return static_cast<int>(res.size());
+    } catch (...) {
+        out_buf[0] = '\0';
+        return 0;
+    }
+}
+
+void abk_engine_set_correction_logging(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_correction_logging(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_correction_logging_enabled(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_correction_logging_enabled() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_clear_correction_log(abk_engine_t handle) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->get_correction_logger().clear_records();
+    } catch (...) {}
+}
+
+int abk_save_local_feedback(const char* raw, const char* received, const char* expected, const char* app, const char* custom_path) {
+    try {
+        abk::FeedbackItem item;
+        item.raw_input = raw ? raw : "";
+        item.received_suggestion = received ? received : "";
+        item.expected_word = expected ? expected : "";
+        item.app_name = app ? app : "";
+        std::string path = custom_path ? custom_path : "";
+        return abk::QualityOfLife::save_feedback_locally(item, path) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
 const char* abk_get_version(void) {
     return "Amar Bangla Kotha v1.0.0 (C++ Core Engine)";
 }

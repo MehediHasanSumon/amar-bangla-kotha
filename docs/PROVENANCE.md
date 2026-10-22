@@ -88,3 +88,13 @@ The following test items in `tests/data/golden.tsv` or vocabulary variants are d
 - **Origin**: Authored specifically for Amar Bangla Kotha.
 - **Description**: Algorithmic number to words conversion (0 to hundreds of crores), South Asian Lakh/Crore digit grouping, revised Bangla Academy Bangabda calendar calculations (2019 revision), and Sadhu-Cholito morphological rules.
 - **Licensing**: Project native license.
+
+---
+
+## 7. Quality of Life & Correction Privacy (Workstream 8)
+
+### `src/quality_of_life.cpp` & `include/abk/quality_of_life.h`
+- **Origin**: Authored in-house for Amar Bangla Kotha.
+- **Description**: Bidirectional Banglish $\leftrightarrow$ Bangla converters, smart typographical punctuation (`.` $\rightarrow$ `।`, `...` $\rightarrow$ `…`, `"` $\rightarrow$ `“”`), and emoji suggestion table based on Unicode 15.0 emoji standards.
+- **Privacy Architecture**: Local JSON Lines feedback storage (`feedback.jsonl`) and size-capped user correction logger (`correction_log.jsonl`) with guaranteed zero logging in password fields and opt-in by default.
+- **Licensing**: Project native license.

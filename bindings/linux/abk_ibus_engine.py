@@ -32,10 +32,10 @@ class AbkSuggestionList(Structure):
 
 def load_abk_library():
     possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "libabk.so"),
         os.path.expanduser("~/.local/lib/libabk.so"),
         "/usr/local/lib/libabk.so",
-        "/usr/lib/libabk.so",
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "libabk.so")
+        "/usr/lib/libabk.so"
     ]
     for p in possible_paths:
         if os.path.exists(p):
@@ -146,6 +146,10 @@ class AmarBanglaKothaEngine(IBus.Engine):
                 abk_lib.abk_load_dictionary(self.engine_handle, dp.encode('utf-8'))
                 break
 
+        wayland_disp = os.environ.get("WAYLAND_DISPLAY")
+        if wayland_disp:
+            log_event("WAYLAND_SESSION_DETECTED", f"WAYLAND_DISPLAY={wayland_disp}, XDG_CURRENT_DESKTOP={os.environ.get('XDG_CURRENT_DESKTOP', 'unknown')}")
+
     def do_destroy(self):
         if self.engine_handle:
             abk_lib.abk_engine_destroy(self.engine_handle)
@@ -179,7 +183,12 @@ class AmarBanglaKothaEngine(IBus.Engine):
         for i in range(res.candidate_count):
             w = res.candidates[i].word.decode('utf-8')
             self.current_candidates.append(w)
-            self.lookup_table.append_candidate(IBus.Text.new_from_string(w))
+            cand_text = IBus.Text.new_from_string(w)
+            self.lookup_table.append_candidate(cand_text)
+            try:
+                self.lookup_table.set_label(i, IBus.Text.new_from_string(f"{i+1}."))
+            except Exception:
+                pass
 
         abk_lib.abk_free_suggestions(res_ptr)
 

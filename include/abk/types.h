@@ -13,7 +13,8 @@ enum class CandidateType {
     AUTOCORRECT,            // Typo-corrected suggestion via edit distance
     PHONETIC_ALTERNATIVE,  // Phonetic variant (e.g. sh/s, i/ee variations)
     SHORTCUT_EXPANSION,     // User defined shortcut / snippet (e.g. "amr" -> "আমার")
-    NEXT_WORD_PREDICTION    // Contextual next-word prediction from bigram model
+    NEXT_WORD_PREDICTION,   // Contextual next-word prediction from bigram model
+    EMOJI_SUGGESTION        // Quality of life: Emoji and symbol suggestion
 };
 
 struct Candidate {

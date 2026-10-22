@@ -18,6 +18,7 @@ SRCS = src/utf8_util.cpp \
        src/legacy_converter.cpp \
        src/domain_packs.cpp \
        src/bangladesh_helpers.cpp \
+       src/quality_of_life.cpp \
        src/engine.cpp \
        src/c_api.cpp
 
@@ -52,6 +53,9 @@ $(BUILD_DIR)/test_legacy_converter.o: tests/test_legacy_converter.cpp | dirs
 $(BUILD_DIR)/test_bangladesh_helpers.o: tests/test_bangladesh_helpers.cpp | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
+$(BUILD_DIR)/test_quality_of_life.o: tests/test_quality_of_life.cpp | dirs
+	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
+
 $(STATIC_LIB): $(OBJS) | dirs
 	$(AR) $(ARFLAGS) $@ $^
 
@@ -61,7 +65,7 @@ $(SHARED_LIB): $(OBJS) | dirs
 $(CLI_BIN): cli/main.cpp $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $< $(STATIC_LIB) -o $@
 
-$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(BUILD_DIR)/test_legacy_converter.o $(BUILD_DIR)/test_bangladesh_helpers.o $(STATIC_LIB) | dirs
+$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(BUILD_DIR)/test_legacy_converter.o $(BUILD_DIR)/test_bangladesh_helpers.o $(BUILD_DIR)/test_quality_of_life.o $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(BENCH_BIN): tests/benchmark.cpp $(STATIC_LIB) | dirs
