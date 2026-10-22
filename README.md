@@ -1,6 +1,6 @@
 # Amar Bangla Kotha (আমার বাংলা কথা)
 
-[![CI](https://github.com/sumon/Keyboard/actions/workflows/ci.yml/badge.svg)](https://github.com/sumon/Keyboard/actions/workflows/ci.yml)
+[![CI](https://github.com/MehediHasanSumon/amar-bangla-kotha/actions/workflows/ci.yml/badge.svg)](https://github.com/MehediHasanSumon/amar-bangla-kotha/actions/workflows/ci.yml)
 [![Standard](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
 [![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20macOS%20%7C%20Windows-green.svg)](#cross-platform-frontends)
 [![License](https://img.shields.io/badge/License-GPLv3-orange.svg)](LICENSE)
