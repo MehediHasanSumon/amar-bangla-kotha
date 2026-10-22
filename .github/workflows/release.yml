@@ -1,0 +1,164 @@
+name: Build, Test, Package and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ----------------------------------------------------
+  # 1. Linux Build & Debian (.deb) Packaging
+  # ----------------------------------------------------
+  linux-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libibus-1.0-dev dpkg-dev
+
+      - name: Build engine, CLI, and run tests
+        run: |
+          make clean
+          make all
+          make test
+          make smoke-test
+          make fuzz-test
+          make benchmark
+
+      - name: Run CLI Diagnostic Self-Test
+        run: |
+          ./bin/abk_cli --selftest
+
+      - name: Package Linux .deb
+        run: |
+          make package-deb
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb-package
+          path: bin/*.deb
+
+  # ----------------------------------------------------
+  # 2. Windows Build, TSF COM & Inno Setup (.exe) Signing
+  # ----------------------------------------------------
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC & CMake
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build Windows Engine and TSF DLL
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+
+      - name: Sign Binaries (Authenticode)
+        shell: bash
+        env:
+          WIN_CERT_FILE: ${{ secrets.WIN_CERT_FILE }}
+          WIN_CERT_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
+        run: |
+          if [ -n "$WIN_CERT_PASSWORD" ]; then
+            ./packaging/scripts/sign_release.sh windows build/Release/abk_tsf.dll
+            ./packaging/scripts/sign_release.sh windows build/Release/abk_cli.exe
+          else
+            echo "Skipping signing in development environment (no cert configured)."
+          fi
+
+      - name: Build Inno Setup Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1
+        with:
+          path: packaging/windows/installer.iss
+
+      - name: Sign Inno Setup Installer (.exe)
+        shell: bash
+        env:
+          WIN_CERT_FILE: ${{ secrets.WIN_CERT_FILE }}
+          WIN_CERT_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
+        run: |
+          if [ -n "$WIN_CERT_PASSWORD" ]; then
+            ./packaging/scripts/sign_release.sh windows bin/AmarBanglaKotha-Setup-1.0.0.exe
+          fi
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: bin/*.exe
+
+  # ----------------------------------------------------
+  # 3. macOS Build, InputMethodKit (.pkg) & Notarization
+  # ----------------------------------------------------
+  macos-release:
+    runs-on: macos-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Build macOS Engine
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+
+      - name: Run Unit Tests
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Build macOS .pkg Installer
+        run: |
+          chmod +x packaging/macos/build_pkg.sh
+          ./packaging/macos/build_pkg.sh 1.0.0
+
+      - name: Sign and Notarize macOS Package
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_INSTALLER_IDENTITY: ${{ secrets.MACOS_INSTALLER_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
+            ./packaging/scripts/sign_release.sh macos bin/AmarBanglaKotha-1.0.0.pkg
+          else
+            echo "Skipping macOS signing/notarization (dry-run)."
+          fi
+
+      - name: Upload macOS Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-package
+          path: bin/*.pkg
+
+  # ----------------------------------------------------
+  # 4. GitHub Release Publishing
+  # ----------------------------------------------------
+  publish-release:
+    needs: [linux-release, windows-release, macos-release]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/linux-deb-package/*.deb
+            release-artifacts/windows-installer/*.exe
+            release-artifacts/macos-package/*.pkg
+          generate_release_notes: true

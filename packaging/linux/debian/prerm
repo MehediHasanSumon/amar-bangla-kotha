@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        # Notify or restart ibus if running
+        if which ibus >/dev/null 2>&1; then
+            ibus restart 2>/dev/null || true
+        fi
+    ;;
+esac
+
+exit 0

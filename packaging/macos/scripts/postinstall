@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+# macOS Post-Install script for Amar Bangla Kotha .pkg
+TARGET_DIR="/Library/Input Methods/AmarBanglaKotha.app"
+
+echo "Configuring permissions for $TARGET_DIR..."
+chmod -R 755 "$TARGET_DIR"
+
+# Refresh macOS Input Method / Text Input Service database
+echo "Refreshing macOS Text Input Services cache..."
+touch "/Library/Input Methods"
+
+# Kill any running old instance so the newly installed version starts cleanly
+killall -9 AmarBanglaKotha 2>/dev/null || true
+
+echo "Amar Bangla Kotha successfully installed into /Library/Input Methods/."
+echo "Users can enable it in System Settings -> Keyboard -> Text Input -> Input Sources (+)."
+exit 0

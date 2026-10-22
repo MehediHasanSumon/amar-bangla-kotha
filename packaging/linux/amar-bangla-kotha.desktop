@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Amar Bangla Kotha Settings
+Name[bn]=আমার বাংলা কথা সেটিংস
+Comment=Configure Amar Bangla Kotha keyboard engine and practice phonetic typing
+Comment[bn]=বাংলা কিবোর্ড ইঞ্জিন কনফিগার করুন এবং টাইপিং প্র্যাকটিস করুন
+Exec=/usr/bin/amar-bangla-kotha-settings
+Icon=input-keyboard
+Terminal=false
+Type=Application
+Categories=Settings;Utility;TextTools;
+Keywords=keyboard;bangla;avro;ime;input;phonetic;

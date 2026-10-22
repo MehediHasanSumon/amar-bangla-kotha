@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        # Update IBus component cache
+        if which ibus >/dev/null 2>&1; then
+            ibus write-cache 2>/dev/null || true
+        fi
+        # Update desktop database
+        if which update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
+        # Update shared library cache
+        ldconfig 2>/dev/null || true
+    ;;
+esac
+
+exit 0

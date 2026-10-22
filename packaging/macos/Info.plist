@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>AmarBanglaKotha</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.amar.bangla.kotha.inputmethod</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Amar Bangla Kotha</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>11.0</string>
+    <!-- LSUIElement=1 ensures the input method server runs as a background agent without showing in Dock -->
+    <key>LSUIElement</key>
+    <true/>
+    <!-- InputMethodKit specific keys -->
+    <key>InputMethodServerControllerClass</key>
+    <string>ABKInputController</string>
+    <key>InputMethodServerDelegateClass</key>
+    <string>ABKInputController</string>
+    <key>tsInputModeListKey</key>
+    <dict>
+        <key>org.amar.bangla.kotha.inputmethod.phonetic</key>
+        <dict>
+            <key>tsInputModeIsVisibleKey</key>
+            <true/>
+            <key>tsInputModeKeyEquivalentKey</key>
+            <string>F12</string>
+            <key>tsInputModeKeyEquivalentModifiersKey</key>
+            <integer>0</integer>
+            <key>tsInputModeMenuIconFileKey</key>
+            <string>abk_icon.png</string>
+            <key>tsInputModePaletteIconFileKey</key>
+            <string>abk_icon.png</string>
+            <key>tsInputModeScriptKey</key>
+            <string>smBengali</string>
+        </dict>
+    </dict>
+    <key>TISIntendedLanguage</key>
+    <string>bn</string>
+    <key>TISParticipatesInServerMode</key>
+    <false/>
+</dict>
+</plist>

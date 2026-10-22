@@ -155,5 +155,8 @@ uninstall:
 	@rm -rf $(USER_PREFIX)/include/abk $(USER_DATA_DIR)
 	@echo "Uninstalled."
 
+package-deb: all
+	@bash packaging/linux/build_deb.sh
+
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(LIB_DIR)

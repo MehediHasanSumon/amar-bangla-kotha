@@ -1,0 +1,12 @@
+Package: amar-bangla-kotha
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Amar Bangla Kotha Team <support@amar-bangla-kotha.org>
+Depends: libc6, python3, python3-gi, ibus (>= 1.5.0)
+Description: Production Bangla phonetic keyboard for Linux (IBus/Fcitx5)
+ Amar Bangla Kotha (আমার বাংলা কথা) is a high-performance, privacy-first
+ phonetic Bengali input method engine built in modern C++.
+ It features Avro-compatible phonetic transliteration, next-word
+ prediction, personal shortcuts, and auto-bypass for password fields.
