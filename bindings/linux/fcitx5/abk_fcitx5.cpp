@@ -106,6 +106,9 @@ void AmarBanglaKothaEngine::onCandidateClicked(InputContext* ic, size_t index, c
 
 void AmarBanglaKothaEngine::commitWord(InputContext* ic, const std::string& word, bool appendSpace) {
     std::string commitStr = appendSpace ? (word + " ") : word;
+    if (engine_ && !buffer_.empty()) {
+        abk_engine_record_commit(engine_, buffer_.c_str(), commitStr.c_str(), 0);
+    }
     ic->commitString(commitStr);
 
     buffer_.clear();
@@ -134,6 +137,9 @@ void AmarBanglaKothaEngine::cancelComposition(InputContext* ic) {
 }
 
 void AmarBanglaKothaEngine::reset(const InputMethodEntry& /*entry*/, InputContextEvent& event) {
+    if (engine_) {
+        abk_engine_clear_undo(engine_);
+    }
     cancelComposition(event.inputContext());
 }
 
@@ -246,6 +252,19 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
             updatePreedit(ic, buffer_);
             keyEvent.filterAndAccept();
             return;
+        } else if (engine_ && abk_engine_can_undo_commit(engine_)) {
+            char commBuf[512] = {0};
+            char rawBuf[512] = {0};
+            if (abk_engine_get_undo_info(engine_, commBuf, sizeof(commBuf), rawBuf, sizeof(rawBuf))) {
+                abk_log_event(engine_, "UNDO_BACKSPACE", rawBuf);
+                size_t commLen = abk_grapheme_count(commBuf);
+                if (commLen == 0) commLen = strlen(commBuf);
+                ic->deleteSurrounding(-static_cast<int>(commLen), commLen);
+                buffer_ = rawBuf;
+                updatePreedit(ic, buffer_);
+                keyEvent.filterAndAccept();
+                return;
+            }
         }
         return;
     }

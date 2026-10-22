@@ -59,6 +59,7 @@ ABK_API int abk_load_dictionary(abk_engine_t engine, const char* filepath);
 // Phase 3: Unicode Normalization and Grapheme utilities for platform frontends
 ABK_API int abk_normalize_nfc(const char* utf8_in, char* out_buf, size_t buf_size);
 ABK_API int abk_pop_logical_unit(const char* utf8_in, char* out_buf, size_t buf_size);
+ABK_API int abk_pop_grapheme_cluster(const char* utf8_in, char* out_buf, size_t buf_size);
 ABK_API size_t abk_grapheme_count(const char* utf8_in);
 
 // Workstream 1: Suggestion Panel Navigation & State Machine APIs (Single Source of Truth)
@@ -79,6 +80,13 @@ ABK_API void abk_engine_set_secure_mode(abk_engine_t engine, int is_secure);
 ABK_API int abk_engine_is_secure_mode(abk_engine_t engine);
 ABK_API void abk_engine_set_clipboard_mode(abk_engine_t engine, int enable);
 ABK_API int abk_engine_is_clipboard_mode(abk_engine_t engine);
+
+// Workstream 3: Undo on Backspace after Autocorrect/Auto-Commit & Token Bypass
+ABK_API void abk_engine_record_commit(abk_engine_t engine, const char* raw_input, const char* committed_text, int was_autocorrected);
+ABK_API int abk_engine_can_undo_commit(abk_engine_t engine);
+ABK_API int abk_engine_get_undo_info(abk_engine_t engine, char* out_committed, size_t comm_size, char* out_raw, size_t raw_size);
+ABK_API void abk_engine_clear_undo(abk_engine_t engine);
+ABK_API int abk_token_should_bypass(abk_engine_t engine, const char* token);
 
 // Get engine version
 ABK_API const char* abk_get_version(void);

@@ -389,5 +389,17 @@ std::string pop_logical_unit(const std::string& utf8_str) {
     return to_utf8(cps);
 }
 
+std::string pop_grapheme_cluster(const std::string& utf8_str) {
+    if (utf8_str.empty()) return "";
+    auto clusters = get_grapheme_clusters(utf8_str);
+    if (clusters.empty()) return "";
+    clusters.pop_back();
+    std::string result;
+    for (const auto& c : clusters) {
+        result += c;
+    }
+    return result;
+}
+
 } // namespace utf8
 } // namespace abk

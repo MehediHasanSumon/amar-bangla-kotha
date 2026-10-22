@@ -75,6 +75,18 @@ def load_abk_library():
                 lib.abk_engine_set_clipboard_mode.argtypes = [c_void_p, c_int]
                 lib.abk_engine_is_clipboard_mode.restype = c_int
                 lib.abk_engine_is_clipboard_mode.argtypes = [c_void_p]
+                lib.abk_engine_record_commit.restype = None
+                lib.abk_engine_record_commit.argtypes = [c_void_p, c_char_p, c_char_p, c_int]
+                lib.abk_engine_can_undo_commit.restype = c_int
+                lib.abk_engine_can_undo_commit.argtypes = [c_void_p]
+                lib.abk_engine_get_undo_info.restype = c_int
+                lib.abk_engine_get_undo_info.argtypes = [c_void_p, c_char_p, c_size_t, c_char_p, c_size_t]
+                lib.abk_engine_clear_undo.restype = None
+                lib.abk_engine_clear_undo.argtypes = [c_void_p]
+                lib.abk_token_should_bypass.restype = c_int
+                lib.abk_token_should_bypass.argtypes = [c_void_p, c_char_p]
+                lib.abk_pop_grapheme_cluster.restype = c_int
+                lib.abk_pop_grapheme_cluster.argtypes = [c_char_p, c_char_p, c_size_t]
                 return lib
             except Exception as e:
                 print(f"Error loading {p}: {e}", file=sys.stderr)
@@ -204,6 +216,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
 
         log_event("COMMIT_TEXT", f"Word: '{word}', append_space={append_space}")
 
+        raw_typed = self.buffer
+
         # 1. Reset state and hide composition UI FIRST
         self.buffer = ""
         self.current_primary = ""
@@ -216,7 +230,16 @@ class AmarBanglaKothaEngine(IBus.Engine):
         clean_word = normalize_nfc(word)
         text_to_commit = clean_word + (" " if append_space else "")
 
-        # 3. Commit text cleanly in a single call
+        # 3. Workstream 3: Record commit for Undo on Backspace
+        if raw_typed and text_to_commit and self.engine_handle:
+            abk_lib.abk_engine_record_commit(
+                self.engine_handle,
+                raw_typed.encode('utf-8'),
+                text_to_commit.encode('utf-8'),
+                0
+            )
+
+        # 4. Commit text cleanly in a single call
         if text_to_commit:
             self.commit_text(IBus.Text.new_from_string(text_to_commit))
 
@@ -327,6 +350,21 @@ class AmarBanglaKothaEngine(IBus.Engine):
                 self.buffer = self.buffer[:-1]
                 self.update_preedit_and_lookup()
                 return True
+            elif self.engine_handle and abk_lib.abk_engine_can_undo_commit(self.engine_handle):
+                comm_buf = ctypes.create_string_buffer(512)
+                raw_buf = ctypes.create_string_buffer(512)
+                ret = abk_lib.abk_engine_get_undo_info(self.engine_handle, comm_buf, 512, raw_buf, 512)
+                if ret:
+                    comm_str = comm_buf.value.decode('utf-8')
+                    raw_str = raw_buf.value.decode('utf-8')
+                    log_event("UNDO_COMMIT", f"Reverting committed '{comm_str}' to raw '{raw_str}'")
+                    try:
+                        self.delete_surrounding_text(-len(comm_str), len(comm_str))
+                    except Exception as e:
+                        log_event("UNDO_ERROR", f"delete_surrounding_text failed: {e}")
+                    self.buffer = raw_str
+                    self.update_preedit_and_lookup()
+                    return True
             return False
 
         # 4. Escape: cancel composition
@@ -366,6 +404,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if self.buffer:
             target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
             self.commit_word(target, append_space=False)
+        if self.engine_handle:
+            abk_lib.abk_engine_clear_undo(self.engine_handle)
 
 def main():
     IBus.init()

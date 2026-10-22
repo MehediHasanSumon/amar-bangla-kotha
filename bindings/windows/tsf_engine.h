@@ -89,9 +89,11 @@ private:
         EDIT_NONE,
         EDIT_UPDATE_PREEDIT,
         EDIT_COMMIT_AND_END,
-        EDIT_CANCEL
+        EDIT_CANCEL,
+        EDIT_UNDO_COMMIT
     };
     EditAction _pendingAction;
     std::wstring _textToCommit;
+    std::wstring _undoCommittedText;
     bool _commitAppendSpace;
 };

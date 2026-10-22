@@ -55,6 +55,10 @@ size_t grapheme_count(const std::string& utf8_str);
 // leaving the base consonant / conjunct intact!
 std::string pop_logical_unit(const std::string& utf8_str);
 
+// Backspace deletion of complete grapheme cluster (UAX #29):
+// Deletes entire user-perceived visual cluster (e.g. কি -> "", ক্ত -> "")
+std::string pop_grapheme_cluster(const std::string& utf8_str);
+
 // Bengali Unicode constants
 constexpr char32_t BN_VIRAMA       = 0x09CD; // ্ (Hasant)
 constexpr char32_t BN_KHANDA_TA    = 0x09CE; // ৎ

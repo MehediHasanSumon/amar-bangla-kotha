@@ -191,6 +191,10 @@ STDMETHODIMP CTsfEngine::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM /*
     }
 
     if (_latinBuffer.empty()) {
+        if (wParam == VK_BACK && _engine && abk_engine_can_undo_commit(_engine)) {
+            *pfEaten = TRUE;
+            return S_OK;
+        }
         *pfEaten = FALSE;
         return S_OK;
     }
@@ -364,6 +368,31 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
             pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
             *pfEaten = TRUE;
             return S_OK;
+        } else if (_engine && abk_engine_can_undo_commit(_engine)) {
+            char commBuf[512] = {0};
+            char rawBuf[512] = {0};
+            if (abk_engine_get_undo_info(_engine, commBuf, sizeof(commBuf), rawBuf, sizeof(rawBuf))) {
+                abk_log_event(_engine, "UNDO_BACKSPACE", rawBuf);
+                _undoCommittedText = Utf8ToUtf16(commBuf);
+                _latinBuffer = rawBuf;
+                abk_suggestion_list_t* res = abk_get_suggestions(_engine, _latinBuffer.c_str());
+                if (res) {
+                    _primaryText = res->primary_transliteration ? Utf8ToUtf16(res->primary_transliteration) : Utf8ToUtf16(_latinBuffer);
+                    _candidates.clear();
+                    for (size_t i = 0; i < res->candidate_count; ++i) {
+                        if (res->candidates[i].word) {
+                            _candidates.push_back(Utf8ToUtf16(res->candidates[i].word));
+                        }
+                    }
+                    _selectedIndex = abk_suggestion_get_selected_index(_engine);
+                    abk_free_suggestions(res);
+                }
+                _pendingAction = EDIT_UNDO_COMMIT;
+                HRESULT hrSession = S_OK;
+                pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+                *pfEaten = TRUE;
+                return S_OK;
+            }
         }
         return S_OK;
     }
@@ -459,7 +488,29 @@ STDMETHODIMP CTsfEngine::DoEditSession(TfEditCookie ec) {
         case EDIT_CANCEL:
             _EndComposition(ec);
             _ClearState();
+            if (_engine) {
+                abk_engine_clear_undo(_engine);
+            }
             break;
+        case EDIT_UNDO_COMMIT: {
+            if (_pComposition) {
+                _EndComposition(ec);
+            }
+            ITfInsertAtSelection* pInsertAtSelection = nullptr;
+            if (SUCCEEDED(_pContext->QueryInterface(IID_ITfInsertAtSelection, (void**)&pInsertAtSelection))) {
+                ITfRange* pRange = nullptr;
+                if (SUCCEEDED(pInsertAtSelection->InsertTextAtSelection(ec, TF_IAS_QUERYONLY, NULL, 0, &pRange))) {
+                    LONG cch = (LONG)_undoCommittedText.length();
+                    LONG cchShift = 0;
+                    pRange->ShiftStart(ec, -cch, &cchShift, NULL);
+                    pRange->SetText(ec, 0, L"", 0);
+                    pRange->Release();
+                }
+                pInsertAtSelection->Release();
+            }
+            _UpdateComposition(ec, _pContext);
+            break;
+        }
         default:
             break;
     }
@@ -518,6 +569,12 @@ void CTsfEngine::_UpdateComposition(TfEditCookie ec, ITfContext *pic) {
 
 void CTsfEngine::_CommitComposition(TfEditCookie ec, ITfContext *pic, const std::wstring& text, bool appendSpace) {
     std::wstring finalCommit = appendSpace ? text + L" " : text;
+
+    std::string rawUtf8 = Utf16ToUtf8(_latinBuffer);
+    std::string commUtf8 = Utf16ToUtf8(finalCommit);
+    if (_engine && !rawUtf8.empty()) {
+        abk_engine_record_commit(_engine, rawUtf8.c_str(), commUtf8.c_str(), 0);
+    }
 
     if (!_pComposition) {
         _StartComposition(ec, pic);

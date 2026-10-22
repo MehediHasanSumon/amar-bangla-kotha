@@ -12,6 +12,7 @@ SRCS = src/utf8_util.cpp \
        src/trie.cpp \
        src/dictionary.cpp \
        src/autocorrect.cpp \
+       src/token_classifier.cpp \
        src/engine.cpp \
        src/c_api.cpp
 

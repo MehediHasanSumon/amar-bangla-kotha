@@ -1,4 +1,6 @@
 #include "catch2/catch.hpp"
+#include <fstream>
+#include <sstream>
 #include "abk/utf8_util.h"
 #include "abk/transliterator.h"
 #include "abk/trie.h"
@@ -547,5 +549,224 @@ TEST_CASE("Workstream 2: Safety, Privacy and Password Auto-Bypass", "[engine][se
         CHECK(abk_engine_is_clipboard_mode(c_eng) == 0);
 
         abk_engine_destroy(c_eng);
+    }
+}
+
+TEST_CASE("Workstream 3: Token Classification and Bypass", "[classifier][bypass]") {
+    abk::TokenClassifier classifier;
+    abk::AmarBanglaKothaEngine engine;
+    engine.load_dictionary_file("data/bangla_wordlist.txt");
+
+    SECTION("Golden token classification TSV benchmark verification") {
+        std::ifstream file("tests/data/token_classification.tsv");
+        REQUIRE(file.is_open());
+
+        std::string line;
+        // Read header
+        std::getline(file, line);
+
+        int total_tested = 0;
+        int banglish_tested = 0;
+        int banglish_false_positives = 0;
+        int bypass_tested = 0;
+        int bypass_correct = 0;
+
+        while (std::getline(file, line)) {
+            if (line.empty()) continue;
+            std::stringstream ss(line);
+            std::string token, expected_type, should_bypass_str, category;
+            if (std::getline(ss, token, '\t') &&
+                std::getline(ss, expected_type, '\t') &&
+                std::getline(ss, should_bypass_str, '\t') &&
+                std::getline(ss, category, '\t')) {
+
+                bool should_bypass = (should_bypass_str == "1");
+                auto result = classifier.classify(token);
+                total_tested++;
+
+                if (category == "BANGLISH_PROTECTED") {
+                    banglish_tested++;
+                    if (result.should_bypass_transliteration) {
+                        banglish_false_positives++;
+                    }
+                    CHECK(result.type == abk::TokenType::BANGLA_PHONETIC);
+                    CHECK(!result.should_bypass_transliteration);
+                } else if (should_bypass) {
+                    bypass_tested++;
+                    if (result.should_bypass_transliteration) {
+                        bypass_correct++;
+                    }
+                    CHECK(result.should_bypass_transliteration);
+                }
+            }
+        }
+
+        // Strict accuracy assertions
+        CHECK(total_tested > 40);
+        CHECK(banglish_tested >= 15);
+        CHECK(banglish_false_positives == 0); // 0% false positives on Banglish
+        CHECK(bypass_tested >= 20);
+        CHECK(bypass_correct == bypass_tested); // 100% bypass accuracy on URLs, emails, code, paths
+    }
+
+    SECTION("Engine process bypasses non-Bengali tokens into passthrough") {
+        // URLs
+        auto url_res = engine.process("https://bangladesh.gov.bd");
+        CHECK(url_res.candidates.empty());
+        CHECK(url_res.primary_transliteration == "https://bangladesh.gov.bd");
+
+        // Emails
+        auto email_res = engine.process("dev@domain.com");
+        CHECK(email_res.candidates.empty());
+        CHECK(email_res.primary_transliteration == "dev@domain.com");
+
+        // Code tokens
+        auto code_res = engine.process("myVariableName");
+        CHECK(code_res.candidates.empty());
+        CHECK(code_res.primary_transliteration == "myVariableName");
+
+        // English words
+        auto eng_res = engine.process("computer");
+        CHECK(eng_res.candidates.empty());
+        CHECK(eng_res.primary_transliteration == "computer");
+
+        // Banglish words are NOT bypassed
+        auto bangla_res = engine.process("kotha");
+        CHECK(!bangla_res.candidates.empty());
+        CHECK(bangla_res.primary_transliteration == "কথা");
+    }
+
+    SECTION("C ABI token bypass function") {
+        abk_engine_t c_eng = abk_engine_create();
+        REQUIRE(c_eng != nullptr);
+
+        CHECK(abk_token_should_bypass(c_eng, "https://google.com") == 1);
+        CHECK(abk_token_should_bypass(c_eng, "test@mail.org") == 1);
+        CHECK(abk_token_should_bypass(c_eng, "var_name") == 1);
+        CHECK(abk_token_should_bypass(c_eng, "ami") == 0);
+        CHECK(abk_token_should_bypass(c_eng, "kotha") == 0);
+
+        abk_engine_destroy(c_eng);
+    }
+}
+
+TEST_CASE("Workstream 3: Undo on Backspace State Machine", "[undo][backspace]") {
+    abk::AmarBanglaKothaEngine engine;
+
+    SECTION("Basic commit and undo cycle") {
+        CHECK(!engine.can_undo_commit());
+
+        // 1. Record commit after user types "kotha" and commits "কথা "
+        engine.record_commit("kotha", "কথা ", false);
+        CHECK(engine.can_undo_commit());
+        CHECK(engine.get_last_commit().raw_input == "kotha");
+        CHECK(engine.get_last_commit().committed_text == "কথা ");
+
+        // 2. First backspace: undo_commit() reverts commit and clears can_undo
+        auto undo_result = engine.undo_commit();
+        CHECK(undo_result.first == "কথা ");
+        CHECK(undo_result.second == "kotha");
+        CHECK(!engine.can_undo_commit());
+
+        // 3. Second call fails (already undone)
+        auto second_undo = engine.undo_commit();
+        CHECK(second_undo.first.empty());
+        CHECK(second_undo.second.empty());
+    }
+
+    SECTION("Undo record cleared on explicit clear") {
+        engine.record_commit("ami", "আমি", false);
+        CHECK(engine.can_undo_commit());
+
+        engine.clear_undo();
+        CHECK(!engine.can_undo_commit());
+    }
+
+    SECTION("Secure mode prevents recording undo commits") {
+        engine.set_secure_mode(true);
+        engine.record_commit("password", "password", false);
+        CHECK(!engine.can_undo_commit());
+    }
+
+    SECTION("C ABI Undo APIs") {
+        abk_engine_t c_eng = abk_engine_create();
+        REQUIRE(c_eng != nullptr);
+
+        CHECK(abk_engine_can_undo_commit(c_eng) == 0);
+        abk_engine_record_commit(c_eng, "bhalo", "ভালো ", 1);
+        CHECK(abk_engine_can_undo_commit(c_eng) == 1);
+
+        char comm_buf[128] = {0};
+        char raw_buf[128] = {0};
+        int ret = abk_engine_get_undo_info(c_eng, comm_buf, sizeof(comm_buf), raw_buf, sizeof(raw_buf));
+        CHECK(ret == 1);
+        CHECK(std::string(comm_buf) == "ভালো ");
+        CHECK(std::string(raw_buf) == "bhalo");
+        CHECK(abk_engine_can_undo_commit(c_eng) == 0);
+
+        abk_engine_destroy(c_eng);
+    }
+}
+
+TEST_CASE("Workstream 3: Backspace Unit & Bengali Orthography", "[backspace][grapheme]") {
+    SECTION("Left-sided Kar signs pop logically from trailing end") {
+        // Hrosho-I Kar: 'ক' + 'ি' = 'কি'
+        std::string ki = "কি";
+        std::string ki_popped = abk::utf8::pop_logical_unit(ki);
+        CHECK(ki_popped == "ক");
+
+        // E-Kar: 'ক' + 'ে' = 'কে'
+        std::string ke = "কে";
+        std::string ke_popped = abk::utf8::pop_logical_unit(ke);
+        CHECK(ke_popped == "ক");
+
+        // Oi-Kar: 'ক' + 'ৈ' = 'কৈ'
+        std::string koi = "কৈ";
+        std::string koi_popped = abk::utf8::pop_logical_unit(koi);
+        CHECK(koi_popped == "ক");
+
+        // O-Kar: 'ক' + 'ো' = 'কো'
+        std::string ko = "কো";
+        std::string ko_popped = abk::utf8::pop_logical_unit(ko);
+        CHECK(ko_popped == "ক");
+    }
+
+    SECTION("Progressive logical popping of conjuncts (Yuktakshar)") {
+        // 'ক' + '্' + 'ত' = 'ক্ত'
+        std::string kta = "ক্ত";
+        std::string step1 = abk::utf8::pop_logical_unit(kta);
+        CHECK(step1 == "ক্"); // Pops 'ত'
+
+        std::string step2 = abk::utf8::pop_logical_unit(step1);
+        CHECK(step2 == "ক");  // Pops '্'
+
+        std::string step3 = abk::utf8::pop_logical_unit(step2);
+        CHECK(step3.empty()); // Pops 'ক'
+    }
+
+    SECTION("Grapheme cluster popping vs Logical unit popping") {
+        // 'কি' is 1 grapheme cluster (Ka + i-kar) but 2 logical code points
+        std::string ki = "কি";
+        CHECK(abk::utf8::pop_grapheme_cluster(ki) == "");
+        CHECK(abk::utf8::pop_logical_unit(ki) == "ক");
+
+        // Multi-syllable word "আমি"
+        std::string ami = "আমি";
+        std::string ami_cluster_popped = abk::utf8::pop_grapheme_cluster(ami);
+        CHECK(ami_cluster_popped == "আ"); // Deletes 'মি' cluster completely
+
+        std::string ami_logical_popped = abk::utf8::pop_logical_unit(ami);
+        CHECK(ami_logical_popped == "আম"); // Deletes 'ি' kar, leaves 'ম'
+    }
+
+    SECTION("C ABI pop functions") {
+        char buf[128] = {0};
+        int ret1 = abk_pop_logical_unit("কি", buf, sizeof(buf));
+        CHECK(ret1 > 0);
+        CHECK(std::string(buf) == "ক");
+
+        int ret2 = abk_pop_grapheme_cluster("কি", buf, sizeof(buf));
+        CHECK(ret2 == 0);
+        CHECK(std::string(buf) == "");
     }
 }

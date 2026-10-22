@@ -35,6 +35,7 @@ void AmarBanglaKothaEngine::add_candidate_unique(std::vector<Candidate>& list, c
 
 std::string AmarBanglaKothaEngine::transliterate_fast(const std::string& latin_input) const {
     if (secure_mode) return utf8::normalize_nfc(latin_input);
+    if (should_bypass_token(latin_input)) return utf8::normalize_nfc(latin_input);
     return transliterator.transliterate(latin_input, &dictionary);
 }
 
@@ -52,6 +53,18 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
     std::string trimmed_input = utf8::trim(raw_input);
     if (trimmed_input.empty()) {
         reset_suggestion_state();
+        return result;
+    }
+
+    // Workstream 3: Check token classification (URLs, emails, file paths, code, English)
+    if (should_bypass_token(trimmed_input)) {
+        std::string safe_text = utf8::normalize_nfc(trimmed_input);
+        suggestion_state.items.clear();
+        suggestion_state.selected_index = 0;
+        suggestion_state.visible = false;
+        suggestion_state.raw_input = raw_input;
+        suggestion_state.primary_transliteration = safe_text;
+        result.primary_transliteration = safe_text;
         return result;
     }
 
@@ -281,6 +294,51 @@ void AmarBanglaKothaEngine::learn_word(const std::string& bangla_word, uint32_t 
         dictionary.save_user_word(config.user_dictionary_file_path, bangla_word, frequency);
     } else {
         dictionary.add_word(bangla_word, frequency);
+    }
+}
+
+void AmarBanglaKothaEngine::record_commit(const std::string& raw_input, const std::string& committed_text, bool was_autocorrected) {
+    if (secure_mode) {
+        clear_undo();
+        return;
+    }
+    last_commit.raw_input = raw_input;
+    last_commit.committed_text = committed_text;
+    last_commit.was_autocorrected = was_autocorrected;
+    last_commit.can_undo = !raw_input.empty() && !committed_text.empty();
+}
+
+std::pair<std::string, std::string> AmarBanglaKothaEngine::undo_commit() {
+    if (!last_commit.can_undo) {
+        return {"", ""};
+    }
+    std::pair<std::string, std::string> res = { last_commit.committed_text, last_commit.raw_input };
+    last_commit.can_undo = false;
+    return res;
+}
+
+bool AmarBanglaKothaEngine::should_bypass_token(const std::string& token) const {
+    if (token.empty()) return false;
+
+    auto classification = token_classifier.classify(token);
+    if (!classification.should_bypass_transliteration) {
+        return false;
+    }
+
+    switch (classification.type) {
+        case TokenType::URL:
+        case TokenType::EMAIL:
+        case TokenType::FILE_PATH:
+            return true;
+
+        case TokenType::CODE_TOKEN:
+            return config.enable_code_bypass || config.is_ide_or_terminal;
+
+        case TokenType::ENGLISH_WORD:
+            return config.enable_english_bypass;
+
+        default:
+            return false;
     }
 }
 

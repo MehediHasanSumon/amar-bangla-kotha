@@ -40,6 +40,14 @@ struct SuggestionState {
     std::string primary_transliteration;
 };
 
+// Workstream 3: Undo on Backspace Record
+struct UndoRecord {
+    std::string raw_input;
+    std::string committed_text;
+    bool was_autocorrected = false;
+    bool can_undo = false;
+};
+
 struct EngineConfig {
     size_t max_suggestions = 8;
     bool enable_autocorrect = true;
@@ -47,6 +55,12 @@ struct EngineConfig {
     size_t max_edit_distance = 2;
     bool auto_bypass_password_fields = true;
     bool clipboard_paste_fallback = false;
+
+    // Workstream 3: Token Classification & Per-App Profiles
+    bool enable_english_bypass = true;
+    bool enable_code_bypass = true;
+    bool is_ide_or_terminal = false;
+
     std::string dictionary_file_path = "";
     std::string user_dictionary_file_path = "";
 };

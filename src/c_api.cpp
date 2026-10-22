@@ -199,6 +199,23 @@ int abk_pop_logical_unit(const char* utf8_in, char* out_buf, size_t buf_size) {
     }
 }
 
+int abk_pop_grapheme_cluster(const char* utf8_in, char* out_buf, size_t buf_size) {
+    if (!utf8_in || !out_buf || buf_size == 0) return -1;
+    try {
+        std::string res = abk::utf8::pop_grapheme_cluster(utf8_in);
+        if (res.length() + 1 > buf_size) return -1;
+        std::memcpy(out_buf, res.c_str(), res.length() + 1);
+        return static_cast<int>(res.length());
+    } catch (...) {
+        size_t len = std::strlen(utf8_in);
+        if (len > 0) len--;
+        if (len + 1 > buf_size) return -1;
+        std::memcpy(out_buf, utf8_in, len);
+        out_buf[len] = '\0';
+        return static_cast<int>(len);
+    }
+}
+
 size_t abk_grapheme_count(const char* utf8_in) {
     if (!utf8_in) return 0;
     try {
@@ -348,6 +365,57 @@ int abk_engine_is_clipboard_mode(abk_engine_t handle) {
     try {
         auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
         return engine->is_clipboard_paste_mode() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_record_commit(abk_engine_t handle, const char* raw_input, const char* committed_text, int was_autocorrected) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->record_commit(raw_input ? raw_input : "", committed_text ? committed_text : "", was_autocorrected != 0);
+    } catch (...) {}
+}
+
+int abk_engine_can_undo_commit(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->can_undo_commit() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_engine_get_undo_info(abk_engine_t handle, char* out_committed, size_t comm_size, char* out_raw, size_t raw_size) {
+    if (!handle || !out_committed || comm_size == 0 || !out_raw || raw_size == 0) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        auto undo = engine->undo_commit();
+        if (undo.first.empty() && undo.second.empty()) return 0;
+        if (undo.first.length() + 1 > comm_size || undo.second.length() + 1 > raw_size) return 0;
+        std::memcpy(out_committed, undo.first.c_str(), undo.first.length() + 1);
+        std::memcpy(out_raw, undo.second.c_str(), undo.second.length() + 1);
+        return 1;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_clear_undo(abk_engine_t handle) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->clear_undo();
+    } catch (...) {}
+}
+
+int abk_token_should_bypass(abk_engine_t handle, const char* token) {
+    if (!handle || !token) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->should_bypass_token(token) ? 1 : 0;
     } catch (...) {
         return 0;
     }

@@ -144,7 +144,12 @@
         }
     }
 
+    NSString* rawInput = [_buffer copy];
     NSString* commitStr = appendSpace ? [text stringByAppendingString:@" "] : text;
+
+    if (_engine && [rawInput length] > 0) {
+        abk_engine_record_commit(_engine, [rawInput UTF8String], [commitStr UTF8String], 0);
+    }
 
     [_buffer setString:@""];
     _primaryText = @"";
@@ -160,6 +165,9 @@
 }
 
 - (void)cancelComposition:(id)sender {
+    if (_engine) {
+        abk_engine_clear_undo(_engine);
+    }
     [_buffer setString:@""];
     _primaryText = @"";
     _selectedIndex = 0;
@@ -282,6 +290,22 @@
             [_buffer deleteCharactersInRange:NSMakeRange([_buffer length] - 1, 1)];
             [self updatePreedit:sender];
             return YES;
+        } else if (_engine && abk_engine_can_undo_commit(_engine)) {
+            char commBuf[512] = {0};
+            char rawBuf[512] = {0};
+            if (abk_engine_get_undo_info(_engine, commBuf, sizeof(commBuf), rawBuf, sizeof(rawBuf))) {
+                abk_log_event(_engine, "UNDO_BACKSPACE", rawBuf);
+                NSString* commStr = [NSString stringWithUTF8String:commBuf];
+                NSUInteger len = [commStr length];
+                NSRange selRange = [sender selectedRange];
+                if (selRange.location != NSNotFound && selRange.location >= len) {
+                    NSRange delRange = NSMakeRange(selRange.location - len, len);
+                    [sender insertText:@"" replacementRange:delRange];
+                }
+                [_buffer setString:[NSString stringWithUTF8String:rawBuf]];
+                [self updatePreedit:sender];
+                return YES;
+            }
         }
         return NO;
     }

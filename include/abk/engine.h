@@ -4,6 +4,7 @@
 #include "abk/transliterator.h"
 #include "abk/dictionary.h"
 #include "abk/autocorrect.h"
+#include "abk/token_classifier.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -46,6 +47,17 @@ public:
     void set_clipboard_paste_mode(bool enable) { clipboard_paste_mode = enable; }
     bool is_clipboard_paste_mode() const { return clipboard_paste_mode; }
 
+    // Workstream 3: Undo on Backspace after Autocorrect or Auto-Commit
+    void record_commit(const std::string& raw_input, const std::string& committed_text, bool was_autocorrected = false);
+    bool can_undo_commit() const { return last_commit.can_undo; }
+    const UndoRecord& get_last_commit() const { return last_commit; }
+    void clear_undo() { last_commit = UndoRecord(); }
+    std::pair<std::string, std::string> undo_commit();
+
+    // Workstream 3: Token Classification & Non-Bengali Bypass
+    const TokenClassifier& get_token_classifier() const { return token_classifier; }
+    bool should_bypass_token(const std::string& token) const;
+
     // Workstream 1: Per-event diagnostic logging
     void set_debug_logging(bool enable) { debug_logging = enable; }
     bool is_debug_logging() const { return debug_logging; }
@@ -67,6 +79,8 @@ private:
     Dictionary dictionary;
     Autocorrect autocorrect;
     SuggestionState suggestion_state;
+    TokenClassifier token_classifier;
+    UndoRecord last_commit;
     bool debug_logging = false;
     bool secure_mode = false;
     bool clipboard_paste_mode = false;
