@@ -59,6 +59,11 @@ private:
     void _CommitComposition(TfEditCookie ec, ITfContext *pic, const std::wstring& text, bool appendSpace);
     void _ClearState();
 
+    // Candidate window management
+    void _ShowCandidateWindow(ITfContext *pic);
+    void _HideCandidateWindow();
+    static LRESULT CALLBACK CandidateWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
     LONG _refCount;
     ITfThreadMgr* _pThreadMgr;
     TfClientId _clientId;
@@ -73,6 +78,8 @@ private:
     std::string _latinBuffer;
     std::wstring _primaryText;
     std::vector<std::wstring> _candidates;
+    int _selectedIndex;
+    HWND _hwndCandidate;
 
     // Pending edit session action
     enum EditAction {

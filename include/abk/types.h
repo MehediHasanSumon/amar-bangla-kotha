@@ -31,6 +31,15 @@ struct SuggestionResult {
     std::vector<Candidate> candidates;
 };
 
+// Phase 1 / Workstream 1: Single source of truth for suggestion panel state
+struct SuggestionState {
+    std::vector<Candidate> items;
+    int selected_index = 0;
+    bool visible = false;
+    std::string raw_input;
+    std::string primary_transliteration;
+};
+
 struct EngineConfig {
     size_t max_suggestions = 8;
     bool enable_autocorrect = true;

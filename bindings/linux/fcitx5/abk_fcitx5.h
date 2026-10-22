@@ -18,6 +18,8 @@ public:
     void keyEvent(const InputMethodEntry& entry, KeyEvent& keyEvent) override;
     void reset(const InputMethodEntry& entry, InputContextEvent& event) override;
 
+    void onCandidateClicked(InputContext* ic, size_t index, const std::string& word);
+
 private:
     void updatePreedit(InputContext* ic, const std::string& buffer);
     void commitWord(InputContext* ic, const std::string& word, bool appendSpace);
@@ -28,6 +30,7 @@ private:
     std::string buffer_;
     std::string primaryText_;
     std::vector<std::string> candidates_;
+    int selectedIndex_;
 };
 
 class AmarBanglaKothaFactory : public AddonFactory {

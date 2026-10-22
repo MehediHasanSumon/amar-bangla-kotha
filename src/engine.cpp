@@ -2,6 +2,7 @@
 #include "abk/utf8_util.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 namespace abk {
 
@@ -42,6 +43,7 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
 
     std::string trimmed_input = utf8::trim(raw_input);
     if (trimmed_input.empty()) {
+        reset_suggestion_state();
         return result;
     }
 
@@ -140,7 +142,119 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         result.candidates.resize(config.max_suggestions);
     }
 
+    // Workstream 1: Selection stability across keystrokes
+    std::string prev_selected_word = "";
+    if (suggestion_state.selected_index >= 0 &&
+        suggestion_state.selected_index < static_cast<int>(suggestion_state.items.size())) {
+        prev_selected_word = suggestion_state.items[suggestion_state.selected_index].word;
+    }
+
+    // Update internal single source of truth SuggestionState
+    suggestion_state.items = result.candidates;
+    suggestion_state.raw_input = raw_input;
+    suggestion_state.primary_transliteration = result.primary_transliteration;
+    suggestion_state.visible = !result.candidates.empty();
+
+    int new_selected_index = 0;
+    if (!prev_selected_word.empty()) {
+        for (size_t i = 0; i < suggestion_state.items.size(); ++i) {
+            if (suggestion_state.items[i].word == prev_selected_word) {
+                new_selected_index = static_cast<int>(i);
+                break;
+            }
+        }
+    }
+    suggestion_state.selected_index = new_selected_index;
+
+    if (debug_logging) {
+        log_event("SUGGESTIONS_UPDATED",
+                  "Input: '" + raw_input + "', Total Candidates: " + std::to_string(result.candidates.size()) +
+                  ", Selected Index: " + std::to_string(new_selected_index) +
+                  " ('" + (suggestion_state.items.empty() ? "" : suggestion_state.items[new_selected_index].word) + "')");
+    }
+
     return result;
+}
+
+bool AmarBanglaKothaEngine::select_next_candidate() {
+    if (suggestion_state.items.empty()) {
+        if (debug_logging) log_event("KEY_IGNORED", "Arrow/Tab next with empty candidate list");
+        return false;
+    }
+    suggestion_state.selected_index = (suggestion_state.selected_index + 1) % static_cast<int>(suggestion_state.items.size());
+    suggestion_state.visible = true;
+    if (debug_logging) {
+        log_event("KEY_CONSUMED", "Arrow/Tab next -> selected index: " + std::to_string(suggestion_state.selected_index) +
+                  " ('" + suggestion_state.items[suggestion_state.selected_index].word + "')");
+    }
+    return true;
+}
+
+bool AmarBanglaKothaEngine::select_prev_candidate() {
+    if (suggestion_state.items.empty()) {
+        if (debug_logging) log_event("KEY_IGNORED", "Arrow/Tab prev with empty candidate list");
+        return false;
+    }
+    int sz = static_cast<int>(suggestion_state.items.size());
+    suggestion_state.selected_index = (suggestion_state.selected_index - 1 + sz) % sz;
+    suggestion_state.visible = true;
+    if (debug_logging) {
+        log_event("KEY_CONSUMED", "Arrow/Tab prev -> selected index: " + std::to_string(suggestion_state.selected_index) +
+                  " ('" + suggestion_state.items[suggestion_state.selected_index].word + "')");
+    }
+    return true;
+}
+
+bool AmarBanglaKothaEngine::select_candidate(int index) {
+    if (suggestion_state.items.empty()) {
+        suggestion_state.selected_index = 0;
+        return false;
+    }
+    if (index < 0) {
+        index = 0;
+    } else if (index >= static_cast<int>(suggestion_state.items.size())) {
+        index = static_cast<int>(suggestion_state.items.size() - 1);
+    }
+    suggestion_state.selected_index = index;
+    suggestion_state.visible = true;
+    if (debug_logging) {
+        log_event("CLICK_RECEIVED", "Selected index: " + std::to_string(index) +
+                  " ('" + suggestion_state.items[index].word + "')");
+    }
+    return true;
+}
+
+std::string AmarBanglaKothaEngine::get_selected_candidate_word() const {
+    if (suggestion_state.selected_index >= 0 &&
+        suggestion_state.selected_index < static_cast<int>(suggestion_state.items.size())) {
+        return suggestion_state.items[suggestion_state.selected_index].word;
+    }
+    if (!suggestion_state.primary_transliteration.empty()) {
+        return suggestion_state.primary_transliteration;
+    }
+    return suggestion_state.raw_input;
+}
+
+void AmarBanglaKothaEngine::set_suggestions_visible(bool visible) {
+    suggestion_state.visible = visible;
+    if (debug_logging) {
+        log_event("VISIBILITY_CHANGED", visible ? "true" : "false");
+    }
+}
+
+void AmarBanglaKothaEngine::reset_suggestion_state() {
+    suggestion_state.items.clear();
+    suggestion_state.selected_index = 0;
+    suggestion_state.visible = false;
+    suggestion_state.raw_input.clear();
+    suggestion_state.primary_transliteration.clear();
+    if (debug_logging) {
+        log_event("STATE_RESET", "Candidate list cleared, selection reset to 0, visible=false");
+    }
+}
+
+void AmarBanglaKothaEngine::log_event(const std::string& event_type, const std::string& details) const {
+    std::cerr << "[ABK_EVENT_LOG] " << event_type << " | " << details << std::endl;
 }
 
 void AmarBanglaKothaEngine::learn_word(const std::string& bangla_word, uint32_t frequency) {

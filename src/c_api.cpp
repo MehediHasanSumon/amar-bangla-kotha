@@ -208,6 +208,115 @@ size_t abk_grapheme_count(const char* utf8_in) {
     }
 }
 
+int abk_suggestion_select_next(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->select_next_candidate() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_suggestion_select_prev(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->select_prev_candidate() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_suggestion_select_index(abk_engine_t handle, int index) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->select_candidate(index) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_suggestion_get_selected_index(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->get_suggestion_state().selected_index;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_suggestion_get_selected_word(abk_engine_t handle, char* out_buf, size_t buf_size) {
+    if (!handle || !out_buf || buf_size == 0) return -1;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        std::string w = engine->get_selected_candidate_word();
+        if (w.length() + 1 > buf_size) return -1;
+        std::memcpy(out_buf, w.c_str(), w.length() + 1);
+        return static_cast<int>(w.length());
+    } catch (...) {
+        return -1;
+    }
+}
+
+const char* abk_suggestion_get_selected_word_ptr(abk_engine_t handle) {
+    if (!handle) return "";
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        const auto& state = engine->get_suggestion_state();
+        if (state.selected_index >= 0 && state.selected_index < static_cast<int>(state.items.size())) {
+            return state.items[state.selected_index].word.c_str();
+        }
+        return state.primary_transliteration.c_str();
+    } catch (...) {
+        return "";
+    }
+}
+
+int abk_suggestion_is_visible(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->get_suggestion_state().visible ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_suggestion_set_visible(abk_engine_t handle, int visible) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_suggestions_visible(visible != 0);
+    } catch (...) {}
+}
+
+void abk_suggestion_reset(abk_engine_t handle) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->reset_suggestion_state();
+    } catch (...) {}
+}
+
+void abk_set_debug_logging(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_debug_logging(enable != 0);
+    } catch (...) {}
+}
+
+void abk_log_event(abk_engine_t handle, const char* event_type, const char* details) {
+    if (!handle || !event_type) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->log_event(event_type, details ? details : "");
+    } catch (...) {}
+}
+
 const char* abk_get_version(void) {
     return "Amar Bangla Kotha v1.0.0 (C++ Core Engine)";
 }

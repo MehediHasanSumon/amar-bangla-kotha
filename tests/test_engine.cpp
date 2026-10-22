@@ -5,6 +5,7 @@
 #include "abk/dictionary.h"
 #include "abk/autocorrect.h"
 #include "abk/engine.h"
+#include "abk/abk.h"
 
 TEST_CASE("UTF-8 Utilities and Bengali Unicode Handling", "[utf8]") {
     SECTION("Codepoint conversions") {
@@ -309,4 +310,170 @@ TEST_CASE("Phase 4: Principled Log-Linear Candidate Ranking", "[engine][ranking]
         // Candidate 1 must be exact word 'বাংলা', not the longer completion 'বাংলাদেশ'
         CHECK(res.candidates[0].word == "বাংলা");
     }
+}
+
+TEST_CASE("Workstream 1: Suggestion State Machine and Navigation", "[engine][suggestion_state]") {
+    abk::AmarBanglaKothaEngine engine;
+    engine.load_dictionary_file("data/bangla_wordlist.txt");
+
+    SECTION("Initial state and query population") {
+        auto res = engine.process("ami");
+        REQUIRE(!res.candidates.empty());
+        const auto& state = engine.get_suggestion_state();
+        CHECK(state.visible);
+        CHECK(state.selected_index == 0);
+        CHECK(state.items.size() == res.candidates.size());
+        CHECK(engine.get_selected_candidate_word() == res.candidates[0].word);
+    }
+
+    SECTION("Arrow Down / Next Candidate Navigation with Wrap-around") {
+        engine.process("k");
+        const auto& state = engine.get_suggestion_state();
+        size_t count = state.items.size();
+        REQUIRE(count > 2);
+
+        CHECK(state.selected_index == 0);
+
+        // Move next
+        bool ok = engine.select_next_candidate();
+        CHECK(ok);
+        CHECK(engine.get_suggestion_state().selected_index == 1);
+        CHECK(engine.get_selected_candidate_word() == state.items[1].word);
+
+        // Move to last item
+        for (size_t i = 2; i < count; ++i) {
+            engine.select_next_candidate();
+        }
+        CHECK(engine.get_suggestion_state().selected_index == static_cast<int>(count - 1));
+
+        // Wrap around back to 0
+        bool wrapped = engine.select_next_candidate();
+        CHECK(wrapped);
+        CHECK(engine.get_suggestion_state().selected_index == 0);
+        CHECK(engine.get_selected_candidate_word() == state.items[0].word);
+    }
+
+    SECTION("Arrow Up / Prev Candidate Navigation with Wrap-around") {
+        engine.process("k");
+        const auto& state = engine.get_suggestion_state();
+        size_t count = state.items.size();
+        REQUIRE(count > 2);
+
+        CHECK(state.selected_index == 0);
+
+        // Prev from index 0 wraps to count - 1
+        bool wrapped = engine.select_prev_candidate();
+        CHECK(wrapped);
+        CHECK(engine.get_suggestion_state().selected_index == static_cast<int>(count - 1));
+        CHECK(engine.get_selected_candidate_word() == state.items[count - 1].word);
+
+        // Prev from count - 1 moves to count - 2
+        bool prev = engine.select_prev_candidate();
+        CHECK(prev);
+        CHECK(engine.get_suggestion_state().selected_index == static_cast<int>(count - 2));
+    }
+
+    SECTION("Direct Index Selection (Mouse Click / Number Key) and Clamping") {
+        engine.process("k");
+        const auto& state = engine.get_suggestion_state();
+        size_t count = state.items.size();
+        REQUIRE(count >= 3);
+
+        bool sel = engine.select_candidate(2);
+        CHECK(sel);
+        CHECK(engine.get_suggestion_state().selected_index == 2);
+        CHECK(engine.get_selected_candidate_word() == state.items[2].word);
+
+        // Clamping on out-of-range index
+        bool clamped = engine.select_candidate(999);
+        CHECK(clamped);
+        CHECK(engine.get_suggestion_state().selected_index == static_cast<int>(count - 1));
+    }
+
+    SECTION("Selection Stability Across Keystrokes") {
+        // Step 1: Type "ko", candidates are generated
+        engine.process("ko");
+        const auto& s1 = engine.get_suggestion_state();
+        REQUIRE(s1.items.size() >= 2);
+
+        // Select candidate 1
+        engine.select_candidate(1);
+        std::string selected_word = engine.get_selected_candidate_word();
+        CHECK(!selected_word.empty());
+
+        // Step 2: Next keystroke
+        engine.process("koi");
+        const auto& s2 = engine.get_suggestion_state();
+        REQUIRE(!s2.items.empty());
+
+        // If previously selected word is in s2, selected_index must match it
+        bool found = false;
+        for (size_t i = 0; i < s2.items.size(); ++i) {
+            if (s2.items[i].word == selected_word) {
+                CHECK(s2.selected_index == static_cast<int>(i));
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            // Otherwise it must be safely clamped
+            CHECK(s2.selected_index < static_cast<int>(s2.items.size()));
+        }
+    }
+
+    SECTION("Reset Suggestion State") {
+        engine.process("ami");
+        CHECK(engine.get_suggestion_state().visible);
+        engine.reset_suggestion_state();
+        CHECK(!engine.get_suggestion_state().visible);
+        CHECK(engine.get_suggestion_state().selected_index == 0);
+        CHECK(engine.get_suggestion_state().items.empty());
+    }
+}
+
+TEST_CASE("Workstream 1: C ABI Suggestion Functions", "[c_api][suggestion_state]") {
+    abk_engine_t engine = abk_engine_create();
+    REQUIRE(engine != nullptr);
+    abk_load_dictionary(engine, "data/bangla_wordlist.txt");
+
+    abk_suggestion_list_t* res = abk_get_suggestions(engine, "k");
+    REQUIRE(res != nullptr);
+    REQUIRE(res->candidate_count > 2);
+
+    CHECK(abk_suggestion_is_visible(engine) == 1);
+    CHECK(abk_suggestion_get_selected_index(engine) == 0);
+
+    // Next
+    int next_ok = abk_suggestion_select_next(engine);
+    CHECK(next_ok == 1);
+    CHECK(abk_suggestion_get_selected_index(engine) == 1);
+
+    // Prev
+    int prev_ok = abk_suggestion_select_prev(engine);
+    CHECK(prev_ok == 1);
+    CHECK(abk_suggestion_get_selected_index(engine) == 0);
+
+    // Select index
+    int sel_ok = abk_suggestion_select_index(engine, 2);
+    CHECK(sel_ok == 1);
+    CHECK(abk_suggestion_get_selected_index(engine) == 2);
+
+    // Word via ptr
+    const char* word_ptr = abk_suggestion_get_selected_word_ptr(engine);
+    REQUIRE(word_ptr != nullptr);
+    CHECK(std::string(word_ptr) == std::string(res->candidates[2].word));
+
+    // Word via copy buffer
+    char buf[128] = {0};
+    int len = abk_suggestion_get_selected_word(engine, buf, sizeof(buf));
+    CHECK(len > 0);
+    CHECK(std::string(buf) == std::string(res->candidates[2].word));
+
+    // Reset
+    abk_suggestion_reset(engine);
+    CHECK(abk_suggestion_is_visible(engine) == 0);
+    CHECK(abk_suggestion_get_selected_index(engine) == 0);
+
+    abk_free_suggestions(res);
+    abk_engine_destroy(engine);
 }

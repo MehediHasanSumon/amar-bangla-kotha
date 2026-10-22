@@ -57,12 +57,31 @@ def load_abk_library():
                 lib.abk_pop_logical_unit.argtypes = [c_char_p, c_char_p, c_size_t]
                 lib.abk_grapheme_count.restype = c_size_t
                 lib.abk_grapheme_count.argtypes = [c_char_p]
+                lib.abk_suggestion_select_next.restype = c_int
+                lib.abk_suggestion_select_next.argtypes = [c_void_p]
+                lib.abk_suggestion_select_prev.restype = c_int
+                lib.abk_suggestion_select_prev.argtypes = [c_void_p]
+                lib.abk_suggestion_select_index.restype = c_int
+                lib.abk_suggestion_select_index.argtypes = [c_void_p, c_int]
+                lib.abk_suggestion_get_selected_index.restype = c_int
+                lib.abk_suggestion_get_selected_index.argtypes = [c_void_p]
+                lib.abk_suggestion_reset.restype = None
+                lib.abk_suggestion_reset.argtypes = [c_void_p]
                 return lib
             except Exception as e:
                 print(f"Error loading {p}: {e}", file=sys.stderr)
     raise RuntimeError("Could not find libabk.so. Please run 'make install-user' first.")
 
 abk_lib = load_abk_library()
+
+DEBUG_LOGGING = os.environ.get("ABK_DEBUG", "1") == "1"
+
+def log_event(event_type: str, details: str):
+    if DEBUG_LOGGING:
+        import time
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        sys.stderr.write(f"[ABK_EVENT_LOG {ts}] {event_type} | {details}\n")
+        sys.stderr.flush()
 
 def normalize_nfc(text: str) -> str:
     if not text:
@@ -111,10 +130,18 @@ class AmarBanglaKothaEngine(IBus.Engine):
             abk_lib.abk_engine_destroy(self.engine_handle)
             self.engine_handle = None
 
+    def update_preedit_display(self, display_text=None):
+        if not display_text:
+            display_text = self.current_primary or self.buffer
+        text = IBus.Text.new_from_string(display_text)
+        text.append_attribute(IBus.AttrType.UNDERLINE, IBus.AttrUnderline.SINGLE, 0, len(display_text))
+        self.update_preedit_text(text, len(display_text), True)
+
     def update_preedit_and_lookup(self):
         if not self.buffer:
             self.current_primary = ""
             self.current_candidates = []
+            abk_lib.abk_suggestion_reset(self.engine_handle)
             self.hide_lookup_table()
             self.hide_preedit_text()
             return
@@ -135,11 +162,14 @@ class AmarBanglaKothaEngine(IBus.Engine):
 
         abk_lib.abk_free_suggestions(res_ptr)
 
+        # Sync selected index from engine (single source of truth)
+        sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+        if 0 <= sel_idx < len(self.current_candidates):
+            self.lookup_table.set_cursor_pos(sel_idx)
+
         # Update pre-edit string (live preview underlined)
-        display_text = self.current_primary or self.buffer
-        text = IBus.Text.new_from_string(display_text)
-        text.append_attribute(IBus.AttrType.UNDERLINE, IBus.AttrUnderline.SINGLE, 0, len(display_text))
-        self.update_preedit_text(text, len(display_text), True)
+        display_text = self.current_candidates[sel_idx] if (0 <= sel_idx < len(self.current_candidates)) else (self.current_primary or self.buffer)
+        self.update_preedit_display(display_text)
 
         # Show candidate window if candidates exist
         if self.current_candidates:
@@ -147,14 +177,29 @@ class AmarBanglaKothaEngine(IBus.Engine):
         else:
             self.hide_lookup_table()
 
-    def commit_word(self, word, append_space=False):
+    def do_candidate_clicked(self, index, button, state):
+        log_event("CLICK_RECEIVED", f"Candidate clicked at index: {index}, button: {button}")
+        if 0 <= index < len(self.current_candidates):
+            abk_lib.abk_suggestion_select_index(self.engine_handle, index)
+            self.lookup_table.set_cursor_pos(index)
+            target = self.current_candidates[index]
+            self.commit_word(target, append_space=False)
+
+    def commit_word(self, word=None, append_space=False):
         if not word:
-            word = self.buffer
+            sel_idx = self.lookup_table.get_cursor_pos()
+            if 0 <= sel_idx < len(self.current_candidates):
+                word = self.current_candidates[sel_idx]
+            else:
+                word = self.current_primary or self.buffer
+
+        log_event("COMMIT_TEXT", f"Word: '{word}', append_space={append_space}")
 
         # 1. Reset state and hide composition UI FIRST
         self.buffer = ""
         self.current_primary = ""
         self.current_candidates = []
+        abk_lib.abk_suggestion_reset(self.engine_handle)
         self.hide_lookup_table()
         self.hide_preedit_text()
 
@@ -175,10 +220,55 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if state & (IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK | IBus.ModifierType.SUPER_MASK):
             return False
 
+        # Workstream 1: Navigation with Arrow Down / Key_KP_Down / Tab
+        if keyval in (IBus.KEY_Down, IBus.KEY_KP_Down, IBus.KEY_Tab):
+            if self.buffer and self.current_candidates:
+                abk_lib.abk_suggestion_select_next(self.engine_handle)
+                self.lookup_table.cursor_down()
+                sel_idx = self.lookup_table.get_cursor_pos()
+                log_event("KEY_CONSUMED", f"Arrow Down/Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
+                self.update_lookup_table(self.lookup_table, True)
+                self.update_preedit_display(self.current_candidates[sel_idx])
+                return True
+            log_event("KEY_IGNORED", f"Arrow Down/Tab ignored (buffer={len(self.buffer)})")
+            return False
+
+        # Workstream 1: Navigation with Arrow Up / Key_KP_Up / Shift+Tab
+        if keyval in (IBus.KEY_Up, IBus.KEY_KP_Up, IBus.KEY_ISO_Left_Tab):
+            if self.buffer and self.current_candidates:
+                abk_lib.abk_suggestion_select_prev(self.engine_handle)
+                self.lookup_table.cursor_up()
+                sel_idx = self.lookup_table.get_cursor_pos()
+                log_event("KEY_CONSUMED", f"Arrow Up/Shift-Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
+                self.update_lookup_table(self.lookup_table, True)
+                self.update_preedit_display(self.current_candidates[sel_idx])
+                return True
+            log_event("KEY_IGNORED", f"Arrow Up/Shift-Tab ignored (buffer={len(self.buffer)})")
+            return False
+
+        # Page Up / Page Down
+        if keyval in (IBus.KEY_Page_Up, IBus.KEY_KP_Page_Up):
+            if self.buffer and self.current_candidates:
+                self.lookup_table.page_up()
+                sel_idx = self.lookup_table.get_cursor_pos()
+                abk_lib.abk_suggestion_select_index(self.engine_handle, sel_idx)
+                self.update_lookup_table(self.lookup_table, True)
+                self.update_preedit_display(self.current_candidates[sel_idx])
+                return True
+        if keyval in (IBus.KEY_Page_Down, IBus.KEY_KP_Page_Down):
+            if self.buffer and self.current_candidates:
+                self.lookup_table.page_down()
+                sel_idx = self.lookup_table.get_cursor_pos()
+                abk_lib.abk_suggestion_select_index(self.engine_handle, sel_idx)
+                self.update_lookup_table(self.lookup_table, True)
+                self.update_preedit_display(self.current_candidates[sel_idx])
+                return True
+
         # 1. Space: commit candidate with trailing space
         if keyval == IBus.KEY_space:
             if self.buffer:
-                target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
+                sel_idx = self.lookup_table.get_cursor_pos()
+                target = self.current_candidates[sel_idx] if (0 <= sel_idx < len(self.current_candidates)) else (self.current_primary or self.buffer)
                 self.commit_word(target, append_space=True)
                 return True
             return False
@@ -186,7 +276,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
         # 2. Enter / Return: commit candidate without extra space
         if keyval in (IBus.KEY_Return, IBus.KEY_KP_Enter):
             if self.buffer:
-                target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
+                sel_idx = self.lookup_table.get_cursor_pos()
+                target = self.current_candidates[sel_idx] if (0 <= sel_idx < len(self.current_candidates)) else (self.current_primary or self.buffer)
                 self.commit_word(target, append_space=False)
                 return True
             return False

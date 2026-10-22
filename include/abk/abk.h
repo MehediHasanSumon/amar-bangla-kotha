@@ -61,6 +61,19 @@ ABK_API int abk_normalize_nfc(const char* utf8_in, char* out_buf, size_t buf_siz
 ABK_API int abk_pop_logical_unit(const char* utf8_in, char* out_buf, size_t buf_size);
 ABK_API size_t abk_grapheme_count(const char* utf8_in);
 
+// Workstream 1: Suggestion Panel Navigation & State Machine APIs (Single Source of Truth)
+ABK_API int abk_suggestion_select_next(abk_engine_t engine);
+ABK_API int abk_suggestion_select_prev(abk_engine_t engine);
+ABK_API int abk_suggestion_select_index(abk_engine_t engine, int index);
+ABK_API int abk_suggestion_get_selected_index(abk_engine_t engine);
+ABK_API int abk_suggestion_get_selected_word(abk_engine_t engine, char* out_buf, size_t buf_size);
+ABK_API const char* abk_suggestion_get_selected_word_ptr(abk_engine_t engine);
+ABK_API int abk_suggestion_is_visible(abk_engine_t engine);
+ABK_API void abk_suggestion_set_visible(abk_engine_t engine, int visible);
+ABK_API void abk_suggestion_reset(abk_engine_t engine);
+ABK_API void abk_set_debug_logging(abk_engine_t engine, int enable);
+ABK_API void abk_log_event(abk_engine_t engine, const char* event_type, const char* details);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

@@ -31,31 +31,31 @@ all: dirs $(STATIC_LIB) $(SHARED_LIB) $(CLI_BIN) $(TEST_BIN) $(BENCH_BIN)
 dirs:
 	@mkdir -p $(BUILD_DIR) $(BIN_DIR) $(LIB_DIR)
 
-$(BUILD_DIR)/%.o: src/%.cpp
+$(BUILD_DIR)/%.o: src/%.cpp | dirs
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/catch_main.o: tests/catch_main.cpp
+$(BUILD_DIR)/catch_main.o: tests/catch_main.cpp | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(BUILD_DIR)/test_engine.o: tests/test_engine.cpp
+$(BUILD_DIR)/test_engine.o: tests/test_engine.cpp | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(STATIC_LIB): $(OBJS)
+$(STATIC_LIB): $(OBJS) | dirs
 	$(AR) $(ARFLAGS) $@ $^
 
-$(SHARED_LIB): $(OBJS)
+$(SHARED_LIB): $(OBJS) | dirs
 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
 
-$(CLI_BIN): cli/main.cpp $(STATIC_LIB)
+$(CLI_BIN): cli/main.cpp $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $< $(STATIC_LIB) -o $@
 
-$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(STATIC_LIB)
+$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BENCH_BIN): tests/benchmark.cpp $(STATIC_LIB)
+$(BENCH_BIN): tests/benchmark.cpp $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $< $(STATIC_LIB) -o $@
 
-$(FUZZ_BIN): tests/fuzz_test.cpp $(STATIC_LIB)
+$(FUZZ_BIN): tests/fuzz_test.cpp $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $< $(STATIC_LIB) -o $@
 
 run: $(CLI_BIN)

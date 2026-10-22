@@ -28,6 +28,22 @@ public:
     bool load_dictionary_file(const std::string& filepath);
     bool load_user_dictionary_file(const std::string& filepath);
 
+    // Workstream 1: Suggestion State Machine (Single source of truth)
+    const SuggestionState& get_suggestion_state() const { return suggestion_state; }
+    SuggestionState& get_suggestion_state() { return suggestion_state; }
+
+    bool select_next_candidate();
+    bool select_prev_candidate();
+    bool select_candidate(int index);
+    std::string get_selected_candidate_word() const;
+    void set_suggestions_visible(bool visible);
+    void reset_suggestion_state();
+
+    // Workstream 1: Per-event diagnostic logging
+    void set_debug_logging(bool enable) { debug_logging = enable; }
+    bool is_debug_logging() const { return debug_logging; }
+    void log_event(const std::string& event_type, const std::string& details) const;
+
     // Engine accessors
     const EngineConfig& get_config() const { return config; }
     void set_config(const EngineConfig& cfg) { config = cfg; }
@@ -43,6 +59,8 @@ private:
     Transliterator transliterator;
     Dictionary dictionary;
     Autocorrect autocorrect;
+    SuggestionState suggestion_state;
+    bool debug_logging = false;
 
     void add_candidate_unique(std::vector<Candidate>& list, const Candidate& candidate);
 };

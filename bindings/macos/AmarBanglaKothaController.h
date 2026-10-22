@@ -17,6 +17,7 @@
     NSString* _primaryText;
     NSMutableArray<NSString*>* _candidates;
     IMKCandidates* _candidatesWindow;
+    NSInteger _selectedIndex;
 }
 
 - (id)initWithServer:(IMKServer *)server delegate:(id)delegate client:(id)client;
@@ -24,6 +25,10 @@
 
 // IMKInputController event handling
 - (BOOL)handleEvent:(NSEvent *)event client:(id)sender;
+
+// IMKCandidates selection callbacks
+- (void)candidateSelected:(NSAttributedString *)candidateString;
+- (void)candidateSelectionChanged:(NSAttributedString *)candidateString;
 
 // Composition management
 - (void)updatePreedit:(id)sender;

@@ -30,12 +30,18 @@ CTsfEngine::CTsfEngine()
       _pComposition(nullptr),
       _pContext(nullptr),
       _engine(nullptr),
+      _selectedIndex(0),
+      _hwndCandidate(nullptr),
       _pendingAction(EDIT_NONE),
       _commitAppendSpace(false) {
 }
 
 CTsfEngine::~CTsfEngine() {
     _ClearState();
+    if (_hwndCandidate) {
+        DestroyWindow(_hwndCandidate);
+        _hwndCandidate = nullptr;
+    }
     if (_engine) {
         abk_engine_destroy(_engine);
         _engine = nullptr;
@@ -105,6 +111,14 @@ STDMETHODIMP CTsfEngine::Activate(ITfThreadMgr *ptim, TfClientId tid) {
     // Initialize core C++ engine
     _engine = abk_engine_create();
 
+    // Register Candidate Window Class
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = CandidateWndProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = L"AmarBanglaKotha_CandidateWindow";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
     // Attempt to load dictionary
     char appData[MAX_PATH];
     if (ExpandEnvironmentStringsA("%APPDATA%\\AmarBanglaKotha\\bangla_wordlist.txt", appData, MAX_PATH) > 0) {
@@ -116,6 +130,13 @@ STDMETHODIMP CTsfEngine::Activate(ITfThreadMgr *ptim, TfClientId tid) {
 
 STDMETHODIMP CTsfEngine::Deactivate(void) {
     _ClearState();
+
+    if (_hwndCandidate) {
+        DestroyWindow(_hwndCandidate);
+        _hwndCandidate = nullptr;
+    }
+
+    UnregisterClassW(L"AmarBanglaKotha_CandidateWindow", GetModuleHandle(NULL));
 
     if (_pThreadMgr) {
         ITfSource* pSource = nullptr;
@@ -153,6 +174,14 @@ STDMETHODIMP CTsfEngine::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LPARA
         return S_OK;
     }
 
+    // Both OnTestKeyDown and OnKeyDown set *pfEaten = TRUE for navigation keys while panel is visible
+    if (abk_suggestion_is_visible(_engine) || !_candidates.empty()) {
+        if (wParam == VK_DOWN || wParam == VK_UP || wParam == VK_TAB) {
+            *pfEaten = TRUE;
+            return S_OK;
+        }
+    }
+
     if (wParam == VK_SPACE || wParam == VK_RETURN || wParam == VK_ESCAPE || wParam == VK_BACK) {
         *pfEaten = TRUE;
         return S_OK;
@@ -188,9 +217,49 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
         return S_OK;
     }
 
-    // 1. Escape key: Cancel composition
+    // 1. Navigation keys (Down, Up, Tab)
+    if (!_latinBuffer.empty() && !_candidates.empty()) {
+        if (wParam == VK_DOWN) {
+            abk_suggestion_select_next(_engine);
+            _selectedIndex = abk_suggestion_get_selected_index(_engine);
+            abk_log_event(_engine, "KEY_DOWN", "navigate next candidate");
+            _pendingAction = EDIT_UPDATE_PREEDIT;
+            HRESULT hrSession = S_OK;
+            pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+            *pfEaten = TRUE;
+            return S_OK;
+        }
+        if (wParam == VK_UP) {
+            abk_suggestion_select_prev(_engine);
+            _selectedIndex = abk_suggestion_get_selected_index(_engine);
+            abk_log_event(_engine, "KEY_UP", "navigate prev candidate");
+            _pendingAction = EDIT_UPDATE_PREEDIT;
+            HRESULT hrSession = S_OK;
+            pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+            *pfEaten = TRUE;
+            return S_OK;
+        }
+        if (wParam == VK_TAB) {
+            if (GetKeyState(VK_SHIFT) < 0) {
+                abk_suggestion_select_prev(_engine);
+                abk_log_event(_engine, "KEY_SHIFT_TAB", "navigate prev candidate");
+            } else {
+                abk_suggestion_select_next(_engine);
+                abk_log_event(_engine, "KEY_TAB", "navigate next candidate");
+            }
+            _selectedIndex = abk_suggestion_get_selected_index(_engine);
+            _pendingAction = EDIT_UPDATE_PREEDIT;
+            HRESULT hrSession = S_OK;
+            pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+            *pfEaten = TRUE;
+            return S_OK;
+        }
+    }
+
+    // 2. Escape key: Cancel composition
     if (wParam == VK_ESCAPE) {
         if (!_latinBuffer.empty()) {
+            abk_log_event(_engine, "KEY_ESCAPE", "cancel composition");
             _pendingAction = EDIT_CANCEL;
             HRESULT hrSession = S_OK;
             pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
@@ -200,11 +269,14 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
         return S_OK;
     }
 
-    // 2. Space key: Commit primary/top candidate with space
+    // 3. Space key: Commit selected candidate with space
     if (wParam == VK_SPACE) {
         if (!_latinBuffer.empty()) {
+            const char* sel = abk_suggestion_get_selected_word_ptr(_engine);
+            std::wstring target = (sel && strlen(sel) > 0) ? Utf8ToUtf16(sel) : (!_candidates.empty() ? _candidates[0] : _primaryText);
+            abk_log_event(_engine, "KEY_SPACE", sel ? sel : "");
             _pendingAction = EDIT_COMMIT_AND_END;
-            _textToCommit = !_candidates.empty() ? _candidates[0] : _primaryText;
+            _textToCommit = target;
             _commitAppendSpace = true;
             HRESULT hrSession = S_OK;
             pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
@@ -214,11 +286,14 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
         return S_OK;
     }
 
-    // 3. Return / Enter key: Commit without trailing space
+    // 4. Return / Enter key: Commit selected candidate without trailing space
     if (wParam == VK_RETURN) {
         if (!_latinBuffer.empty()) {
+            const char* sel = abk_suggestion_get_selected_word_ptr(_engine);
+            std::wstring target = (sel && strlen(sel) > 0) ? Utf8ToUtf16(sel) : (!_candidates.empty() ? _candidates[0] : _primaryText);
+            abk_log_event(_engine, "KEY_ENTER", sel ? sel : "");
             _pendingAction = EDIT_COMMIT_AND_END;
-            _textToCommit = !_candidates.empty() ? _candidates[0] : _primaryText;
+            _textToCommit = target;
             _commitAppendSpace = false;
             HRESULT hrSession = S_OK;
             pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
@@ -228,7 +303,7 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
         return S_OK;
     }
 
-    // 4. Backspace key: Remove last character or pop logical unit
+    // 5. Backspace key: Remove last character or pop logical unit
     if (wParam == VK_BACK) {
         if (!_latinBuffer.empty()) {
             _latinBuffer.pop_back();
@@ -245,6 +320,7 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
                             _candidates.push_back(Utf8ToUtf16(res->candidates[i].word));
                         }
                     }
+                    _selectedIndex = abk_suggestion_get_selected_index(_engine);
                     abk_free_suggestions(res);
                 }
                 _pendingAction = EDIT_UPDATE_PREEDIT;
@@ -257,10 +333,13 @@ STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
         return S_OK;
     }
 
-    // 5. Candidate selection via 1-9
+    // 6. Candidate selection via 1-9
     if (!_latinBuffer.empty() && wParam >= '1' && wParam <= '9') {
         size_t idx = (size_t)(wParam - '1');
         if (idx < _candidates.size()) {
+            abk_suggestion_select_index(_engine, (int)idx);
+            _selectedIndex = (int)idx;
+            abk_log_event(_engine, "KEY_NUMBER", "number key candidate selected");
             _pendingAction = EDIT_COMMIT_AND_END;
             _textToCommit = _candidates[idx];
             _commitAppendSpace = true;
@@ -373,6 +452,7 @@ void CTsfEngine::_StartComposition(TfEditCookie ec, ITfContext *pic) {
 }
 
 void CTsfEngine::_EndComposition(TfEditCookie ec) {
+    _HideCandidateWindow();
     if (_pComposition) {
         ITfRange* pRange = nullptr;
         if (SUCCEEDED(_pComposition->GetRange(&pRange))) {
@@ -397,6 +477,8 @@ void CTsfEngine::_UpdateComposition(TfEditCookie ec, ITfContext *pic) {
             pRange->Release();
         }
     }
+
+    _ShowCandidateWindow(pic);
 }
 
 void CTsfEngine::_CommitComposition(TfEditCookie ec, ITfContext *pic, const std::wstring& text, bool appendSpace) {
@@ -417,6 +499,7 @@ void CTsfEngine::_CommitComposition(TfEditCookie ec, ITfContext *pic, const std:
         _pComposition = nullptr;
     }
 
+    _HideCandidateWindow();
     _ClearState();
 }
 
@@ -424,8 +507,108 @@ void CTsfEngine::_ClearState() {
     _latinBuffer.clear();
     _primaryText.clear();
     _candidates.clear();
+    _selectedIndex = 0;
+    if (_engine) {
+        abk_suggestion_reset(_engine);
+    }
+    _HideCandidateWindow();
     if (_pComposition) {
         _pComposition->Release();
         _pComposition = nullptr;
+    }
+}
+
+void CTsfEngine::_ShowCandidateWindow(ITfContext* /*pic*/) {
+    if (_candidates.empty()) {
+        _HideCandidateWindow();
+        return;
+    }
+
+    if (!_hwndCandidate) {
+        // Create lightweight, non-activating topmost tool window
+        _hwndCandidate = CreateWindowExW(
+            WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
+            L"AmarBanglaKotha_CandidateWindow",
+            L"AmarBanglaKothaCandidates",
+            WS_POPUP | WS_BORDER,
+            100, 100, 200, (int)(_candidates.size() * 26 + 4),
+            NULL, NULL, GetModuleHandle(NULL), NULL
+        );
+        if (_hwndCandidate) {
+            SetWindowLongPtr(_hwndCandidate, GWLP_USERDATA, (LONG_PTR)this);
+        }
+    }
+
+    if (_hwndCandidate) {
+        int height = (int)(_candidates.size() * 26 + 4);
+        SetWindowPos(_hwndCandidate, HWND_TOPMOST, 0, 0, 220, height,
+                     SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        InvalidateRect(_hwndCandidate, NULL, TRUE);
+    }
+}
+
+void CTsfEngine::_HideCandidateWindow() {
+    if (_hwndCandidate) {
+        ShowWindow(_hwndCandidate, SW_HIDE);
+    }
+}
+
+LRESULT CALLBACK CTsfEngine::CandidateWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    CTsfEngine* pThis = (CTsfEngine*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+    switch (uMsg) {
+        // Crucial: Prevent panel window from stealing focus from host application
+        case WM_MOUSEACTIVATE:
+            return MA_NOACTIVATE;
+
+        case WM_LBUTTONDOWN: {
+            if (pThis && !pThis->_candidates.empty()) {
+                int y = HIWORD(lParam);
+                int itemHeight = 26;
+                int clickedIdx = y / itemHeight;
+                if (clickedIdx >= 0 && clickedIdx < (int)pThis->_candidates.size()) {
+                    abk_suggestion_select_index(pThis->_engine, clickedIdx);
+                    abk_log_event(pThis->_engine, "CLICK", "tsf candidate clicked");
+                    pThis->_selectedIndex = clickedIdx;
+                    pThis->_pendingAction = EDIT_COMMIT_AND_END;
+                    pThis->_textToCommit = pThis->_candidates[clickedIdx];
+                    pThis->_commitAppendSpace = true;
+                    if (pThis->_pContext) {
+                        HRESULT hrSession = S_OK;
+                        pThis->_pContext->RequestEditSession(pThis->_clientId, pThis, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+                    }
+                }
+            }
+            return 0;
+        }
+
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            if (pThis) {
+                RECT rc;
+                GetClientRect(hwnd, &rc);
+                FillRect(hdc, &rc, (HBRUSH)(COLOR_WINDOW + 1));
+                SetBkMode(hdc, TRANSPARENT);
+                int y = 2;
+                for (size_t i = 0; i < pThis->_candidates.size(); ++i) {
+                    RECT itemRc = { 4, y, rc.right - 4, y + 24 };
+                    if ((int)i == pThis->_selectedIndex) {
+                        FillRect(hdc, &itemRc, GetSysColorBrush(COLOR_HIGHLIGHT));
+                        SetTextColor(hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
+                    } else {
+                        SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+                    }
+                    std::wstring label = std::to_wstring(i + 1) + L". " + pThis->_candidates[i];
+                    DrawTextW(hdc, label.c_str(), (int)label.length(), &itemRc, DT_SINGLELINE | DT_VCENTER);
+                    y += 26;
+                }
+            }
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+
+        default:
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 }

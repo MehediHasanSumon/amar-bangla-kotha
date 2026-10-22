@@ -6,8 +6,25 @@
 
 namespace fcitx {
 
+class AbkCandidateWord : public CandidateWord {
+public:
+    AbkCandidateWord(AmarBanglaKothaEngine* engine, size_t index, const std::string& word)
+        : CandidateWord(Text(word)), engine_(engine), index_(index), word_(word) {}
+
+    void select(InputContext* ic) const override {
+        if (engine_) {
+            engine_->onCandidateClicked(ic, index_, word_);
+        }
+    }
+
+private:
+    AmarBanglaKothaEngine* engine_;
+    size_t index_;
+    std::string word_;
+};
+
 AmarBanglaKothaEngine::AmarBanglaKothaEngine(Instance* instance)
-    : instance_(instance), engine_(nullptr) {
+    : instance_(instance), engine_(nullptr), selectedIndex_(0) {
     engine_ = abk_engine_create();
 
     // Locate dictionary
@@ -36,6 +53,10 @@ void AmarBanglaKothaEngine::updatePreedit(InputContext* ic, const std::string& b
     if (buffer.empty()) {
         primaryText_.clear();
         candidates_.clear();
+        selectedIndex_ = 0;
+        if (engine_) {
+            abk_suggestion_reset(engine_);
+        }
         ic->inputPanel().reset();
         ic->updatePreedit();
         ic->updateUserInterface(UserInterfaceComponent::InputPanel);
@@ -52,6 +73,7 @@ void AmarBanglaKothaEngine::updatePreedit(InputContext* ic, const std::string& b
             candidates_.push_back(res->candidates[i].word);
         }
     }
+    selectedIndex_ = abk_suggestion_get_selected_index(engine_);
     abk_free_suggestions(res);
 
     // Update preedit string
@@ -59,12 +81,13 @@ void AmarBanglaKothaEngine::updatePreedit(InputContext* ic, const std::string& b
     preedit.append(primaryText_, TextFormatFlag::Underline);
     ic->inputPanel().setPreedit(preedit);
 
-    // Update candidate list
+    // Update candidate list with interactive selectable words
     if (!candidates_.empty()) {
         auto candidateList = std::make_unique<CommonCandidateList>();
-        for (const auto& cand : candidates_) {
-            candidateList->append(std::make_unique<DisplayOnlyCandidateWord>(Text(cand)));
+        for (size_t i = 0; i < candidates_.size(); ++i) {
+            candidateList->append(std::make_unique<AbkCandidateWord>(this, i, candidates_[i]));
         }
+        candidateList->setCursor(selectedIndex_);
         ic->inputPanel().setCandidateList(std::move(candidateList));
     } else {
         ic->inputPanel().setCandidateList(nullptr);
@@ -74,6 +97,13 @@ void AmarBanglaKothaEngine::updatePreedit(InputContext* ic, const std::string& b
     ic->updateUserInterface(UserInterfaceComponent::InputPanel);
 }
 
+void AmarBanglaKothaEngine::onCandidateClicked(InputContext* ic, size_t index, const std::string& word) {
+    selectedIndex_ = (int)index;
+    abk_suggestion_select_index(engine_, (int)index);
+    abk_log_event(engine_, "CLICK", word.c_str());
+    commitWord(ic, word, true);
+}
+
 void AmarBanglaKothaEngine::commitWord(InputContext* ic, const std::string& word, bool appendSpace) {
     std::string commitStr = appendSpace ? (word + " ") : word;
     ic->commitString(commitStr);
@@ -81,6 +111,10 @@ void AmarBanglaKothaEngine::commitWord(InputContext* ic, const std::string& word
     buffer_.clear();
     primaryText_.clear();
     candidates_.clear();
+    selectedIndex_ = 0;
+    if (engine_) {
+        abk_suggestion_reset(engine_);
+    }
     ic->inputPanel().reset();
     ic->updatePreedit();
     ic->updateUserInterface(UserInterfaceComponent::InputPanel);
@@ -90,6 +124,10 @@ void AmarBanglaKothaEngine::cancelComposition(InputContext* ic) {
     buffer_.clear();
     primaryText_.clear();
     candidates_.clear();
+    selectedIndex_ = 0;
+    if (engine_) {
+        abk_suggestion_reset(engine_);
+    }
     ic->inputPanel().reset();
     ic->updatePreedit();
     ic->updateUserInterface(UserInterfaceComponent::InputPanel);
@@ -116,9 +154,43 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
     Key sym = keyEvent.rawKey().sym();
     auto* ic = keyEvent.inputContext();
 
-    // 1. Escape key
+    // 1. Navigation keys (Down, Up, Tab)
+    if (!buffer_.empty() && !candidates_.empty()) {
+        if (sym == FcitxKey_Down) {
+            abk_suggestion_select_next(engine_);
+            selectedIndex_ = abk_suggestion_get_selected_index(engine_);
+            abk_log_event(engine_, "KEY_DOWN", "navigate next candidate");
+            updatePreedit(ic, buffer_);
+            keyEvent.filterAndAccept();
+            return;
+        }
+        if (sym == FcitxKey_Up) {
+            abk_suggestion_select_prev(engine_);
+            selectedIndex_ = abk_suggestion_get_selected_index(engine_);
+            abk_log_event(engine_, "KEY_UP", "navigate prev candidate");
+            updatePreedit(ic, buffer_);
+            keyEvent.filterAndAccept();
+            return;
+        }
+        if (sym == FcitxKey_Tab) {
+            if (keyEvent.rawKey().checkModifier(KeyModifier::Shift)) {
+                abk_suggestion_select_prev(engine_);
+                abk_log_event(engine_, "KEY_SHIFT_TAB", "navigate prev candidate");
+            } else {
+                abk_suggestion_select_next(engine_);
+                abk_log_event(engine_, "KEY_TAB", "navigate next candidate");
+            }
+            selectedIndex_ = abk_suggestion_get_selected_index(engine_);
+            updatePreedit(ic, buffer_);
+            keyEvent.filterAndAccept();
+            return;
+        }
+    }
+
+    // 2. Escape key
     if (sym == FcitxKey_Escape) {
         if (!buffer_.empty()) {
+            abk_log_event(engine_, "KEY_ESCAPE", "cancel composition");
             cancelComposition(ic);
             keyEvent.filterAndAccept();
             return;
@@ -126,10 +198,12 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
         return;
     }
 
-    // 2. Space key
+    // 3. Space key
     if (sym == FcitxKey_space) {
         if (!buffer_.empty()) {
-            std::string target = !candidates_.empty() ? candidates_[0] : primaryText_;
+            const char* sel = abk_suggestion_get_selected_word_ptr(engine_);
+            std::string target = (sel && strlen(sel) > 0) ? sel : (!candidates_.empty() ? candidates_[0] : primaryText_);
+            abk_log_event(engine_, "KEY_SPACE", target.c_str());
             commitWord(ic, target, true);
             keyEvent.filterAndAccept();
             return;
@@ -137,10 +211,12 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
         return;
     }
 
-    // 3. Return / Enter key
+    // 4. Return / Enter key
     if (sym == FcitxKey_Return || sym == FcitxKey_KP_Enter) {
         if (!buffer_.empty()) {
-            std::string target = !candidates_.empty() ? candidates_[0] : primaryText_;
+            const char* sel = abk_suggestion_get_selected_word_ptr(engine_);
+            std::string target = (sel && strlen(sel) > 0) ? sel : (!candidates_.empty() ? candidates_[0] : primaryText_);
+            abk_log_event(engine_, "KEY_ENTER", target.c_str());
             commitWord(ic, target, false);
             keyEvent.filterAndAccept();
             return;
@@ -148,7 +224,7 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
         return;
     }
 
-    // 4. Backspace
+    // 5. Backspace
     if (sym == FcitxKey_BackSpace) {
         if (!buffer_.empty()) {
             buffer_.pop_back();
@@ -159,10 +235,18 @@ void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent
         return;
     }
 
-    // 5. Candidate selection via 1-9
+    // 6. Candidate selection via 1-9
     if (!buffer_.empty() && sym >= FcitxKey_1 && sym <= FcitxKey_9) {
         size_t idx = static_cast<size_t>(sym - FcitxKey_1);
         if (idx < candidates_.size()) {
+            selectedIndex_ = (int)idx;
+            abk_suggestion_select_index(engine_, (int)idx);
+            abk_log_event(engine_, "KEY_NUMBER", candidates_[idx].c_str());
+            commitWord(ic, candidates_[idx], true);
+            keyEvent.filterAndAccept();
+            return;
+        }
+    }
             commitWord(ic, candidates_[idx], true);
             keyEvent.filterAndAccept();
             return;
