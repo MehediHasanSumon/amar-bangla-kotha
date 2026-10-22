@@ -67,6 +67,14 @@ def load_abk_library():
                 lib.abk_suggestion_get_selected_index.argtypes = [c_void_p]
                 lib.abk_suggestion_reset.restype = None
                 lib.abk_suggestion_reset.argtypes = [c_void_p]
+                lib.abk_engine_set_secure_mode.restype = None
+                lib.abk_engine_set_secure_mode.argtypes = [c_void_p, c_int]
+                lib.abk_engine_is_secure_mode.restype = c_int
+                lib.abk_engine_is_secure_mode.argtypes = [c_void_p]
+                lib.abk_engine_set_clipboard_mode.restype = None
+                lib.abk_engine_set_clipboard_mode.argtypes = [c_void_p, c_int]
+                lib.abk_engine_is_clipboard_mode.restype = c_int
+                lib.abk_engine_is_clipboard_mode.argtypes = [c_void_p]
                 return lib
             except Exception as e:
                 print(f"Error loading {p}: {e}", file=sys.stderr)
@@ -114,6 +122,7 @@ class AmarBanglaKothaEngine(IBus.Engine):
         self.current_primary = ""
         self.current_candidates = []
         self.lookup_table = IBus.LookupTable.new(9, 0, True, True)
+        self.is_secure_mode = False
 
         dict_paths = [
             os.path.expanduser("~/.local/share/amar-bangla-kotha/bangla_wordlist.txt"),
@@ -211,7 +220,37 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if text_to_commit:
             self.commit_text(IBus.Text.new_from_string(text_to_commit))
 
+    def do_set_content_type(self, purpose, hints):
+        # Workstream 2: Auto-detect password / PIN / sensitive fields
+        is_pwd = False
+        try:
+            # IBus.InputPurpose.PASSWORD = 2, PIN = 3
+            if hasattr(IBus, 'InputPurpose'):
+                if purpose in (IBus.InputPurpose.PASSWORD, IBus.InputPurpose.PIN):
+                    is_pwd = True
+            if hasattr(IBus, 'InputHints'):
+                if hints & IBus.InputHints.PRIVATE:
+                    is_pwd = True
+        except Exception:
+            pass
+
+        self.is_secure_mode = is_pwd
+        if self.engine_handle:
+            abk_lib.abk_engine_set_secure_mode(self.engine_handle, 1 if is_pwd else 0)
+
+        if is_pwd:
+            log_event("SECURE_FIELD_DETECTED", "Password / sensitive field active - auto bypass enabled")
+            self.buffer = ""
+            self.current_primary = ""
+            self.current_candidates = []
+            self.hide_lookup_table()
+            self.hide_preedit_text()
+
     def do_process_key_event(self, keyval, keycode, state):
+        # Workstream 2: If inside a password or sensitive field, auto-bypass completely
+        if self.is_secure_mode:
+            return False
+
         # Ignore key release
         if state & IBus.ModifierType.RELEASE_MASK:
             return False

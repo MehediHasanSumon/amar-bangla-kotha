@@ -140,6 +140,21 @@ void AmarBanglaKothaEngine::reset(const InputMethodEntry& /*entry*/, InputContex
 void AmarBanglaKothaEngine::keyEvent(const InputMethodEntry& /*entry*/, KeyEvent& keyEvent) {
     if (keyEvent.isRelease()) return;
 
+    auto* ic = keyEvent.inputContext();
+    if (!ic) return;
+
+    // Workstream 2: Auto-detect password / PIN / sensitive fields
+    if (ic->capabilityFlags().test(CapabilityFlag::Password) ||
+        ic->capabilityFlags().test(CapabilityFlag::Sensitive)) {
+        abk_engine_set_secure_mode(engine_, 1);
+        if (!buffer_.empty()) {
+            cancelComposition(ic);
+        }
+        return; // Auto-bypass, pass keys directly to host application without learning or logging
+    } else {
+        abk_engine_set_secure_mode(engine_, 0);
+    }
+
     // Pass through Ctrl / Alt / Super shortcuts
     if (keyEvent.rawKey().hasModifier() &&
         (keyEvent.rawKey().checkModifier(KeyModifier::Ctrl) ||

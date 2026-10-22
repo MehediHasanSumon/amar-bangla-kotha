@@ -62,12 +62,12 @@ int main() {
         0x80, 0xBF, 0xC0, 0xC1, 0xF5, 0xFF, 0xFE, 0x00, 0x7F, 0xE0, 0xED, 0xA0
     };
 
-    std::uniform_int_distribution<int> action_dist(0, 5);
+    std::uniform_int_distribution<int> action_dist(0, 6);
     std::uniform_int_distribution<int> char_dist(0, valid_chars.size() - 1);
     std::uniform_int_distribution<int> corrupt_dist(0, corrupted_bytes.size() - 1);
     std::uniform_int_distribution<int> length_dist(1, 100);
 
-    const int TOTAL_ITERATIONS = 50000;
+    const int TOTAL_ITERATIONS = 100000;
     std::string current_buffer;
     char out_buf[1024];
 
@@ -98,6 +98,10 @@ int main() {
             if (!current_buffer.empty()) {
                 abk_learn_word(engine, current_buffer.c_str(), 100);
             }
+        } else if (action == 5) {
+            // Workstream 2: Toggle secure mode & clipboard paste fallback mode
+            abk_engine_set_secure_mode(engine, rng() % 2);
+            abk_engine_set_clipboard_mode(engine, rng() % 2);
         } else {
             // Clear buffer
             current_buffer.clear();
@@ -106,6 +110,14 @@ int main() {
         // Test 1: Suggestions query
         abk_suggestion_list_t* res = abk_get_suggestions(engine, current_buffer.c_str());
         if (res) {
+            // Exercise candidate selection navigation
+            abk_suggestion_select_next(engine);
+            abk_suggestion_select_prev(engine);
+            abk_suggestion_select_index(engine, rng() % 10);
+            char sel_word[256];
+            abk_suggestion_get_selected_word(engine, sel_word, sizeof(sel_word));
+            abk_suggestion_get_selected_word_ptr(engine);
+
             if (res->primary_transliteration) {
                 size_t p_len = std::strlen(res->primary_transliteration);
                 if (!is_valid_utf8(res->primary_transliteration, p_len)) {

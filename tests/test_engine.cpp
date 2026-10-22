@@ -477,3 +477,75 @@ TEST_CASE("Workstream 1: C ABI Suggestion Functions", "[c_api][suggestion_state]
     abk_free_suggestions(res);
     abk_engine_destroy(engine);
 }
+
+TEST_CASE("Workstream 2: Safety, Privacy and Password Auto-Bypass", "[engine][security]") {
+    abk::AmarBanglaKothaEngine engine;
+    engine.load_dictionary_file("data/bangla_wordlist.txt");
+
+    SECTION("Normal mode vs Secure mode processing") {
+        // Normal mode produces transliteration
+        auto normal_res = engine.process("ami");
+        CHECK(normal_res.primary_transliteration == "আমি");
+        CHECK(!normal_res.candidates.empty());
+        CHECK(engine.get_suggestion_state().visible);
+
+        // Turn on secure mode (e.g. entering a password or PIN field)
+        engine.set_secure_mode(true);
+        CHECK(engine.is_secure_mode());
+        CHECK(!engine.get_suggestion_state().visible);
+
+        // In secure mode: auto-bypass, zero transliteration, zero candidate exposure
+        auto secure_res = engine.process("ami");
+        CHECK(secure_res.primary_transliteration == "ami");
+        CHECK(secure_res.candidates.empty());
+        CHECK(!engine.get_suggestion_state().visible);
+
+        // Fast transliteration also bypasses
+        CHECK(engine.transliterate_fast("secret123") == "secret123");
+
+        // Turn secure mode back off
+        engine.set_secure_mode(false);
+        CHECK(!engine.is_secure_mode());
+        auto restored_res = engine.process("ami");
+        CHECK(restored_res.primary_transliteration == "আমি");
+    }
+
+    SECTION("Zero learning and storage in secure mode") {
+        engine.set_secure_mode(true);
+
+        // Attempt to learn a sensitive word in secure mode
+        engine.learn_word("গোপনপাসওয়ার্ড", 10000);
+
+        // Verify dictionary does NOT store or learn the sensitive word
+        CHECK(!engine.get_dictionary().contains("গোপনপাসওয়ার্ড"));
+        auto matches = engine.get_dictionary().get_prefix_matches("গোপন", 5);
+        for (const auto& m : matches) {
+            CHECK(m.first != "গোপনপাসওয়ার্ড");
+        }
+    }
+
+    SECTION("C ABI Secure and Clipboard Fallback APIs") {
+        abk_engine_t c_eng = abk_engine_create();
+        REQUIRE(c_eng != nullptr);
+
+        CHECK(abk_engine_is_secure_mode(c_eng) == 0);
+        abk_engine_set_secure_mode(c_eng, 1);
+        CHECK(abk_engine_is_secure_mode(c_eng) == 1);
+
+        abk_suggestion_list_t* res = abk_get_suggestions(c_eng, "password123");
+        REQUIRE(res != nullptr);
+        // Under secure mode, candidate count is 0 and transliteration is passthrough
+        CHECK(res->candidate_count == 0);
+        CHECK(std::string(res->primary_transliteration) == "password123");
+        abk_free_suggestions(res);
+
+        // Clipboard paste fallback mode toggle
+        CHECK(abk_engine_is_clipboard_mode(c_eng) == 0);
+        abk_engine_set_clipboard_mode(c_eng, 1);
+        CHECK(abk_engine_is_clipboard_mode(c_eng) == 1);
+        abk_engine_set_clipboard_mode(c_eng, 0);
+        CHECK(abk_engine_is_clipboard_mode(c_eng) == 0);
+
+        abk_engine_destroy(c_eng);
+    }
+}

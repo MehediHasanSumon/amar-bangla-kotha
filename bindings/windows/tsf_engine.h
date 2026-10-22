@@ -64,6 +64,9 @@ private:
     void _HideCandidateWindow();
     static LRESULT CALLBACK CandidateWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+    // Workstream 2: Safety & Password Field Detection
+    bool _IsPasswordField(ITfContext* pic);
+
     LONG _refCount;
     ITfThreadMgr* _pThreadMgr;
     TfClientId _clientId;

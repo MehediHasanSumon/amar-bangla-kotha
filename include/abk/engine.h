@@ -39,6 +39,13 @@ public:
     void set_suggestions_visible(bool visible);
     void reset_suggestion_state();
 
+    // Workstream 2: Safety, Privacy & Secure Fields (Password auto-bypass)
+    void set_secure_mode(bool secure);
+    bool is_secure_mode() const { return secure_mode; }
+
+    void set_clipboard_paste_mode(bool enable) { clipboard_paste_mode = enable; }
+    bool is_clipboard_paste_mode() const { return clipboard_paste_mode; }
+
     // Workstream 1: Per-event diagnostic logging
     void set_debug_logging(bool enable) { debug_logging = enable; }
     bool is_debug_logging() const { return debug_logging; }
@@ -61,6 +68,8 @@ private:
     Autocorrect autocorrect;
     SuggestionState suggestion_state;
     bool debug_logging = false;
+    bool secure_mode = false;
+    bool clipboard_paste_mode = false;
 
     void add_candidate_unique(std::vector<Candidate>& list, const Candidate& candidate);
 };

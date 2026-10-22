@@ -74,6 +74,12 @@ ABK_API void abk_suggestion_reset(abk_engine_t engine);
 ABK_API void abk_set_debug_logging(abk_engine_t engine, int enable);
 ABK_API void abk_log_event(abk_engine_t engine, const char* event_type, const char* details);
 
+// Workstream 2: Security, Privacy & Secure Fields (Password auto-bypass & Clipboard fallback)
+ABK_API void abk_engine_set_secure_mode(abk_engine_t engine, int is_secure);
+ABK_API int abk_engine_is_secure_mode(abk_engine_t engine);
+ABK_API void abk_engine_set_clipboard_mode(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_clipboard_mode(abk_engine_t engine);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

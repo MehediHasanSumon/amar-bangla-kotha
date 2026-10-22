@@ -34,12 +34,20 @@ void AmarBanglaKothaEngine::add_candidate_unique(std::vector<Candidate>& list, c
 }
 
 std::string AmarBanglaKothaEngine::transliterate_fast(const std::string& latin_input) const {
+    if (secure_mode) return utf8::normalize_nfc(latin_input);
     return transliterator.transliterate(latin_input, &dictionary);
 }
 
 SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
     SuggestionResult result;
     result.raw_input = raw_input;
+
+    // Security & Privacy: Auto-bypass password and sensitive fields
+    if (secure_mode) {
+        reset_suggestion_state();
+        result.primary_transliteration = utf8::normalize_nfc(raw_input);
+        return result;
+    }
 
     std::string trimmed_input = utf8::trim(raw_input);
     if (trimmed_input.empty()) {
@@ -253,11 +261,20 @@ void AmarBanglaKothaEngine::reset_suggestion_state() {
     }
 }
 
+void AmarBanglaKothaEngine::set_secure_mode(bool secure) {
+    secure_mode = secure;
+    if (secure) {
+        reset_suggestion_state();
+    }
+}
+
 void AmarBanglaKothaEngine::log_event(const std::string& event_type, const std::string& details) const {
+    if (secure_mode) return; // Strict privacy: never log sensitive/password input
     std::cerr << "[ABK_EVENT_LOG] " << event_type << " | " << details << std::endl;
 }
 
 void AmarBanglaKothaEngine::learn_word(const std::string& bangla_word, uint32_t frequency) {
+    if (secure_mode) return; // Strict privacy: never learn words typed in secure fields
     if (bangla_word.empty()) return;
 
     if (!config.user_dictionary_file_path.empty()) {

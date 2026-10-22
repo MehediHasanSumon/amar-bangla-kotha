@@ -317,6 +317,42 @@ void abk_log_event(abk_engine_t handle, const char* event_type, const char* deta
     } catch (...) {}
 }
 
+void abk_engine_set_secure_mode(abk_engine_t handle, int is_secure) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_secure_mode(is_secure != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_secure_mode(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_secure_mode() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_set_clipboard_mode(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_clipboard_paste_mode(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_clipboard_mode(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_clipboard_paste_mode() ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
 const char* abk_get_version(void) {
     return "Amar Bangla Kotha v1.0.0 (C++ Core Engine)";
 }

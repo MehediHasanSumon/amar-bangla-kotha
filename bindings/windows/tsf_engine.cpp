@@ -166,8 +166,29 @@ STDMETHODIMP CTsfEngine::OnPreservedKey(ITfContext* /*pic*/, REFGUID /*rguid*/, 
     return S_OK;
 }
 
-STDMETHODIMP CTsfEngine::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LPARAM /*lParam*/, BOOL *pfEaten) {
+bool CTsfEngine::_IsPasswordField(ITfContext* pic) {
+    if (!pic) return false;
+    TF_STATUS status;
+    if (SUCCEEDED(pic->GetStatus(&status))) {
+        // Transitory contexts typically indicate password fields or non-document entries
+        if (status.dwStaticFlags & TS_SS_TRANSITORY) {
+            return true;
+        }
+    }
+    return false;
+}
+
+STDMETHODIMP CTsfEngine::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM /*lParam*/, BOOL *pfEaten) {
     if (!pfEaten) return E_INVALIDARG;
+
+    // Workstream 2: Auto-detect password / PIN fields and auto-bypass
+    if (_IsPasswordField(pic)) {
+        abk_engine_set_secure_mode(_engine, 1);
+        *pfEaten = FALSE;
+        return S_OK;
+    } else {
+        abk_engine_set_secure_mode(_engine, 0);
+    }
 
     if (_latinBuffer.empty()) {
         *pfEaten = FALSE;
@@ -204,6 +225,20 @@ STDMETHODIMP CTsfEngine::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LPARA
 STDMETHODIMP CTsfEngine::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
     if (!pfEaten) return E_INVALIDARG;
     *pfEaten = FALSE;
+
+    // Workstream 2: Auto-detect password / PIN fields and auto-bypass
+    if (_IsPasswordField(pic)) {
+        abk_engine_set_secure_mode(_engine, 1);
+        if (!_latinBuffer.empty()) {
+            _pendingAction = EDIT_CANCEL;
+            HRESULT hrSession = S_OK;
+            pic->RequestEditSession(_clientId, this, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+        }
+        *pfEaten = FALSE;
+        return S_OK;
+    } else {
+        abk_engine_set_secure_mode(_engine, 0);
+    }
 
     // Check modifiers: Ignore if Ctrl or Alt is held
     if (GetKeyState(VK_CONTROL) < 0 || GetKeyState(VK_MENU) < 0) {

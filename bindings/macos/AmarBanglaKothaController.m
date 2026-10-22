@@ -178,6 +178,17 @@
         return NO;
     }
 
+    // Workstream 2: Auto-detect password / secure text fields (macOS SecureEventInput)
+    if (IsSecureEventInputEnabled()) {
+        abk_engine_set_secure_mode(_engine, 1);
+        if ([_buffer length] > 0) {
+            [self cancelComposition:sender];
+        }
+        return NO; // Pass through to password field untouched, nothing logged or learned
+    } else {
+        abk_engine_set_secure_mode(_engine, 0);
+    }
+
     NSEventModifierFlags flags = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
 
     // Pass through Command and Control shortcuts to OS

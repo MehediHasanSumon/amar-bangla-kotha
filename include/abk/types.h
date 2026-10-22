@@ -45,6 +45,8 @@ struct EngineConfig {
     bool enable_autocorrect = true;
     bool enable_prefix_completion = true;
     size_t max_edit_distance = 2;
+    bool auto_bypass_password_fields = true;
+    bool clipboard_paste_fallback = false;
     std::string dictionary_file_path = "";
     std::string user_dictionary_file_path = "";
 };
