@@ -770,3 +770,234 @@ TEST_CASE("Workstream 3: Backspace Unit & Bengali Orthography", "[backspace][gra
         CHECK(std::string(buf) == "");
     }
 }
+
+TEST_CASE("Workstream 4: Bigram Language Model and Prediction", "[bigram][prediction]") {
+    abk::BigramModel model(100);
+
+    SECTION("Adding bigrams and next-word prediction") {
+        model.add_bigram("আমি", "ভালো", 10);
+        model.add_bigram("আমি", "যাব", 5);
+        model.add_bigram("আমি", "আছি", 2);
+
+        CHECK(model.entry_count() == 3);
+        CHECK(model.has_context("আমি"));
+        CHECK(!model.has_context("অচেনা"));
+
+        auto predictions = model.predict_next_words("আমি", 3);
+        REQUIRE(predictions.size() == 3);
+        CHECK(predictions[0].first == "ভালো");
+        CHECK(predictions[1].first == "যাব");
+        CHECK(predictions[2].first == "আছি");
+
+        double p = model.get_bigram_prob("আমি", "ভালো");
+        CHECK(p > 0.5);
+    }
+
+    SECTION("Loading from bigram TSV file") {
+        abk::BigramModel file_model;
+        bool loaded = file_model.load_from_file("data/bangla_bigrams.tsv");
+        REQUIRE(loaded);
+        CHECK(file_model.entry_count() > 50);
+
+        auto preds = file_model.predict_next_words("আমার", 3);
+        REQUIRE(!preds.empty());
+        CHECK(preds[0].first == "নাম");
+    }
+
+    SECTION("Hard size cap and pruning") {
+        abk::BigramModel small_model(5);
+        for (int i = 0; i < 20; ++i) {
+            small_model.add_bigram("word" + std::to_string(i), "next" + std::to_string(i), 1);
+        }
+        CHECK(small_model.entry_count() <= 10);
+    }
+
+    SECTION("Trigram prediction behind enable_trigram") {
+        model.set_enable_trigram(true);
+        model.add_trigram("আমি", "ভাত", "খাই", 15);
+        model.add_trigram("আমি", "ভাত", "রান্না", 3);
+
+        auto tri_preds = model.predict_trigram_next_words("আমি", "ভাত", 2);
+        REQUIRE(!tri_preds.empty());
+        CHECK(tri_preds[0].first == "খাই");
+    }
+}
+
+TEST_CASE("Workstream 4: Personal Dictionary, Shortcuts and Persistence", "[personal][shortcuts]") {
+    std::string test_file = "tests/data/test_personal_dict.tsv";
+    // Ensure clean state before test
+    std::remove(test_file.c_str());
+
+    SECTION("Shortcut addition, expansion and removal") {
+        abk::PersonalDictionary pdict;
+        pdict.add_shortcut("amr", "আমার");
+        pdict.add_shortcut("thx", "ধন্যবাদ");
+
+        CHECK(pdict.has_shortcut("amr"));
+        CHECK(pdict.get_expansion("amr") == "আমার");
+        CHECK(pdict.has_shortcut("thx"));
+        CHECK(pdict.get_expansion("thx") == "ধন্যবাদ");
+
+        CHECK(pdict.remove_shortcut("thx"));
+        CHECK(!pdict.has_shortcut("thx"));
+    }
+
+    SECTION("Atomic save and corruption recovery") {
+        abk::PersonalDictionary pdict;
+        pdict.add_shortcut("amr", "আমার");
+        pdict.learn_word("রোবোটিক্স", 500);
+
+        bool saved = pdict.save_atomic(test_file);
+        REQUIRE(saved);
+
+        // Load into new instance
+        abk::PersonalDictionary pdict_loaded;
+        REQUIRE(pdict_loaded.load_from_file(test_file));
+        CHECK(pdict_loaded.has_shortcut("amr"));
+        CHECK(pdict_loaded.contains_word("রোবোটিক্স"));
+
+        // Simulate corrupted file with extra garbage lines
+        {
+            std::ofstream corrupt_f(test_file, std::ios::app);
+            corrupt_f << "CORRUPT_UNKNOWN_RECORD\tgarbage\n";
+            corrupt_f << "\xFE\xFF\x00\n";
+        }
+
+        abk::PersonalDictionary pdict_recovered;
+        // Should recover valid lines without crashing
+        REQUIRE(pdict_recovered.load_from_file(test_file));
+        CHECK(pdict_recovered.has_shortcut("amr"));
+        CHECK(pdict_recovered.contains_word("রোবোটিক্স"));
+
+        // Verify .bak file was created
+        std::ifstream bak_f(test_file + ".bak");
+        CHECK(bak_f.is_open());
+
+        // Cleanup
+        pdict.reset_storage(test_file);
+    }
+
+    SECTION("Engine integration with shortcuts") {
+        abk::AmarBanglaKothaEngine engine;
+        engine.load_dictionary_file("data/bangla_wordlist.txt");
+        engine.add_personal_shortcut("amr", "আমার");
+        engine.add_personal_shortcut("thx", "ধন্যবাদ");
+
+        auto res1 = engine.process("amr");
+        REQUIRE(!res1.candidates.empty());
+        CHECK(res1.candidates[0].word == "আমার");
+        CHECK(res1.candidates[0].type == abk::CandidateType::SHORTCUT_EXPANSION);
+
+        auto res2 = engine.process("thx");
+        REQUIRE(!res2.candidates.empty());
+        CHECK(res2.candidates[0].word == "ধন্যবাদ");
+
+        // Clear personal data
+        engine.clear_personal_data();
+        CHECK(!engine.has_personal_shortcut("amr"));
+    }
+}
+
+TEST_CASE("Workstream 4: Proper Noun Learning and Recall", "[proper_noun][learning]") {
+    abk::AmarBanglaKothaEngine engine;
+    engine.load_dictionary_file("data/bangla_wordlist.txt");
+    engine.load_bigram_file("data/bangla_bigrams.tsv");
+
+    SECTION("Unseen proper noun transliteration and learning") {
+        // "tanvir" is not in the foundation dictionary
+        CHECK(!engine.get_dictionary().contains("তানভীর"));
+
+        auto initial_res = engine.process("tanvir");
+        REQUIRE(!initial_res.candidates.empty());
+        std::string chosen_name = initial_res.candidates[0].word;
+
+        // User commits the name
+        engine.record_commit("tanvir", chosen_name, false);
+
+        // Name is dynamically learned
+        CHECK(engine.get_personal_dictionary().contains_word(chosen_name));
+
+        // On next typing, the learned name is recognized and prioritized
+        auto subsequent_res = engine.process("tanvir");
+        REQUIRE(!subsequent_res.candidates.empty());
+        CHECK(subsequent_res.candidates[0].word == chosen_name);
+    }
+
+    SECTION("Contextual bigram prediction during engine process") {
+        // Commit context word "আমার"
+        engine.record_commit("amar", "আমার ", false);
+        CHECK(engine.get_last_committed_word() == "আমার");
+
+        // Next-word prediction when buffer is empty
+        auto empty_res = engine.process("");
+        REQUIRE(!empty_res.candidates.empty());
+        CHECK(empty_res.candidates[0].type == abk::CandidateType::NEXT_WORD_PREDICTION);
+        CHECK(empty_res.candidates[0].word == "নাম");
+
+        // When typing "d", "দেশ" receives contextual boost over other d-words
+        auto d_res = engine.process("desh");
+        REQUIRE(!d_res.candidates.empty());
+        CHECK(d_res.candidates[0].word == "দেশ");
+    }
+
+    SECTION("C ABI Workstream 4 APIs") {
+        abk_engine_t c_eng = abk_engine_create();
+        REQUIRE(c_eng != nullptr);
+
+        abk_engine_add_shortcut(c_eng, "addr", "ঢাকা, বাংলাদেশ");
+        abk_suggestion_list_t* res = abk_get_suggestions(c_eng, "addr");
+        REQUIRE(res != nullptr);
+        REQUIRE(res->candidate_count > 0);
+        CHECK(std::string(res->candidates[0].word) == "ঢাকা, বাংলাদেশ");
+        abk_free_suggestions(res);
+
+        // Next word prediction API
+        abk_engine_record_commit(c_eng, "ami", "আমি", 0);
+        abk_suggestion_list_t* next_preds = abk_engine_get_next_word_predictions(c_eng, "আমি");
+        REQUIRE(next_preds != nullptr);
+        CHECK(next_preds->candidate_count > 0);
+        abk_free_suggestions(next_preds);
+
+        abk_engine_clear_personal_data(c_eng);
+        abk_engine_destroy(c_eng);
+    }
+
+    SECTION("Dev and Held-Out Test Split Bigram Evaluation") {
+        std::ifstream eval_f("tests/data/bigram_eval.tsv");
+        REQUIRE(eval_f.is_open());
+
+        std::string line;
+        std::getline(eval_f, line); // header
+
+        int dev_total = 0, dev_top1 = 0;
+        int test_total = 0, test_top1 = 0;
+
+        while (std::getline(eval_f, line)) {
+            if (line.empty()) continue;
+            std::stringstream ss(line);
+            std::string context, input, expected, split;
+            if (std::getline(ss, context, '\t') &&
+                std::getline(ss, input, '\t') &&
+                std::getline(ss, expected, '\t') &&
+                std::getline(ss, split, '\t')) {
+
+                engine.set_last_committed_word(context);
+                auto res = engine.process(input);
+                bool match = (!res.candidates.empty() && res.candidates[0].word == expected);
+
+                if (split == "dev") {
+                    dev_total++;
+                    if (match) dev_top1++;
+                } else if (split == "test") {
+                    test_total++;
+                    if (match) test_top1++;
+                }
+            }
+        }
+
+        CHECK(dev_total == 10);
+        CHECK(dev_top1 >= 9);
+        CHECK(test_total == 10);
+        CHECK(test_top1 >= 9);
+    }
+}

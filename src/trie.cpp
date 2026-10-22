@@ -107,15 +107,16 @@ void Trie::collect_prefix_bounded(uint32_t node_idx,
 
 std::vector<std::pair<std::string, uint32_t>> Trie::find_by_prefix(const std::string& prefix, size_t limit) const {
     std::vector<std::pair<std::string, uint32_t>> results;
-    if (prefix.empty() || nodes.empty()) return results;
+    if (nodes.empty()) return results;
 
-    std::string norm_prefix = utf8::normalize_nfc(prefix);
-    std::vector<char32_t> codepoints = utf8::to_codepoints(norm_prefix);
     uint32_t current_idx = 0;
-
-    for (char32_t cp : codepoints) {
-        current_idx = find_child(current_idx, cp);
-        if (current_idx == 0) return results;
+    if (!prefix.empty()) {
+        std::string norm_prefix = utf8::normalize_nfc(prefix);
+        std::vector<char32_t> codepoints = utf8::to_codepoints(norm_prefix);
+        for (char32_t cp : codepoints) {
+            current_idx = find_child(current_idx, cp);
+            if (current_idx == 0) return results;
+        }
     }
 
     collect_prefix_bounded(current_idx, results, limit * 4);
@@ -139,6 +140,12 @@ size_t Trie::memory_bytes() const {
         bytes += node.word.capacity();
     }
     return bytes;
+}
+
+void Trie::clear() {
+    nodes.clear();
+    nodes.emplace_back();
+    word_count = 0;
 }
 
 } // namespace abk

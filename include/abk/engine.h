@@ -5,6 +5,8 @@
 #include "abk/dictionary.h"
 #include "abk/autocorrect.h"
 #include "abk/token_classifier.h"
+#include "abk/bigram_model.h"
+#include "abk/personal_dictionary.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -58,6 +60,32 @@ public:
     const TokenClassifier& get_token_classifier() const { return token_classifier; }
     bool should_bypass_token(const std::string& token) const;
 
+    // Workstream 4: Next-Word Prediction & Personalization
+    bool load_bigram_file(const std::string& filepath);
+    bool load_personal_dictionary_file(const std::string& filepath);
+    bool save_personal_dictionary_file(const std::string& filepath) const;
+
+    std::vector<Candidate> get_next_word_predictions(size_t limit = 5) const;
+    std::vector<Candidate> get_next_word_predictions_for(const std::string& prev_word, size_t limit = 5) const;
+
+    void add_personal_shortcut(const std::string& shortcut, const std::string& expansion);
+    bool remove_personal_shortcut(const std::string& shortcut);
+    bool has_personal_shortcut(const std::string& shortcut) const;
+    std::string get_personal_shortcut_expansion(const std::string& shortcut) const;
+
+    void clear_personal_data();
+    bool export_personal_data(const std::string& filepath) const;
+    bool import_personal_data(const std::string& filepath);
+
+    const BigramModel& get_bigram_model() const { return bigram_model; }
+    BigramModel& get_bigram_model() { return bigram_model; }
+
+    const PersonalDictionary& get_personal_dictionary() const { return personal_dictionary; }
+    PersonalDictionary& get_personal_dictionary() { return personal_dictionary; }
+
+    const std::string& get_last_committed_word() const { return last_committed_word; }
+    void set_last_committed_word(const std::string& word) { last_committed_word = word; }
+
     // Workstream 1: Per-event diagnostic logging
     void set_debug_logging(bool enable) { debug_logging = enable; }
     bool is_debug_logging() const { return debug_logging; }
@@ -81,6 +109,10 @@ private:
     SuggestionState suggestion_state;
     TokenClassifier token_classifier;
     UndoRecord last_commit;
+    BigramModel bigram_model;
+    PersonalDictionary personal_dictionary;
+    std::string last_committed_word;
+    std::string second_last_committed_word;
     bool debug_logging = false;
     bool secure_mode = false;
     bool clipboard_paste_mode = false;

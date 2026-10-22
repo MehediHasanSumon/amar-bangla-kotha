@@ -421,6 +421,111 @@ int abk_token_should_bypass(abk_engine_t handle, const char* token) {
     }
 }
 
+int abk_engine_load_bigrams(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->load_bigram_file(filepath) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_engine_load_personal_dict(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->load_personal_dictionary_file(filepath) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_engine_save_personal_dict(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->save_personal_dictionary_file(filepath) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_add_shortcut(abk_engine_t handle, const char* shortcut, const char* expansion) {
+    if (!handle || !shortcut || !expansion) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->add_personal_shortcut(shortcut, expansion);
+    } catch (...) {}
+}
+
+int abk_engine_remove_shortcut(abk_engine_t handle, const char* shortcut) {
+    if (!handle || !shortcut) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->remove_personal_shortcut(shortcut) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+void abk_engine_clear_personal_data(abk_engine_t handle) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->clear_personal_data();
+    } catch (...) {}
+}
+
+int abk_engine_export_personal_data(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->export_personal_data(filepath) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+int abk_engine_import_personal_data(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->import_personal_data(filepath) ? 1 : 0;
+    } catch (...) {
+        return 0;
+    }
+}
+
+abk_suggestion_list_t* abk_engine_get_next_word_predictions(abk_engine_t handle, const char* prev_word) {
+    if (!handle) return nullptr;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        std::vector<abk::Candidate> preds;
+        if (prev_word && std::strlen(prev_word) > 0) {
+            preds = engine->get_next_word_predictions_for(prev_word, engine->get_config().max_suggestions);
+        } else {
+            preds = engine->get_next_word_predictions(engine->get_config().max_suggestions);
+        }
+
+        auto* res = new abk_suggestion_list_t();
+        res->raw_input = nullptr;
+        res->primary_transliteration = preds.empty() ? nullptr : duplicate_str(preds[0].word);
+        res->candidate_count = preds.size();
+        res->candidates = new abk_candidate_t[preds.size()];
+
+        for (size_t i = 0; i < preds.size(); ++i) {
+            res->candidates[i].word = duplicate_str(preds[i].word);
+            res->candidates[i].score = preds[i].score;
+            res->candidates[i].candidate_type = static_cast<int>(preds[i].type);
+            res->candidates[i].explanation = duplicate_str(preds[i].explanation);
+        }
+        return res;
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 const char* abk_get_version(void) {
     return "Amar Bangla Kotha v1.0.0 (C++ Core Engine)";
 }

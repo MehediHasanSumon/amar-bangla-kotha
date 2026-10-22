@@ -11,7 +11,9 @@ enum class CandidateType {
     DICTIONARY_EXACT,       // Direct match in the Bengali dictionary
     PREFIX_COMPLETION,      // Next letters / prefix completion from dictionary
     AUTOCORRECT,            // Typo-corrected suggestion via edit distance
-    PHONETIC_ALTERNATIVE   // Phonetic variant (e.g. sh/s, i/ee variations)
+    PHONETIC_ALTERNATIVE,  // Phonetic variant (e.g. sh/s, i/ee variations)
+    SHORTCUT_EXPANSION,     // User defined shortcut / snippet (e.g. "amr" -> "আমার")
+    NEXT_WORD_PREDICTION    // Contextual next-word prediction from bigram model
 };
 
 struct Candidate {
@@ -60,6 +62,16 @@ struct EngineConfig {
     bool enable_english_bypass = true;
     bool enable_code_bypass = true;
     bool is_ide_or_terminal = false;
+
+    // Workstream 4: Next-word prediction & Personalization
+    bool enable_next_word_prediction = true;
+    bool enable_shortcut_expansion = true;
+    bool enable_dynamic_learning = true;
+    bool enable_trigram = false;
+    size_t max_bigrams = 50000;
+    size_t max_user_words = 10000;
+    std::string personal_dictionary_file_path = "";
+    std::string bigram_model_file_path = "";
 
     std::string dictionary_file_path = "";
     std::string user_dictionary_file_path = "";

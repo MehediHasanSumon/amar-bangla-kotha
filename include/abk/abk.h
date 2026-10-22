@@ -88,6 +88,17 @@ ABK_API int abk_engine_get_undo_info(abk_engine_t engine, char* out_committed, s
 ABK_API void abk_engine_clear_undo(abk_engine_t engine);
 ABK_API int abk_token_should_bypass(abk_engine_t engine, const char* token);
 
+// Workstream 4: Next-Word Prediction & Personalization
+ABK_API int abk_engine_load_bigrams(abk_engine_t engine, const char* filepath);
+ABK_API int abk_engine_load_personal_dict(abk_engine_t engine, const char* filepath);
+ABK_API int abk_engine_save_personal_dict(abk_engine_t engine, const char* filepath);
+ABK_API void abk_engine_add_shortcut(abk_engine_t engine, const char* shortcut, const char* expansion);
+ABK_API int abk_engine_remove_shortcut(abk_engine_t engine, const char* shortcut);
+ABK_API void abk_engine_clear_personal_data(abk_engine_t engine);
+ABK_API int abk_engine_export_personal_data(abk_engine_t engine, const char* filepath);
+ABK_API int abk_engine_import_personal_data(abk_engine_t engine, const char* filepath);
+ABK_API abk_suggestion_list_t* abk_engine_get_next_word_predictions(abk_engine_t engine, const char* prev_word);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

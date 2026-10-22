@@ -49,6 +49,9 @@ public:
     // Approximate memory footprint of the trie in bytes
     size_t memory_bytes() const;
 
+    // Reset and clear all words from trie
+    void clear();
+
     // Node accessors for fast fuzzy search (Autocorrect)
     const CompactTrieNode& get_node(uint32_t idx) const { return nodes[idx]; }
     uint32_t get_root_index() const { return 0; }

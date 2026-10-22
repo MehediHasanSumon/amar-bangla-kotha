@@ -7,13 +7,22 @@
 namespace abk {
 
 AmarBanglaKothaEngine::AmarBanglaKothaEngine(const EngineConfig& cfg)
-    : config(cfg) {
+    : config(cfg), bigram_model(cfg.max_bigrams), personal_dictionary(cfg.max_user_words) {
     if (!config.dictionary_file_path.empty()) {
         dictionary.load_from_file(config.dictionary_file_path);
     }
     if (!config.user_dictionary_file_path.empty()) {
         dictionary.load_user_dictionary(config.user_dictionary_file_path);
     }
+    if (!config.bigram_model_file_path.empty()) {
+        bigram_model.load_from_file(config.bigram_model_file_path);
+    } else {
+        bigram_model.load_from_file("data/bangla_bigrams.tsv");
+    }
+    if (!config.personal_dictionary_file_path.empty()) {
+        personal_dictionary.load_from_file(config.personal_dictionary_file_path);
+    }
+    bigram_model.set_enable_trigram(config.enable_trigram);
 }
 
 void AmarBanglaKothaEngine::add_candidate_unique(std::vector<Candidate>& list, const Candidate& candidate) {
@@ -53,6 +62,18 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
     std::string trimmed_input = utf8::trim(raw_input);
     if (trimmed_input.empty()) {
         reset_suggestion_state();
+        if (config.enable_next_word_prediction && !last_committed_word.empty()) {
+            auto predictions = get_next_word_predictions(config.max_suggestions);
+            if (!predictions.empty()) {
+                result.candidates = predictions;
+                result.primary_transliteration = predictions[0].word;
+                suggestion_state.items = predictions;
+                suggestion_state.selected_index = 0;
+                suggestion_state.visible = true;
+                suggestion_state.raw_input = "";
+                suggestion_state.primary_transliteration = predictions[0].word;
+            }
+        }
         return result;
     }
 
@@ -66,6 +87,15 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         suggestion_state.primary_transliteration = safe_text;
         result.primary_transliteration = safe_text;
         return result;
+    }
+
+    // Workstream 4: Personal Shortcut / Snippet Expansion (e.g. "amr" -> "আমার")
+    if (config.enable_shortcut_expansion && personal_dictionary.has_shortcut(trimmed_input)) {
+        std::string expansion = personal_dictionary.get_expansion(trimmed_input);
+        if (!expansion.empty()) {
+            Candidate sc_cand(expansion, 15000.0, CandidateType::SHORTCUT_EXPANSION, "Personal shortcut");
+            add_candidate_unique(result.candidates, sc_cand);
+        }
     }
 
     // 1. Beam-search transliteration powered by lattice
@@ -154,6 +184,30 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         }
     }
 
+    // Workstream 4: Contextual Bigram Boosting and Personal Familiarity
+    if (config.enable_next_word_prediction && !last_committed_word.empty()) {
+        for (auto& cand : result.candidates) {
+            double bi_prob = 0.0;
+            if (config.enable_trigram && !second_last_committed_word.empty()) {
+                bi_prob = bigram_model.get_trigram_prob(second_last_committed_word, last_committed_word, cand.word);
+            } else {
+                bi_prob = bigram_model.get_bigram_prob(last_committed_word, cand.word);
+            }
+            if (bi_prob > 0.0) {
+                cand.score += 750.0 * std::log10(bi_prob * 1000.0 + 1.0);
+            }
+            if (personal_dictionary.contains_word(cand.word)) {
+                cand.score += 800.0;
+            }
+        }
+    } else {
+        for (auto& cand : result.candidates) {
+            if (personal_dictionary.contains_word(cand.word)) {
+                cand.score += 800.0;
+            }
+        }
+    }
+
     // 6. Final sort descending by score
     std::sort(result.candidates.begin(), result.candidates.end(), [](const Candidate& a, const Candidate& b) {
         return a.score > b.score;
@@ -161,6 +215,10 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
 
     if (result.candidates.size() > config.max_suggestions) {
         result.candidates.resize(config.max_suggestions);
+    }
+
+    if (!result.candidates.empty()) {
+        result.primary_transliteration = result.candidates[0].word;
     }
 
     // Workstream 1: Selection stability across keystrokes
@@ -300,12 +358,36 @@ void AmarBanglaKothaEngine::learn_word(const std::string& bangla_word, uint32_t 
 void AmarBanglaKothaEngine::record_commit(const std::string& raw_input, const std::string& committed_text, bool was_autocorrected) {
     if (secure_mode) {
         clear_undo();
+        last_committed_word.clear();
+        second_last_committed_word.clear();
         return;
     }
     last_commit.raw_input = raw_input;
     last_commit.committed_text = committed_text;
     last_commit.was_autocorrected = was_autocorrected;
     last_commit.can_undo = !raw_input.empty() && !committed_text.empty();
+
+    std::string clean_word = utf8::normalize_nfc(utf8::trim(committed_text));
+    if (!clean_word.empty()) {
+        if (config.enable_dynamic_learning) {
+            learn_word(clean_word, 200);
+            personal_dictionary.learn_word(clean_word, 200);
+        }
+
+        if (config.enable_next_word_prediction && !last_committed_word.empty()) {
+            bigram_model.add_bigram(last_committed_word, clean_word, 1);
+            if (config.enable_trigram && !second_last_committed_word.empty()) {
+                bigram_model.add_trigram(second_last_committed_word, last_committed_word, clean_word, 1);
+            }
+        }
+
+        second_last_committed_word = last_committed_word;
+        last_committed_word = clean_word;
+
+        if (!config.personal_dictionary_file_path.empty()) {
+            personal_dictionary.save_atomic(config.personal_dictionary_file_path);
+        }
+    }
 }
 
 std::pair<std::string, std::string> AmarBanglaKothaEngine::undo_commit() {
@@ -348,6 +430,75 @@ bool AmarBanglaKothaEngine::load_dictionary_file(const std::string& filepath) {
 
 bool AmarBanglaKothaEngine::load_user_dictionary_file(const std::string& filepath) {
     return dictionary.load_user_dictionary(filepath);
+}
+
+bool AmarBanglaKothaEngine::load_bigram_file(const std::string& filepath) {
+    return bigram_model.load_from_file(filepath);
+}
+
+bool AmarBanglaKothaEngine::load_personal_dictionary_file(const std::string& filepath) {
+    return personal_dictionary.load_from_file(filepath);
+}
+
+bool AmarBanglaKothaEngine::save_personal_dictionary_file(const std::string& filepath) const {
+    return personal_dictionary.save_atomic(filepath);
+}
+
+std::vector<Candidate> AmarBanglaKothaEngine::get_next_word_predictions(size_t limit) const {
+    if (last_committed_word.empty()) return {};
+    return get_next_word_predictions_for(last_committed_word, limit);
+}
+
+std::vector<Candidate> AmarBanglaKothaEngine::get_next_word_predictions_for(const std::string& prev_word, size_t limit) const {
+    std::vector<Candidate> candidates;
+    if (prev_word.empty()) return candidates;
+
+    std::vector<std::pair<std::string, double>> predictions;
+    if (config.enable_trigram && !second_last_committed_word.empty() && prev_word == last_committed_word) {
+        predictions = bigram_model.predict_trigram_next_words(second_last_committed_word, last_committed_word, limit);
+    } else {
+        predictions = bigram_model.predict_next_words(prev_word, limit);
+    }
+
+    for (const auto& p : predictions) {
+        double score = 4000.0 + p.second * 1000.0;
+        candidates.emplace_back(p.first, score, CandidateType::NEXT_WORD_PREDICTION, "Next-word prediction");
+    }
+    return candidates;
+}
+
+void AmarBanglaKothaEngine::add_personal_shortcut(const std::string& shortcut, const std::string& expansion) {
+    personal_dictionary.add_shortcut(shortcut, expansion);
+}
+
+bool AmarBanglaKothaEngine::remove_personal_shortcut(const std::string& shortcut) {
+    return personal_dictionary.remove_shortcut(shortcut);
+}
+
+bool AmarBanglaKothaEngine::has_personal_shortcut(const std::string& shortcut) const {
+    return personal_dictionary.has_shortcut(shortcut);
+}
+
+std::string AmarBanglaKothaEngine::get_personal_shortcut_expansion(const std::string& shortcut) const {
+    return personal_dictionary.get_expansion(shortcut);
+}
+
+void AmarBanglaKothaEngine::clear_personal_data() {
+    personal_dictionary.clear();
+    bigram_model.clear();
+    last_committed_word.clear();
+    second_last_committed_word.clear();
+    if (!config.personal_dictionary_file_path.empty()) {
+        personal_dictionary.reset_storage(config.personal_dictionary_file_path);
+    }
+}
+
+bool AmarBanglaKothaEngine::export_personal_data(const std::string& filepath) const {
+    return personal_dictionary.export_to_tsv(filepath);
+}
+
+bool AmarBanglaKothaEngine::import_personal_data(const std::string& filepath) {
+    return personal_dictionary.import_from_tsv(filepath);
 }
 
 } // namespace abk

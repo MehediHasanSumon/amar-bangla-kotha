@@ -22,6 +22,12 @@ This document records the provenance, authorship, and licensing terms of every r
 - **Licensing**: Permissive / Public Domain / Project-owned.
 - **Status**: Clean. No proprietary data.
 
+### `data/bangla_bigrams.tsv`
+- **Origin**: Authored and curated specifically for Amar Bangla Kotha by the engineering team.
+- **Description**: High-frequency natural Bengali collocations and bigram language model pairs ($w_1 \rightarrow w_2$) with frequency weights.
+- **Licensing**: Native project license (GPLv3 / project-owned).
+- **Status**: Clean. No copyrighted or third-party datasets imported.
+
 ---
 
 ## 3. Public Datasets (Available for Import)
