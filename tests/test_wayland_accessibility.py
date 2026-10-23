@@ -73,7 +73,7 @@ class TestLinuxWaylandAccessibility(unittest.TestCase):
         self.assertEqual(table.get_cursor_pos(), 0)
 
     def test_keyboard_navigation_accessibility(self):
-        """Verifies Arrow Down and Up update cursor position for screen reader."""
+        """Verifies Arrow Down, Up, Right, and Left update cursor position."""
         for ch in "bari":
             self.engine.do_process_key_event(ord(ch), 0, 0)
 
@@ -85,9 +85,49 @@ class TestLinuxWaylandAccessibility(unittest.TestCase):
         self.assertTrue(handled_down)
         self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 1)
 
+        # Arrow Right -> cursor moves to index 2
+        handled_right = self.engine.do_process_key_event(IBus.KEY_Right, 0, 0)
+        self.assertTrue(handled_right)
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 2)
+
+        # Arrow Left -> cursor moves back to index 1
+        handled_left = self.engine.do_process_key_event(IBus.KEY_Left, 0, 0)
+        self.assertTrue(handled_left)
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 1)
+
         # Arrow Up -> cursor moves back to index 0
         handled_up = self.engine.do_process_key_event(IBus.KEY_Up, 0, 0)
         self.assertTrue(handled_up)
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 0)
+
+    def test_candidate_mouse_click(self):
+        """Verifies mouse click on candidate commits candidate word."""
+        for ch in "achis":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+
+        self.assertGreater(len(self.engine.current_candidates), 1)
+        expected_word = self.engine.current_candidates[1]
+
+        # Simulate mouse click on candidate at index 1
+        self.engine.do_candidate_clicked(1, 1, 0)
+
+        # After click, composition buffer should be cleared
+        self.assertEqual(self.engine.buffer, "")
+        self.assertEqual(len(self.engine.current_candidates), 0)
+
+    def test_cursor_scroll_virtual_methods(self):
+        """Verifies cursor_down and cursor_up virtual methods navigate candidates."""
+        for ch in "achis":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 0)
+
+        # Scroll down
+        self.engine.do_cursor_down()
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 1)
+
+        # Scroll up
+        self.engine.do_cursor_up()
         self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 0)
 
     def test_password_field_accessibility_and_security(self):

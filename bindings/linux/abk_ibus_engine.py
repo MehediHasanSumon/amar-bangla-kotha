@@ -209,11 +209,54 @@ class AmarBanglaKothaEngine(IBus.Engine):
 
     def do_candidate_clicked(self, index, button, state):
         log_event("CLICK_RECEIVED", f"Candidate clicked at index: {index}, button: {button}")
-        if 0 <= index < len(self.current_candidates):
-            abk_lib.abk_suggestion_select_index(self.engine_handle, index)
-            self.lookup_table.set_cursor_pos(index)
-            target = self.current_candidates[index]
-            self.commit_word(target, append_space=False)
+        cursor_pos = self.lookup_table.get_cursor_pos()
+        cursor_in_page = self.lookup_table.get_cursor_in_page()
+        current_page_start = cursor_pos - cursor_in_page
+        real_index = current_page_start + index
+
+        if 0 <= real_index < len(self.current_candidates):
+            target_idx = real_index
+        elif 0 <= index < len(self.current_candidates):
+            target_idx = index
+        else:
+            return
+
+        abk_lib.abk_suggestion_select_index(self.engine_handle, target_idx)
+        self.lookup_table.set_cursor_pos(target_idx)
+        target = self.current_candidates[target_idx]
+        self.commit_word(target, append_space=False)
+
+    def do_cursor_down(self):
+        if self.buffer and self.current_candidates:
+            abk_lib.abk_suggestion_select_next(self.engine_handle)
+            sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+            self.lookup_table.set_cursor_pos(sel_idx)
+            self.update_lookup_table(self.lookup_table, True)
+            self.update_preedit_display(self.current_candidates[sel_idx])
+
+    def do_cursor_up(self):
+        if self.buffer and self.current_candidates:
+            abk_lib.abk_suggestion_select_prev(self.engine_handle)
+            sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+            self.lookup_table.set_cursor_pos(sel_idx)
+            self.update_lookup_table(self.lookup_table, True)
+            self.update_preedit_display(self.current_candidates[sel_idx])
+
+    def do_page_down(self):
+        if self.buffer and self.current_candidates:
+            self.lookup_table.page_down()
+            sel_idx = self.lookup_table.get_cursor_pos()
+            abk_lib.abk_suggestion_select_index(self.engine_handle, sel_idx)
+            self.update_lookup_table(self.lookup_table, True)
+            self.update_preedit_display(self.current_candidates[sel_idx])
+
+    def do_page_up(self):
+        if self.buffer and self.current_candidates:
+            self.lookup_table.page_up()
+            sel_idx = self.lookup_table.get_cursor_pos()
+            abk_lib.abk_suggestion_select_index(self.engine_handle, sel_idx)
+            self.update_lookup_table(self.lookup_table, True)
+            self.update_preedit_display(self.current_candidates[sel_idx])
 
     def commit_word(self, word=None, append_space=False):
         if not word:
@@ -291,30 +334,30 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if state & (IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK | IBus.ModifierType.SUPER_MASK):
             return False
 
-        # Workstream 1: Navigation with Arrow Down / Key_KP_Down / Tab
-        if keyval in (IBus.KEY_Down, IBus.KEY_KP_Down, IBus.KEY_Tab):
+        # Workstream 1: Navigation with Arrow Down / Key_KP_Down / Arrow Right / Key_KP_Right / Tab
+        if keyval in (IBus.KEY_Down, IBus.KEY_KP_Down, IBus.KEY_Right, IBus.KEY_KP_Right, IBus.KEY_Tab):
             if self.buffer and self.current_candidates:
                 abk_lib.abk_suggestion_select_next(self.engine_handle)
-                self.lookup_table.cursor_down()
-                sel_idx = self.lookup_table.get_cursor_pos()
-                log_event("KEY_CONSUMED", f"Arrow Down/Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
+                sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+                self.lookup_table.set_cursor_pos(sel_idx)
+                log_event("KEY_CONSUMED", f"Arrow Down/Right/Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
                 self.update_lookup_table(self.lookup_table, True)
                 self.update_preedit_display(self.current_candidates[sel_idx])
                 return True
-            log_event("KEY_IGNORED", f"Arrow Down/Tab ignored (buffer={len(self.buffer)})")
+            log_event("KEY_IGNORED", f"Arrow Down/Right/Tab ignored (buffer={len(self.buffer)})")
             return False
 
-        # Workstream 1: Navigation with Arrow Up / Key_KP_Up / Shift+Tab
-        if keyval in (IBus.KEY_Up, IBus.KEY_KP_Up, IBus.KEY_ISO_Left_Tab):
+        # Workstream 1: Navigation with Arrow Up / Key_KP_Up / Arrow Left / Key_KP_Left / Shift+Tab
+        if keyval in (IBus.KEY_Up, IBus.KEY_KP_Up, IBus.KEY_Left, IBus.KEY_KP_Left, IBus.KEY_ISO_Left_Tab):
             if self.buffer and self.current_candidates:
                 abk_lib.abk_suggestion_select_prev(self.engine_handle)
-                self.lookup_table.cursor_up()
-                sel_idx = self.lookup_table.get_cursor_pos()
-                log_event("KEY_CONSUMED", f"Arrow Up/Shift-Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
+                sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+                self.lookup_table.set_cursor_pos(sel_idx)
+                log_event("KEY_CONSUMED", f"Arrow Up/Left/Shift-Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
                 self.update_lookup_table(self.lookup_table, True)
                 self.update_preedit_display(self.current_candidates[sel_idx])
                 return True
-            log_event("KEY_IGNORED", f"Arrow Up/Shift-Tab ignored (buffer={len(self.buffer)})")
+            log_event("KEY_IGNORED", f"Arrow Up/Left/Shift-Tab ignored (buffer={len(self.buffer)})")
             return False
 
         # Page Up / Page Down
