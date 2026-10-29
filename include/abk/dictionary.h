@@ -3,6 +3,8 @@
 #include "abk/trie.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <utility>
 #include <cstdint>
 
 namespace abk {
@@ -30,6 +32,10 @@ public:
     uint32_t get_frequency(const std::string& word) const;
     std::vector<std::pair<std::string, uint32_t>> get_prefix_matches(const std::string& prefix, size_t limit = 10) const;
 
+    // Section 8: Collapsed/skeleton key lookup for ত/ট/ৎ, শ/ষ/স, ই/ঈ, উ/ঊ, ন/ণ, র/ড়/ঢ়, o/ো inconsistencies
+    static std::string compute_skeleton(const std::string& bangla_word);
+    std::vector<std::pair<std::string, uint32_t>> lookup_by_skeleton(const std::string& bangla_query, size_t limit = 8) const;
+
     // Total words across system and user dictionaries
     size_t word_count() const { return system_trie.size() + user_trie.size(); }
     size_t memory_bytes() const { return system_trie.memory_bytes() + user_trie.memory_bytes(); }
@@ -41,7 +47,9 @@ public:
 private:
     Trie system_trie; // Preloaded foundational and file vocabulary
     Trie user_trie;   // Custom user dictionary overlay
+    std::unordered_map<std::string, std::vector<std::pair<std::string, uint32_t>>> skeleton_index;
 
+    void index_skeleton_word(const std::string& word, uint32_t frequency);
     void parse_line_and_insert(const std::string& line, Trie& target_trie);
 };
 

@@ -29,7 +29,7 @@ void Dictionary::load_builtin_words() {
         {"যদি", 82000}, {"তো", 84000}, {"না", 99000}, {"হ্যাঁ", 87000}, {"আর", 92000},
         {"রে", 89000}, {"জন্য", 90000}, {"সাথে", 87000}, {"নিয়ে", 78000},
         {"এখন", 87000}, {"তখন", 72000}, {"শুধু", 80000}, {"খুব", 92000}, {"অনেক", 89000},
-        {"ভালো", 94000}, {"ভাল", 88000}, {"সুন্দর", 88000}, {"নতুন", 86000},
+        {"ভালো", 94000}, {"ভাল", 15000}, {"সুন্দর", 88000}, {"নতুন", 86000},
 
         {"কই", 92000}, {"কৈ", 15000}, {"বই", 84000}, {"দই", 82000}, {"মই", 75000},
         {"কথা", 92000}, {"শব্দ", 77000}, {"ভাষা", 87000}, {"বাংলা", 99500}, {"বাংলাদেশ", 99000},
@@ -41,7 +41,126 @@ void Dictionary::load_builtin_words() {
 
     for (const auto& item : builtin_corpus) {
         system_trie.insert(item.first, item.second);
+        index_skeleton_word(item.first, item.second);
     }
+}
+
+std::string Dictionary::compute_skeleton(const std::string& bangla_word) {
+    std::string norm = utf8::normalize_nfc(bangla_word);
+    auto cps = utf8::to_codepoints(norm);
+    std::vector<char32_t> skel;
+    skel.reserve(cps.size());
+
+    for (size_t i = 0; i < cps.size(); ) {
+        char32_t cp = cps[i];
+        bool next_nukta = (i + 1 < cps.size() && cps[i + 1] == utf8::BN_NUKTA);
+        if (next_nukta) {
+            if (cp == 0x09A1 || cp == 0x09A2) {
+                skel.push_back(0x09B0); // ড়, ঢ় -> র
+            } else if (cp == 0x09AF) {
+                skel.push_back(0x09DF); // য়
+            } else if (cp == 0x099C) {
+                skel.push_back(0x099C); // জ় -> জ
+            } else {
+                skel.push_back(cp);
+            }
+            i += 2;
+            continue;
+        }
+
+        switch (cp) {
+            case 0x09DC: case 0x09DD: case 0x09B0:
+                skel.push_back(0x09B0); // র / ড় / ঢ়
+                break;
+            case 0x09DF:
+                skel.push_back(0x09DF); // য়
+                break;
+            case 0x099C: case 0x09AF:
+                skel.push_back(0x099C); // জ / য
+                break;
+            case 0x09B6: case 0x09B7: case 0x09B8:
+                skel.push_back(0x09B6); // শ / ষ / স
+                break;
+            case 0x09A4: case 0x099F: case 0x09CE:
+                skel.push_back(0x09A4); // ত / ট / ৎ
+                break;
+            case 0x09A5: case 0x09A0:
+                skel.push_back(0x09A5); // থ / ঠ
+                break;
+            case 0x09A6: case 0x09A1:
+                skel.push_back(0x09A6); // দ / ড
+                break;
+            case 0x09A7: case 0x09A2:
+                skel.push_back(0x09A7); // ধ / ঢ
+                break;
+            case 0x09A8: case 0x09A3:
+                skel.push_back(0x09A8); // ন / ণ
+                break;
+            case 0x0999: case 0x0982:
+                skel.push_back(0x0982); // ঙ / ং
+                break;
+            case 0x0987: case 0x0988:
+                skel.push_back(0x0987); // ই / ঈ
+                break;
+            case 0x09BF: case 0x09C0:
+                skel.push_back(0x09BF); // ি / ী
+                break;
+            case 0x0989: case 0x098A:
+                skel.push_back(0x0989); // উ / ঊ
+                break;
+            case 0x09C1: case 0x09C2:
+                skel.push_back(0x09C1); // ু / ূ
+                break;
+            case 0x09CB: // ো (collapsed with inherent 'o')
+            case 0x0981: // ঁ (optional nasalization)
+            case 0x200C: // ZWNJ
+            case 0x200D: // ZWJ
+                break;
+            default:
+                skel.push_back(cp);
+                break;
+        }
+        ++i;
+    }
+
+    return utf8::to_utf8(skel);
+}
+
+void Dictionary::index_skeleton_word(const std::string& word, uint32_t frequency) {
+    std::string norm = utf8::normalize_nfc(word);
+    if (norm.empty()) return;
+    std::string skel = compute_skeleton(norm);
+    if (skel.empty()) return;
+
+    auto& bucket = skeleton_index[skel];
+    for (auto& entry : bucket) {
+        if (entry.first == norm) {
+            if (frequency > entry.second) {
+                entry.second = frequency;
+            }
+            return;
+        }
+    }
+    bucket.emplace_back(norm, frequency);
+}
+
+std::vector<std::pair<std::string, uint32_t>> Dictionary::lookup_by_skeleton(const std::string& bangla_query, size_t limit) const {
+    std::vector<std::pair<std::string, uint32_t>> out;
+    if (bangla_query.empty() || limit == 0) return out;
+
+    std::string skel = compute_skeleton(bangla_query);
+    auto it = skeleton_index.find(skel);
+    if (it == skeleton_index.end()) return out;
+
+    out = it->second;
+    std::sort(out.begin(), out.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    if (out.size() > limit) {
+        out.resize(limit);
+    }
+    return out;
 }
 
 void Dictionary::parse_line_and_insert(const std::string& line, Trie& target_trie) {
@@ -57,7 +176,9 @@ void Dictionary::parse_line_and_insert(const std::string& line, Trie& target_tri
         // frequency provided
     }
     if (!word.empty()) {
-        target_trie.insert(word, freq);
+        std::string norm = utf8::normalize_nfc(word);
+        target_trie.insert(norm, freq);
+        index_skeleton_word(norm, freq);
     }
 }
 
@@ -84,16 +205,20 @@ bool Dictionary::load_user_dictionary(const std::string& filepath) {
 }
 
 bool Dictionary::save_user_word(const std::string& filepath, const std::string& word, uint32_t frequency) {
-    user_trie.insert(word, frequency);
+    std::string norm = utf8::normalize_nfc(word);
+    user_trie.insert(norm, frequency);
+    index_skeleton_word(norm, frequency);
     std::ofstream file(filepath, std::ios::app);
     if (!file.is_open()) return false;
 
-    file << utf8::normalize_nfc(word) << " " << frequency << "\n";
+    file << norm << " " << frequency << "\n";
     return true;
 }
 
 void Dictionary::add_word(const std::string& word, uint32_t frequency) {
-    user_trie.insert(word, frequency);
+    std::string norm = utf8::normalize_nfc(word);
+    user_trie.insert(norm, frequency);
+    index_skeleton_word(norm, frequency);
 }
 
 bool Dictionary::contains(const std::string& word) const {

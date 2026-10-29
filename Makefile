@@ -23,6 +23,7 @@ SRCS = src/utf8_util.cpp \
        src/c_api.cpp
 
 OBJS = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+HEADERS = $(wildcard include/abk/*.h)
 
 STATIC_LIB = $(LIB_DIR)/libabk.a
 SHARED_LIB = $(LIB_DIR)/libabk.so
@@ -38,22 +39,25 @@ all: dirs $(STATIC_LIB) $(SHARED_LIB) $(CLI_BIN) $(TEST_BIN) $(BENCH_BIN)
 dirs:
 	@mkdir -p $(BUILD_DIR) $(BIN_DIR) $(LIB_DIR)
 
-$(BUILD_DIR)/%.o: src/%.cpp | dirs
+$(BUILD_DIR)/%.o: src/%.cpp $(HEADERS) | dirs
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/catch_main.o: tests/catch_main.cpp | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(BUILD_DIR)/test_engine.o: tests/test_engine.cpp | dirs
+$(BUILD_DIR)/test_engine.o: tests/test_engine.cpp $(HEADERS) | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(BUILD_DIR)/test_legacy_converter.o: tests/test_legacy_converter.cpp | dirs
+$(BUILD_DIR)/test_legacy_converter.o: tests/test_legacy_converter.cpp $(HEADERS) | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(BUILD_DIR)/test_bangladesh_helpers.o: tests/test_bangladesh_helpers.cpp | dirs
+$(BUILD_DIR)/test_bangladesh_helpers.o: tests/test_bangladesh_helpers.cpp $(HEADERS) | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
-$(BUILD_DIR)/test_quality_of_life.o: tests/test_quality_of_life.cpp | dirs
+$(BUILD_DIR)/test_quality_of_life.o: tests/test_quality_of_life.cpp $(HEADERS) | dirs
+	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
+
+$(BUILD_DIR)/test_avro_style.o: tests/test_avro_style.cpp $(HEADERS) | dirs
 	$(CXX) $(CXXFLAGS) -Itests -c $< -o $@
 
 $(STATIC_LIB): $(OBJS) | dirs
@@ -65,7 +69,7 @@ $(SHARED_LIB): $(OBJS) | dirs
 $(CLI_BIN): cli/main.cpp $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $< $(STATIC_LIB) -o $@
 
-$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(BUILD_DIR)/test_legacy_converter.o $(BUILD_DIR)/test_bangladesh_helpers.o $(BUILD_DIR)/test_quality_of_life.o $(STATIC_LIB) | dirs
+$(TEST_BIN): $(BUILD_DIR)/catch_main.o $(BUILD_DIR)/test_engine.o $(BUILD_DIR)/test_legacy_converter.o $(BUILD_DIR)/test_bangladesh_helpers.o $(BUILD_DIR)/test_quality_of_life.o $(BUILD_DIR)/test_avro_style.o $(STATIC_LIB) | dirs
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(BENCH_BIN): tests/benchmark.cpp $(STATIC_LIB) | dirs
@@ -117,6 +121,8 @@ install: all
 	@cp $(SHARED_LIB) $(PREFIX)/lib/
 	@cp include/abk/*.h $(PREFIX)/include/abk/
 	@cp data/bangla_wordlist.txt $(DATA_DIR)/
+	@cp data/keymap_phonetic.toml $(DATA_DIR)/
+	@cp data/autocorrect_default.tsv $(DATA_DIR)/
 	@cp data/phonetic_rules.tsv $(DATA_DIR)/
 	@echo "Installation complete! Run 'abk' from terminal."
 
@@ -128,6 +134,8 @@ install-user: all
 	@cp $(SHARED_LIB) $(USER_PREFIX)/lib/
 	@cp include/abk/*.h $(USER_PREFIX)/include/abk/
 	@cp data/bangla_wordlist.txt $(USER_DATA_DIR)/
+	@cp data/keymap_phonetic.toml $(USER_DATA_DIR)/
+	@cp data/autocorrect_default.tsv $(USER_DATA_DIR)/
 	@cp data/phonetic_rules.tsv $(USER_DATA_DIR)/
 	@echo "Installation complete! Run 'abk' (make sure ~/.local/bin is in your PATH)."
 
@@ -136,9 +144,11 @@ install-gui: install-user
 	@mkdir -p $(USER_PREFIX)/bin
 	@mkdir -p $(USER_PREFIX)/share/applications
 	@mkdir -p $(USER_PREFIX)/share/icons/hicolor/scalable/apps
+	@mkdir -p $(USER_DATA_DIR)
 	@cp gui/app.py $(USER_PREFIX)/bin/amar-bangla-kotha
 	@chmod +x $(USER_PREFIX)/bin/amar-bangla-kotha
 	@cp gui/icon.svg $(USER_PREFIX)/share/icons/hicolor/scalable/apps/amar-bangla-kotha.svg
+	@cp gui/logo_bangla.svg gui/logo_english.svg $(USER_DATA_DIR)/
 	@cp gui/amar-bangla-kotha.desktop $(USER_PREFIX)/share/applications/amar-bangla-kotha.desktop
 	@cp gui/amar-bangla-kotha.desktop $(HOME)/Desktop/"Amar Bangla Kotha.desktop"
 	@chmod +x $(HOME)/Desktop/"Amar Bangla Kotha.desktop"

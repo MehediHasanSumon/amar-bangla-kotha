@@ -511,17 +511,25 @@ abk_suggestion_list_t* abk_engine_get_next_word_predictions(abk_engine_t handle,
             preds = engine->get_next_word_predictions(engine->get_config().max_suggestions);
         }
 
-        auto* res = new abk_suggestion_list_t();
+        auto* res = static_cast<abk_suggestion_list_t*>(malloc(sizeof(abk_suggestion_list_t)));
+        if (!res) return nullptr;
         res->raw_input = nullptr;
         res->primary_transliteration = preds.empty() ? nullptr : duplicate_str(preds[0].word);
         res->candidate_count = preds.size();
-        res->candidates = new abk_candidate_t[preds.size()];
-
-        for (size_t i = 0; i < preds.size(); ++i) {
-            res->candidates[i].word = duplicate_str(preds[i].word);
-            res->candidates[i].score = preds[i].score;
-            res->candidates[i].candidate_type = static_cast<int>(preds[i].type);
-            res->candidates[i].explanation = duplicate_str(preds[i].explanation);
+        if (res->candidate_count > 0) {
+            res->candidates = static_cast<abk_candidate_t*>(malloc(sizeof(abk_candidate_t) * res->candidate_count));
+            if (!res->candidates) {
+                res->candidate_count = 0;
+            } else {
+                for (size_t i = 0; i < res->candidate_count; ++i) {
+                    res->candidates[i].word = duplicate_str(preds[i].word);
+                    res->candidates[i].score = preds[i].score;
+                    res->candidates[i].candidate_type = static_cast<int>(preds[i].type);
+                    res->candidates[i].explanation = duplicate_str(preds[i].explanation);
+                }
+            }
+        } else {
+            res->candidates = nullptr;
         }
         return res;
     } catch (...) {
@@ -769,6 +777,242 @@ int abk_save_local_feedback(const char* raw, const char* received, const char* e
     } catch (...) {
         return 0;
     }
+}
+
+void abk_engine_set_suggestion_mode(abk_engine_t handle, int mode) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        abk::SuggestionMode sm = abk::SuggestionMode::CHARACTER_FIRST;
+        if (mode == 1) sm = abk::SuggestionMode::DICTIONARY_FIRST;
+        else if (mode == 2) sm = abk::SuggestionMode::CLASSIC_PHONETIC;
+        engine->set_suggestion_mode(sm);
+    } catch (...) {}
+}
+
+int abk_engine_get_suggestion_mode(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return static_cast<int>(engine->get_suggestion_mode());
+    } catch (...) { return 0; }
+}
+
+void abk_engine_set_tab_browses(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_tab_browses_candidates(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_tab_browses(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_tab_browses_candidates() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_suggestion_browse_tab(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->browse_tab() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_suggestion_close_window(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->close_suggestion_window() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_suggestion_commit_selected(abk_engine_t handle, int append_space, char* out_buf, size_t out_cap) {
+    if (!handle) return -1;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        std::string committed = engine->commit_selected_candidate(append_space != 0);
+        if (out_buf && out_cap > 0) {
+            if (committed.size() + 1 > out_cap) return -1;
+            std::memcpy(out_buf, committed.c_str(), committed.size() + 1);
+        }
+        return static_cast<int>(committed.size());
+    } catch (...) { return -1; }
+}
+
+void abk_engine_set_window_pinned(abk_engine_t handle, int pinned, int x, int y) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_window_pinned(pinned != 0, x, y);
+    } catch (...) {}
+}
+
+int abk_engine_is_window_pinned(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_window_pinned() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_engine_get_pinned_position(abk_engine_t handle, int* out_x, int* out_y) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        auto pos = engine->get_pinned_position();
+        if (out_x) *out_x = pos.first;
+        if (out_y) *out_y = pos.second;
+        return engine->is_window_pinned() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_engine_revert_autocorrect(abk_engine_t handle, char* out_buf, size_t out_cap) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        std::string reverted = engine->revert_autocorrect_on_backspace();
+        if (reverted.empty()) return 0;
+        if (out_buf && out_cap > 0) {
+            if (reverted.size() + 1 > out_cap) return 0;
+            std::memcpy(out_buf, reverted.c_str(), reverted.size() + 1);
+        }
+        return static_cast<int>(reverted.size());
+    } catch (...) { return 0; }
+}
+
+void abk_engine_remember_choice(abk_engine_t handle, const char* raw_input, const char* chosen_word) {
+    if (!handle || !raw_input || !chosen_word) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->remember_candidate_choice(raw_input, chosen_word);
+    } catch (...) {}
+}
+
+void abk_engine_reset_remembered_choices(abk_engine_t handle) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->reset_remembered_choices();
+    } catch (...) {}
+}
+
+void abk_autocorrect_set_enabled(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_autocorrect_enabled(enable != 0);
+    } catch (...) {}
+}
+
+int abk_autocorrect_is_enabled(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_autocorrect_enabled() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_autocorrect_add(abk_engine_t handle, const char* typed_text, const char* replacement) {
+    if (!handle || !typed_text || !replacement) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->add_autocorrect_entry(typed_text, replacement) ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_autocorrect_remove(abk_engine_t handle, const char* typed_text) {
+    if (!handle || !typed_text) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->remove_autocorrect_entry(typed_text) ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_autocorrect_import_tsv(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->import_autocorrect_table(filepath) ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+int abk_autocorrect_export_tsv(abk_engine_t handle, const char* filepath) {
+    if (!handle || !filepath) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->export_autocorrect_table(filepath) ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+void abk_engine_set_bangla_digits(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_bangla_digits(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_bangla_digits(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_bangla_digits_enabled() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+void abk_engine_set_nukta_ja(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_nukta_ja(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_nukta_ja(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_nukta_ja_enabled() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+void abk_engine_set_taka_sign(abk_engine_t handle, int enable) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        engine->set_taka_sign(enable != 0);
+    } catch (...) {}
+}
+
+int abk_engine_is_taka_sign(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return engine->is_taka_sign_enabled() ? 1 : 0;
+    } catch (...) { return 0; }
+}
+
+void abk_engine_set_pipe_mode(abk_engine_t handle, int mode) {
+    if (!handle) return;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        abk::PipeMode pm = abk::PipeMode::PASSTHROUGH;
+        if (mode == 1) pm = abk::PipeMode::LITERAL_DOT;
+        else if (mode == 2) pm = abk::PipeMode::BENGALI_DARI;
+        engine->set_pipe_mode(pm);
+    } catch (...) {}
+}
+
+int abk_engine_get_pipe_mode(abk_engine_t handle) {
+    if (!handle) return 0;
+    try {
+        auto* engine = static_cast<abk::AmarBanglaKothaEngine*>(handle);
+        return static_cast<int>(engine->get_pipe_mode());
+    } catch (...) { return 0; }
 }
 
 const char* abk_get_version(void) {

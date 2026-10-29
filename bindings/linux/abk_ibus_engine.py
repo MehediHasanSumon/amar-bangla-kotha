@@ -31,8 +31,9 @@ class AbkSuggestionList(Structure):
     ]
 
 def load_abk_library():
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     possible_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "libabk.so"),
+        os.path.join(root_dir, "lib", "libabk.so"),
         os.path.expanduser("~/.local/lib/libabk.so"),
         "/usr/local/lib/libabk.so",
         "/usr/lib/libabk.so"
@@ -87,6 +88,32 @@ def load_abk_library():
                 lib.abk_token_should_bypass.argtypes = [c_void_p, c_char_p]
                 lib.abk_pop_grapheme_cluster.restype = c_int
                 lib.abk_pop_grapheme_cluster.argtypes = [c_char_p, c_char_p, c_size_t]
+                lib.abk_suggestion_browse_tab.restype = c_int
+                lib.abk_suggestion_browse_tab.argtypes = [c_void_p]
+                lib.abk_suggestion_close_window.restype = c_int
+                lib.abk_suggestion_close_window.argtypes = [c_void_p]
+                lib.abk_suggestion_is_visible.restype = c_int
+                lib.abk_suggestion_is_visible.argtypes = [c_void_p]
+                lib.abk_engine_set_suggestion_mode.restype = None
+                lib.abk_engine_set_suggestion_mode.argtypes = [c_void_p, c_int]
+                lib.abk_engine_get_suggestion_mode.restype = c_int
+                lib.abk_engine_get_suggestion_mode.argtypes = [c_void_p]
+                lib.abk_engine_set_tab_browses.restype = None
+                lib.abk_engine_set_tab_browses.argtypes = [c_void_p, c_int]
+                lib.abk_engine_is_tab_browses.restype = c_int
+                lib.abk_engine_is_tab_browses.argtypes = [c_void_p]
+                lib.abk_engine_remember_choice.restype = None
+                lib.abk_engine_remember_choice.argtypes = [c_void_p, c_char_p, c_char_p]
+                lib.abk_engine_reset_remembered_choices.restype = None
+                lib.abk_engine_reset_remembered_choices.argtypes = [c_void_p]
+                lib.abk_engine_revert_autocorrect.restype = c_int
+                lib.abk_engine_revert_autocorrect.argtypes = [c_void_p, c_char_p, c_size_t]
+                lib.abk_engine_set_window_pinned.restype = None
+                lib.abk_engine_set_window_pinned.argtypes = [c_void_p, c_int, c_int, c_int]
+                lib.abk_engine_is_window_pinned.restype = c_int
+                lib.abk_engine_is_window_pinned.argtypes = [c_void_p]
+                lib.abk_engine_get_pinned_position.restype = c_int
+                lib.abk_engine_get_pinned_position.argtypes = [c_void_p, POINTER(c_int), POINTER(c_int)]
                 return lib
             except Exception as e:
                 print(f"Error loading {p}: {e}", file=sys.stderr)
@@ -133,13 +160,15 @@ class AmarBanglaKothaEngine(IBus.Engine):
         self.buffer = ""
         self.current_primary = ""
         self.current_candidates = []
+        self.current_candidate_types = []
+        self.lookup_window_shown = False
         self.lookup_table = IBus.LookupTable.new(9, 0, True, True)
         self.is_secure_mode = False
 
         dict_paths = [
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "bangla_wordlist.txt"),
             os.path.expanduser("~/.local/share/amar-bangla-kotha/bangla_wordlist.txt"),
-            "/usr/local/share/amar-bangla-kotha/bangla_wordlist.txt",
-            os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "bangla_wordlist.txt")
+            "/usr/local/share/amar-bangla-kotha/bangla_wordlist.txt"
         ]
         for dp in dict_paths:
             if os.path.exists(dp):
@@ -166,6 +195,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if not self.buffer:
             self.current_primary = ""
             self.current_candidates = []
+            self.current_candidate_types = []
+            self.lookup_window_shown = False
             abk_lib.abk_suggestion_reset(self.engine_handle)
             self.hide_lookup_table()
             self.hide_preedit_text()
@@ -178,11 +209,14 @@ class AmarBanglaKothaEngine(IBus.Engine):
         res = res_ptr.contents
         self.current_primary = res.primary_transliteration.decode('utf-8') if res.primary_transliteration else ""
         self.current_candidates = []
+        self.current_candidate_types = []
 
         self.lookup_table.clear()
         for i in range(res.candidate_count):
             w = res.candidates[i].word.decode('utf-8')
+            ctype = res.candidates[i].candidate_type
             self.current_candidates.append(w)
+            self.current_candidate_types.append(ctype)
             cand_text = IBus.Text.new_from_string(w)
             self.lookup_table.append_candidate(cand_text)
             try:
@@ -201,10 +235,13 @@ class AmarBanglaKothaEngine(IBus.Engine):
         display_text = self.current_candidates[sel_idx] if (0 <= sel_idx < len(self.current_candidates)) else (self.current_primary or self.buffer)
         self.update_preedit_display(display_text)
 
-        # Show candidate window if candidates exist
-        if self.current_candidates:
+        # Show candidate window if candidates exist and suggestion mode keeps window visible
+        win_visible = abk_lib.abk_suggestion_is_visible(self.engine_handle) == 1
+        if self.current_candidates and win_visible:
+            self.lookup_window_shown = True
             self.update_lookup_table(self.lookup_table, True)
         else:
+            self.lookup_window_shown = False
             self.hide_lookup_table()
 
     def do_candidate_clicked(self, index, button, state):
@@ -224,7 +261,7 @@ class AmarBanglaKothaEngine(IBus.Engine):
         abk_lib.abk_suggestion_select_index(self.engine_handle, target_idx)
         self.lookup_table.set_cursor_pos(target_idx)
         target = self.current_candidates[target_idx]
-        self.commit_word(target, append_space=False)
+        self.commit_word(target, append_space=False, explicit_index=target_idx)
 
     def do_cursor_down(self):
         if self.buffer and self.current_candidates:
@@ -258,9 +295,9 @@ class AmarBanglaKothaEngine(IBus.Engine):
             self.update_lookup_table(self.lookup_table, True)
             self.update_preedit_display(self.current_candidates[sel_idx])
 
-    def commit_word(self, word=None, append_space=False):
+    def commit_word(self, word=None, append_space=False, explicit_index=None):
+        sel_idx = explicit_index if explicit_index is not None else self.lookup_table.get_cursor_pos()
         if not word:
-            sel_idx = self.lookup_table.get_cursor_pos()
             if 0 <= sel_idx < len(self.current_candidates):
                 word = self.current_candidates[sel_idx]
             else:
@@ -269,11 +306,18 @@ class AmarBanglaKothaEngine(IBus.Engine):
         log_event("COMMIT_TEXT", f"Word: '{word}', append_space={append_space}")
 
         raw_typed = self.buffer
+        was_autocorrected = (
+            0 <= sel_idx < len(self.current_candidate_types)
+            and self.current_candidate_types[sel_idx] == 3
+        )
+        non_default_choice = (0 < sel_idx < len(self.current_candidates))
 
         # 1. Reset state and hide composition UI FIRST
         self.buffer = ""
         self.current_primary = ""
         self.current_candidates = []
+        self.current_candidate_types = []
+        self.lookup_window_shown = False
         abk_lib.abk_suggestion_reset(self.engine_handle)
         self.hide_lookup_table()
         self.hide_preedit_text()
@@ -282,16 +326,24 @@ class AmarBanglaKothaEngine(IBus.Engine):
         clean_word = normalize_nfc(word)
         text_to_commit = clean_word + (" " if append_space else "")
 
-        # 3. Workstream 3: Record commit for Undo on Backspace
+        # 3. Section 8: Remember non-default user choice locally
+        if non_default_choice and raw_typed and clean_word and self.engine_handle:
+            abk_lib.abk_engine_remember_choice(
+                self.engine_handle,
+                raw_typed.encode('utf-8'),
+                clean_word.encode('utf-8')
+            )
+
+        # 4. Section 7 / Workstream 3: Record commit for Undo/Revert on Backspace
         if raw_typed and text_to_commit and self.engine_handle:
             abk_lib.abk_engine_record_commit(
                 self.engine_handle,
                 raw_typed.encode('utf-8'),
                 text_to_commit.encode('utf-8'),
-                0
+                1 if was_autocorrected else 0
             )
 
-        # 4. Commit text cleanly in a single call
+        # 5. Commit text cleanly in a single call
         if text_to_commit:
             self.commit_text(IBus.Text.new_from_string(text_to_commit))
 
@@ -334,17 +386,35 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if state & (IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK | IBus.ModifierType.SUPER_MASK):
             return False
 
-        # Workstream 1: Navigation with Arrow Down / Key_KP_Down / Arrow Right / Key_KP_Right / Tab
-        if keyval in (IBus.KEY_Down, IBus.KEY_KP_Down, IBus.KEY_Right, IBus.KEY_KP_Right, IBus.KEY_Tab):
+        # Section 8: Optional Tab browsing (disabled when user prefers Tab for spreadsheets/tables)
+        if keyval == IBus.KEY_Tab:
+            if self.buffer and self.current_candidates:
+                if abk_lib.abk_engine_is_tab_browses(self.engine_handle) == 1:
+                    abk_lib.abk_suggestion_browse_tab(self.engine_handle)
+                    sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
+                    self.lookup_table.set_cursor_pos(sel_idx)
+                    self.lookup_window_shown = True
+                    self.update_lookup_table(self.lookup_table, True)
+                    self.update_preedit_display(self.current_candidates[sel_idx])
+                    return True
+                else:
+                    # Commit current candidate and let Tab pass through to spreadsheet/table
+                    self.commit_word(append_space=False)
+                    return False
+            return False
+
+        # Workstream 1: Navigation with Arrow Down / Key_KP_Down / Arrow Right / Key_KP_Right
+        if keyval in (IBus.KEY_Down, IBus.KEY_KP_Down, IBus.KEY_Right, IBus.KEY_KP_Right):
             if self.buffer and self.current_candidates:
                 abk_lib.abk_suggestion_select_next(self.engine_handle)
                 sel_idx = abk_lib.abk_suggestion_get_selected_index(self.engine_handle)
                 self.lookup_table.set_cursor_pos(sel_idx)
-                log_event("KEY_CONSUMED", f"Arrow Down/Right/Tab -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
+                self.lookup_window_shown = True
+                log_event("KEY_CONSUMED", f"Arrow Down/Right -> selected index: {sel_idx} ('{self.current_candidates[sel_idx]}')")
                 self.update_lookup_table(self.lookup_table, True)
                 self.update_preedit_display(self.current_candidates[sel_idx])
                 return True
-            log_event("KEY_IGNORED", f"Arrow Down/Right/Tab ignored (buffer={len(self.buffer)})")
+            log_event("KEY_IGNORED", f"Arrow Down/Right ignored (buffer={len(self.buffer)})")
             return False
 
         # Workstream 1: Navigation with Arrow Up / Key_KP_Up / Arrow Left / Key_KP_Left / Shift+Tab
@@ -396,7 +466,7 @@ class AmarBanglaKothaEngine(IBus.Engine):
                 return True
             return False
 
-        # 3. Backspace
+        # 3. Backspace (with Section 7 first-backspace autocorrect revert)
         if keyval == IBus.KEY_BackSpace:
             if self.buffer:
                 self.buffer = self.buffer[:-1]
@@ -409,6 +479,10 @@ class AmarBanglaKothaEngine(IBus.Engine):
                 if ret:
                     comm_str = comm_buf.value.decode('utf-8')
                     raw_str = raw_buf.value.decode('utf-8')
+                    # If commit was an autocorrect, also trigger engine suppression so raw text stays un-autocorrected
+                    rev_buf = ctypes.create_string_buffer(512)
+                    abk_lib.abk_engine_revert_autocorrect(self.engine_handle, rev_buf, 512)
+                    abk_lib.abk_engine_clear_undo(self.engine_handle)
                     log_event("UNDO_COMMIT", f"Reverting committed '{comm_str}' to raw '{raw_str}'")
                     try:
                         self.delete_surrounding_text(-len(comm_str), len(comm_str))
@@ -419,12 +493,19 @@ class AmarBanglaKothaEngine(IBus.Engine):
                     return True
             return False
 
-        # 4. Escape: cancel composition
+        # 4. Escape: close candidate window first (Section 8); press again to cancel composition
         if keyval == IBus.KEY_Escape:
             if self.buffer:
+                if self.lookup_window_shown:
+                    abk_lib.abk_suggestion_close_window(self.engine_handle)
+                    self.lookup_window_shown = False
+                    self.hide_lookup_table()
+                    return True
                 self.buffer = ""
                 self.current_primary = ""
                 self.current_candidates = []
+                self.current_candidate_types = []
+                self.lookup_window_shown = False
                 self.hide_lookup_table()
                 self.hide_preedit_text()
                 return True
@@ -434,7 +515,7 @@ class AmarBanglaKothaEngine(IBus.Engine):
         if self.buffer and IBus.KEY_1 <= keyval <= IBus.KEY_9:
             idx = keyval - IBus.KEY_1
             if idx < len(self.current_candidates):
-                self.commit_word(self.current_candidates[idx], append_space=True)
+                self.commit_word(self.current_candidates[idx], append_space=True, explicit_index=idx)
                 return True
 
         # 6. Latin characters & special phonetic symbols

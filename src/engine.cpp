@@ -22,6 +22,11 @@ AmarBanglaKothaEngine::AmarBanglaKothaEngine(const EngineConfig& cfg)
     if (!config.personal_dictionary_file_path.empty()) {
         personal_dictionary.load_from_file(config.personal_dictionary_file_path);
     }
+    personal_dictionary.set_max_remembered_choices(config.max_remembered_choices);
+    autocorrect_table.set_enabled(config.enable_autocorrect);
+    suggestion_state.pinned = config.window_pinned;
+    suggestion_state.pinned_x = config.window_pinned_x;
+    suggestion_state.pinned_y = config.window_pinned_y;
     bigram_model.set_enable_trigram(config.enable_trigram);
 
     // Workstream 7: Initialize built-in Bangladeshi shortcuts (Currency 'tk' -> '৳', greetings)
@@ -66,6 +71,14 @@ void AmarBanglaKothaEngine::add_candidate_unique(std::vector<Candidate>& list, c
 std::string AmarBanglaKothaEngine::transliterate_fast(const std::string& latin_input) const {
     if (secure_mode) return utf8::normalize_nfc(latin_input);
     if (should_bypass_token(latin_input)) return utf8::normalize_nfc(latin_input);
+    if (config.suggestion_mode == SuggestionMode::CLASSIC_PHONETIC) {
+        return transliterator.transliterate(latin_input, nullptr);
+    }
+    std::string trimmed = utf8::trim(latin_input);
+    if (config.enable_autocorrect && autocorrect_table.is_enabled() && trimmed != suppressed_autocorrect_input) {
+        std::string ac = autocorrect_table.lookup(trimmed);
+        if (!ac.empty()) return ac;
+    }
     return transliterator.transliterate(latin_input, &dictionary);
 }
 
@@ -81,9 +94,14 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
     }
 
     std::string trimmed_input = utf8::trim(raw_input);
+    if (!suppressed_autocorrect_input.empty() && trimmed_input != suppressed_autocorrect_input) {
+        suppressed_autocorrect_input.clear();
+    }
+
     if (trimmed_input.empty()) {
         reset_suggestion_state();
-        if (config.enable_next_word_prediction && !last_committed_word.empty()) {
+        if (config.suggestion_mode != SuggestionMode::CLASSIC_PHONETIC &&
+            config.enable_next_word_prediction && !last_committed_word.empty()) {
             auto predictions = get_next_word_predictions(config.max_suggestions);
             if (!predictions.empty()) {
                 result.candidates = predictions;
@@ -98,7 +116,7 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         return result;
     }
 
-    // Workstream 3: Check token classification (URLs, emails, file paths, code, English)
+    // Workstream 3 & D: Check token classification (URLs, emails, file paths, code, English)
     if (should_bypass_token(trimmed_input)) {
         std::string safe_text = utf8::normalize_nfc(trimmed_input);
         suggestion_state.items.clear();
@@ -110,13 +128,62 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         return result;
     }
 
+    const bool has_explicit_ctrl = AutocorrectTable::has_explicit_control_keys(trimmed_input);
+    const bool allow_autocorrect_for_token =
+        config.enable_autocorrect && autocorrect_table.is_enabled() &&
+        !has_explicit_ctrl && (trimmed_input != suppressed_autocorrect_input);
+
+    // Section 8 Mode 3: Classic phonetic with no suggestion window
+    if (config.suggestion_mode == SuggestionMode::CLASSIC_PHONETIC) {
+        std::string out = transliterator.transliterate(trimmed_input, nullptr);
+        result.primary_transliteration = out;
+        result.candidates = {Candidate(out, 12000.0, CandidateType::EXACT_TRANSLITERATION, "Classic phonetic")};
+        suggestion_state.items = result.candidates;
+        suggestion_state.selected_index = 0;
+        suggestion_state.visible = false; // No suggestion window in classic mode
+        suggestion_state.raw_input = raw_input;
+        suggestion_state.primary_transliteration = out;
+        return result;
+    }
+
+    // Section 8: "Remember my choice" — rank previously selected non-default candidate first
+    if (config.enable_remember_choice && trimmed_input != suppressed_autocorrect_input &&
+        personal_dictionary.has_remembered_choice(trimmed_input)) {
+        std::string rem = personal_dictionary.get_remembered_choice(trimmed_input);
+        if (!rem.empty()) {
+            add_candidate_unique(result.candidates,
+                Candidate(rem, 22000.0, CandidateType::REMEMBERED_CHOICE, "Remembered user choice"));
+        }
+    }
+
+    // Section 7: Editable Autocorrect Replacement Table (never overrides explicit control keys)
+    if (allow_autocorrect_for_token) {
+        std::string ac_repl = autocorrect_table.lookup(trimmed_input);
+        if (!ac_repl.empty()) {
+            add_candidate_unique(result.candidates,
+                Candidate(ac_repl, 16500.0, CandidateType::AUTOCORRECT, "Autocorrect table"));
+        }
+    }
+
     // Workstream 4: Personal Shortcut / Snippet Expansion (e.g. "amr" -> "আমার")
-    if (config.enable_shortcut_expansion && personal_dictionary.has_shortcut(trimmed_input)) {
+    if (config.enable_shortcut_expansion && !has_explicit_ctrl &&
+        trimmed_input != suppressed_autocorrect_input &&
+        personal_dictionary.has_shortcut(trimmed_input)) {
         std::string expansion = personal_dictionary.get_expansion(trimmed_input);
         if (!expansion.empty()) {
             Candidate sc_cand(expansion, 15000.0, CandidateType::SHORTCUT_EXPANSION, "Personal shortcut");
             add_candidate_unique(result.candidates, sc_cand);
         }
+    }
+
+    // Classic strict character-first phonetic result
+    std::string classic_phonetic = transliterator.transliterate(trimmed_input, nullptr);
+    if (!classic_phonetic.empty() && config.suggestion_mode == SuggestionMode::CHARACTER_FIRST) {
+        CandidateType ctype = dictionary.contains(classic_phonetic)
+            ? CandidateType::DICTIONARY_EXACT
+            : CandidateType::EXACT_TRANSLITERATION;
+        add_candidate_unique(result.candidates,
+            Candidate(classic_phonetic, 11800.0, ctype, "Classic phonetic"));
     }
 
     // Workstream 7: Domain Dictionary Pack matching
@@ -139,7 +206,7 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
     if (!beam_candidates.empty()) {
         primary = beam_candidates[0].first;
     } else {
-        primary = transliterator.transliterate(trimmed_input, &dictionary);
+        primary = classic_phonetic;
     }
     result.primary_transliteration = primary;
 
@@ -158,18 +225,43 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         if (in_dict) {
             uint32_t freq = dictionary.get_frequency(cand_word);
             double lm_log_score = std::log10(static_cast<double>(freq + 1));
-            // Log-linear combination: Transliteration confidence + LM unigram + Rank discount
             double final_score = 8500.0 * trans_conf + 500.0 * lm_log_score - (i * 35.0);
             add_candidate_unique(result.candidates, Candidate(cand_word, final_score, CandidateType::DICTIONARY_EXACT, "Dictionary match"));
-        } else {
-            double final_score = 7500.0 * trans_conf - (i * 45.0);
+        } else if (i == 0) {
+            double final_score = 7500.0 * trans_conf;
             add_candidate_unique(result.candidates, Candidate(cand_word, final_score, CandidateType::EXACT_TRANSLITERATION, "Phonetic transliteration"));
+        } else if (i <= 2) {
+            double final_score = 6180.0 * trans_conf - (i * 25.0);
+            add_candidate_unique(result.candidates, Candidate(cand_word, final_score, CandidateType::PHONETIC_ALTERNATIVE, "Phonetic variation"));
+        } else {
+            double final_score = 2600.0 * trans_conf - (i * 15.0);
+            add_candidate_unique(result.candidates, Candidate(cand_word, final_score, CandidateType::PHONETIC_ALTERNATIVE, "Phonetic variation"));
+        }
+    }
+
+    // 2b. Section 8: Skeleton / Collapsed Phonetic Key Dictionary Lookup
+    // Resolves ত/ট/ৎ, শ/ষ/স, ই/ঈ, উ/ঊ, ন/ণ, র/ড়/ঢ়, and inherent o vs ো inconsistencies
+    if (!classic_phonetic.empty()) {
+        auto skel_matches = dictionary.lookup_by_skeleton(classic_phonetic, config.max_suggestions);
+        for (size_t s_idx = 0; s_idx < skel_matches.size(); ++s_idx) {
+            const auto& sm = skel_matches[s_idx];
+            double lm_log_score = std::log10(static_cast<double>(sm.second + 1));
+            double skel_score = (!has_explicit_ctrl && config.suggestion_mode == SuggestionMode::DICTIONARY_FIRST)
+                ? (8200.0 + 500.0 * lm_log_score - (s_idx * 30.0))
+                : (7800.0 + 450.0 * lm_log_score - (s_idx * 30.0));
+            if (has_explicit_ctrl) {
+                // Never allow skeleton collapse to outrank an explicit control key (#1)
+                skel_score = std::min(skel_score, 7100.0 - (s_idx * 25.0));
+            }
+            add_candidate_unique(result.candidates,
+                Candidate(sm.first, skel_score, CandidateType::DICTIONARY_EXACT, "Skeleton dictionary match"));
         }
     }
 
     // 3. Phonetic Alternatives
     std::vector<std::string> variants = transliterator.get_phonetic_variants(trimmed_input, 4);
-    for (const auto& var : variants) {
+    for (size_t v_idx = 0; v_idx < variants.size(); ++v_idx) {
+        const auto& var = variants[v_idx];
         if (var != primary) {
             if (dictionary.contains(var)) {
                 uint32_t freq = dictionary.get_frequency(var);
@@ -177,31 +269,32 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
                 double score = 5200.0 + 400.0 * lm_log_score;
                 add_candidate_unique(result.candidates, Candidate(var, score, CandidateType::PHONETIC_ALTERNATIVE, "Phonetic variation (in dictionary)"));
             } else {
-                double score = 2600.0;
+                double score = 4900.0 - (v_idx * 80.0);
                 add_candidate_unique(result.candidates, Candidate(var, score, CandidateType::PHONETIC_ALTERNATIVE, "Phonetic variation"));
             }
         }
     }
 
     // 4. Prefix Completion from Dictionary (Future word completions)
-    if (config.enable_prefix_completion && !primary.empty()) {
-        auto prefix_matches = dictionary.get_prefix_matches(primary, config.max_suggestions * 2);
-        size_t prim_len = utf8::codepoint_length(primary);
+    const std::string& pfx_seed = (!classic_phonetic.empty() && config.suggestion_mode == SuggestionMode::CHARACTER_FIRST)
+        ? classic_phonetic : primary;
+    if (config.enable_prefix_completion && !pfx_seed.empty()) {
+        auto prefix_matches = dictionary.get_prefix_matches(pfx_seed, config.max_suggestions * 2);
+        size_t prim_len = utf8::codepoint_length(pfx_seed);
 
         for (const auto& match : prefix_matches) {
-            if (match.first == primary) continue;
+            if (match.first == pfx_seed) continue;
             size_t word_len = utf8::codepoint_length(match.first);
             double len_diff = (word_len >= prim_len) ? static_cast<double>(word_len - prim_len) : 0.0;
             double lm_log_score = std::log10(static_cast<double>(match.second + 1));
 
-            // Log-linear: Base + LM score - length distance penalty
             double score = 3200.0 + 350.0 * lm_log_score - (len_diff * 80.0);
             add_candidate_unique(result.candidates, Candidate(match.first, score, CandidateType::PREFIX_COMPLETION, "Prefix completion"));
         }
     }
 
-    // 5. Autocorrect / Typo Correction (Bounded fast fuzzy trie search)
-    if (config.enable_autocorrect && utf8::codepoint_length(primary) >= 2) {
+    // 5. Autocorrect / Typo Correction (Bounded fast fuzzy trie search — never overrides explicit control keys)
+    if (allow_autocorrect_for_token && utf8::codepoint_length(primary) >= 2) {
         auto corrections = autocorrect.suggest_corrections(
             dictionary.get_system_trie(),
             primary,
@@ -212,9 +305,8 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
         for (const auto& match : corrections) {
             if (match.word == primary) continue;
             double lm_log_score = std::log10(static_cast<double>(match.frequency + 1));
-            // Log-linear: Base + LM score - Edit distance penalty
             double score = 3000.0 + 400.0 * lm_log_score - (match.edit_distance * 700.0);
-            add_candidate_unique(result.candidates, Candidate(match.word, score, CandidateType::AUTOCORRECT, "Autocorrect"));
+            add_candidate_unique(result.candidates, Candidate(match.word, score, CandidateType::AUTOCORRECT, "Fuzzy autocorrect"));
         }
     }
 
@@ -227,14 +319,14 @@ SuggestionResult AmarBanglaKothaEngine::process(const std::string& raw_input) {
             } else {
                 bi_prob = bigram_model.get_bigram_prob(last_committed_word, cand.word);
             }
-            if (bi_prob > 0.0) {
-                cand.score += 750.0 * std::log10(bi_prob * 1000.0 + 1.0);
+            if (bi_prob > 0.0 && !has_explicit_ctrl) {
+                cand.score += 2400.0 * std::log10(bi_prob * 1000.0 + 1.0);
             }
-            if (personal_dictionary.contains_word(cand.word)) {
+            if (personal_dictionary.contains_word(cand.word) && !has_explicit_ctrl) {
                 cand.score += 800.0;
             }
         }
-    } else {
+    } else if (!has_explicit_ctrl) {
         for (auto& cand : result.candidates) {
             if (personal_dictionary.contains_word(cand.word)) {
                 cand.score += 800.0;
@@ -329,12 +421,106 @@ bool AmarBanglaKothaEngine::select_candidate(int index) {
         index = static_cast<int>(suggestion_state.items.size() - 1);
     }
     suggestion_state.selected_index = index;
-    suggestion_state.visible = true;
+    suggestion_state.visible = (config.suggestion_mode != SuggestionMode::CLASSIC_PHONETIC);
     if (debug_logging) {
         log_event("CLICK_RECEIVED", "Selected index: " + std::to_string(index) +
                   " ('" + suggestion_state.items[index].word + "')");
     }
     return true;
+}
+
+bool AmarBanglaKothaEngine::browse_tab() {
+    if (!config.tab_browses_candidates || !suggestion_state.visible || suggestion_state.items.empty()) {
+        if (debug_logging) log_event("KEY_IGNORED", "Tab ignored (disabled or candidate window closed)");
+        return false;
+    }
+    return select_next_candidate();
+}
+
+bool AmarBanglaKothaEngine::close_suggestion_window() {
+    if (!suggestion_state.visible) {
+        return false;
+    }
+    suggestion_state.visible = false;
+    if (debug_logging) log_event("WINDOW_CLOSED", "Suggestion window closed via Esc");
+    return true;
+}
+
+std::string AmarBanglaKothaEngine::commit_selected_candidate(bool append_space) {
+    std::string raw_in = utf8::trim(suggestion_state.raw_input);
+    std::string chosen = get_selected_candidate_word();
+    int sel_idx = suggestion_state.selected_index;
+    bool was_ac = false;
+
+    if (sel_idx >= 0 && sel_idx < static_cast<int>(suggestion_state.items.size())) {
+        auto ctype = suggestion_state.items[sel_idx].type;
+        was_ac = (ctype == CandidateType::AUTOCORRECT || ctype == CandidateType::SHORTCUT_EXPANSION);
+    }
+
+    // Section 8: "Remember my choice" when user picks a non-default candidate (sel_idx > 0)
+    if (config.enable_remember_choice && !secure_mode && sel_idx > 0 && !raw_in.empty() && !chosen.empty()) {
+        personal_dictionary.remember_choice(raw_in, chosen);
+    }
+
+    suppressed_autocorrect_input.clear();
+    std::string committed = utf8::normalize_nfc(chosen) + (append_space ? " " : "");
+    if (!raw_in.empty() && !committed.empty()) {
+        record_commit(raw_in, committed, was_ac);
+    }
+    reset_suggestion_state();
+    return committed;
+}
+
+void AmarBanglaKothaEngine::set_suggestion_mode(SuggestionMode mode) {
+    config.suggestion_mode = mode;
+    if (mode == SuggestionMode::CLASSIC_PHONETIC) {
+        suggestion_state.visible = false;
+    }
+}
+
+void AmarBanglaKothaEngine::set_window_pinned(bool pinned, int x, int y) {
+    config.window_pinned = pinned;
+    config.window_pinned_x = x;
+    config.window_pinned_y = y;
+    suggestion_state.pinned = pinned;
+    suggestion_state.pinned_x = x;
+    suggestion_state.pinned_y = y;
+}
+
+void AmarBanglaKothaEngine::remember_candidate_choice(const std::string& raw_input, const std::string& chosen_word) {
+    if (secure_mode || !config.enable_remember_choice) return;
+    personal_dictionary.remember_choice(raw_input, chosen_word);
+    if (!config.personal_dictionary_file_path.empty()) {
+        personal_dictionary.save_atomic(config.personal_dictionary_file_path);
+    }
+}
+
+void AmarBanglaKothaEngine::reset_remembered_choices() {
+    personal_dictionary.clear_remembered_choices();
+    if (!config.personal_dictionary_file_path.empty()) {
+        personal_dictionary.save_atomic(config.personal_dictionary_file_path);
+    }
+}
+
+void AmarBanglaKothaEngine::set_autocorrect_enabled(bool enable) {
+    config.enable_autocorrect = enable;
+    autocorrect_table.set_enabled(enable);
+}
+
+bool AmarBanglaKothaEngine::add_autocorrect_entry(const std::string& typed_text, const std::string& replacement) {
+    return autocorrect_table.add_or_update(typed_text, replacement, "user");
+}
+
+bool AmarBanglaKothaEngine::remove_autocorrect_entry(const std::string& typed_text) {
+    return autocorrect_table.remove(typed_text);
+}
+
+bool AmarBanglaKothaEngine::import_autocorrect_table(const std::string& filepath) {
+    return autocorrect_table.import_tsv(filepath);
+}
+
+bool AmarBanglaKothaEngine::export_autocorrect_table(const std::string& filepath) const {
+    return autocorrect_table.export_tsv(filepath);
 }
 
 std::string AmarBanglaKothaEngine::get_selected_candidate_word() const {
@@ -433,9 +619,20 @@ std::pair<std::string, std::string> AmarBanglaKothaEngine::undo_commit() {
     if (!last_commit.can_undo) {
         return {"", ""};
     }
+    if (last_commit.was_autocorrected) {
+        suppressed_autocorrect_input = utf8::trim(last_commit.raw_input);
+    }
     std::pair<std::string, std::string> res = { last_commit.committed_text, last_commit.raw_input };
     last_commit.can_undo = false;
     return res;
+}
+
+std::string AmarBanglaKothaEngine::revert_autocorrect_on_backspace() {
+    if (!last_commit.can_undo || !last_commit.was_autocorrected) {
+        return "";
+    }
+    auto res = undo_commit();
+    return res.second; // Exact text the user typed
 }
 
 bool AmarBanglaKothaEngine::should_bypass_token(const std::string& token) const {
@@ -456,6 +653,13 @@ bool AmarBanglaKothaEngine::should_bypass_token(const std::string& token) const 
             return config.enable_code_bypass || config.is_ide_or_terminal;
 
         case TokenType::ENGLISH_WORD:
+            if (config.enable_autocorrect && autocorrect_table.is_enabled() &&
+                token != suppressed_autocorrect_input && autocorrect_table.contains(token)) {
+                return false;
+            }
+            if (config.enable_shortcut_expansion && personal_dictionary.has_shortcut(token)) {
+                return false;
+            }
             return config.enable_english_bypass;
 
         default:

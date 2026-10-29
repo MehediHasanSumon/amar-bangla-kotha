@@ -43,6 +43,19 @@ static bool is_valid_utf8(const char* data, size_t len) {
     return true;
 }
 
+// Verify UTF-8 string never contains Assamese Ra (U+09F0: E0 A7 B0) or Wa (U+09F1: E0 A7 B1)
+static bool has_no_forbidden_assamese(const char* data, size_t len) {
+    for (size_t i = 0; i + 2 < len; ++i) {
+        unsigned char b0 = static_cast<unsigned char>(data[i]);
+        unsigned char b1 = static_cast<unsigned char>(data[i + 1]);
+        unsigned char b2 = static_cast<unsigned char>(data[i + 2]);
+        if (b0 == 0xE0 && b1 == 0xA7 && (b2 == 0xB0 || b2 == 0xB1)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main() {
     std::cout << "=========================================================\n";
     std::cout << " Amar Bangla Kotha - Fuzz Testing Suite (ASan / UBSan)   \n";
@@ -57,7 +70,7 @@ int main() {
     std::mt19937 rng(1337); // Deterministic seed for reproducible fuzzing
 
     // Character pools
-    const std::string valid_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789^:` .,!?;:-()";
+    const std::string valid_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789^:`$| .,!?;:-()[]{}/\\+*%";
     std::vector<uint8_t> corrupted_bytes = {
         0x80, 0xBF, 0xC0, 0xC1, 0xF5, 0xFF, 0xFE, 0x00, 0x7F, 0xE0, 0xED, 0xA0
     };
@@ -99,9 +112,14 @@ int main() {
                 abk_learn_word(engine, current_buffer.c_str(), 100);
             }
         } else if (action == 5) {
-            // Workstream 2: Toggle secure mode & clipboard paste fallback mode
+            // Workstream 2 & Section 7/8: Toggle secure/clipboard/suggestion modes, Tab, Taka & digits
             abk_engine_set_secure_mode(engine, rng() % 2);
             abk_engine_set_clipboard_mode(engine, rng() % 2);
+            abk_engine_set_suggestion_mode(engine, rng() % 3);
+            abk_engine_set_tab_browses(engine, rng() % 2);
+            abk_engine_set_bangla_digits(engine, rng() % 2);
+            abk_engine_set_taka_sign(engine, rng() % 2);
+            abk_autocorrect_set_enabled(engine, rng() % 2);
         } else {
             // Clear buffer
             current_buffer.clear();
@@ -110,10 +128,23 @@ int main() {
         // Test 1: Suggestions query
         abk_suggestion_list_t* res = abk_get_suggestions(engine, current_buffer.c_str());
         if (res) {
-            // Exercise candidate selection navigation
+            // Exercise candidate selection navigation, Tab, Esc & autocorrect revert
             abk_suggestion_select_next(engine);
             abk_suggestion_select_prev(engine);
+            abk_suggestion_browse_tab(engine);
             abk_suggestion_select_index(engine, rng() % 10);
+            if ((iter % 17) == 0) {
+                abk_suggestion_close_window(engine);
+            }
+            if ((iter % 53) == 0 && !current_buffer.empty() && res->candidate_count > 0 && res->candidates[0].word) {
+                abk_engine_remember_choice(engine, current_buffer.c_str(), res->candidates[0].word);
+                abk_engine_record_commit(engine, current_buffer.c_str(), res->candidates[0].word, 1);
+                char rev_buf[256];
+                abk_engine_revert_autocorrect(engine, rev_buf, sizeof(rev_buf));
+            }
+            if ((iter % 2000) == 0) {
+                abk_engine_reset_remembered_choices(engine);
+            }
             char sel_word[256];
             abk_suggestion_get_selected_word(engine, sel_word, sizeof(sel_word));
             abk_suggestion_get_selected_word_ptr(engine);
@@ -133,11 +164,13 @@ int main() {
                     std::cerr << "\n";
                     assert(false);
                 }
+                assert(has_no_forbidden_assamese(res->primary_transliteration, p_len));
             }
             for (size_t i = 0; i < res->candidate_count; ++i) {
                 if (res->candidates[i].word) {
                     size_t w_len = std::strlen(res->candidates[i].word);
                     assert(is_valid_utf8(res->candidates[i].word, w_len));
+                    assert(has_no_forbidden_assamese(res->candidates[i].word, w_len));
                 }
             }
             abk_free_suggestions(res);
@@ -147,6 +180,7 @@ int main() {
         int fast_ret = abk_transliterate_fast(engine, current_buffer.c_str(), out_buf, sizeof(out_buf));
         if (fast_ret >= 0) {
             assert(is_valid_utf8(out_buf, fast_ret));
+            assert(has_no_forbidden_assamese(out_buf, static_cast<size_t>(fast_ret)));
         }
 
         // Test 3: Normalization & Grapheme utilities

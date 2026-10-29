@@ -1,9 +1,238 @@
 #include "abk/autocorrect.h"
 #include "abk/utf8_util.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <sstream>
 
 namespace abk {
+
+namespace {
+std::string sanitize_bengali_nfc(const std::string& s) {
+    auto cps = utf8::to_codepoints(s);
+    std::vector<char32_t> clean;
+    clean.reserve(cps.size());
+    for (char32_t cp : cps) {
+        if (cp == 0x09F0) clean.push_back(0x09B0);      // Never emit Assamese ৰ
+        else if (cp == 0x09F1) clean.push_back(0x09AC); // Never emit Assamese ৱ
+        else clean.push_back(cp);
+    }
+    return utf8::normalize_nfc(utf8::to_utf8(clean));
+}
+} // namespace
+
+AutocorrectTable::AutocorrectTable() {
+    std::vector<std::string> paths = {
+        "data/autocorrect_default.tsv",
+        "../data/autocorrect_default.tsv",
+        "../../data/autocorrect_default.tsv",
+        "/usr/local/share/amar-bangla-kotha/autocorrect_default.tsv",
+        "/usr/share/amar-bangla-kotha/autocorrect_default.tsv"
+    };
+    bool loaded = false;
+    for (const auto& p : paths) {
+        if (load_defaults(p)) {
+            loaded = true;
+            break;
+        }
+    }
+    if (!loaded || entries_.empty()) {
+        init_builtin_defaults();
+    }
+}
+
+AutocorrectTable::AutocorrectTable(const std::string& defaults_filepath) {
+    if (!load_defaults(defaults_filepath) || entries_.empty()) {
+        init_builtin_defaults();
+    }
+}
+
+bool AutocorrectTable::has_explicit_control_keys(const std::string& input) {
+    if (input.empty()) return false;
+    if (input.find('`') != std::string::npos || input.find(",,") != std::string::npos) {
+        return true;
+    }
+    for (unsigned char uc : input) {
+        if (uc >= 'A' && uc <= 'Z') {
+            return true;
+        }
+    }
+    return false;
+}
+
+void AutocorrectTable::init_builtin_defaults() {
+    entries_.clear();
+    const std::vector<AutocorrectEntry> defaults = {
+        {"amra", "আমরা", "conjunct_exception", false},
+        {"tomra", "তোমরা", "conjunct_exception", false},
+        {"apnara", "আপনারা", "conjunct_exception", false},
+        {"amader", "আমাদের", "conjunct_exception", false},
+        {"tomader", "তোমাদের", "conjunct_exception", false},
+        {"apnader", "আপনাদের", "conjunct_exception", false},
+        {"ekta", "একটা", "conjunct_exception", false},
+        {"ekti", "একটি", "conjunct_exception", false},
+        {"ektu", "একটু", "conjunct_exception", false},
+        {"aglano", "আগলানো", "conjunct_exception", false},
+        {"korbo", "করব", "conjunct_exception", false},
+        {"bolbo", "বলব", "conjunct_exception", false},
+        {"dekhbo", "দেখব", "conjunct_exception", false},
+        {"korte", "করতে", "conjunct_exception", false},
+        {"bolte", "বলতে", "conjunct_exception", false},
+        {"dekhte", "দেখতে", "conjunct_exception", false},
+        {"dorkar", "দরকার", "conjunct_exception", false},
+        {"sorkar", "সরকার", "conjunct_exception", false},
+        {"shorkar", "সরকার", "conjunct_exception", false},
+        {"tarpor", "তারপর", "conjunct_exception", false},
+        {"ajke", "আজকে", "conjunct_exception", false},
+        {"kalke", "কালকে", "conjunct_exception", false},
+        {"byakti", "ব্যক্তি", "conjunct_exception", false},
+        {"lokkhmi", "লক্ষ্মী", "conjunct_exception", false},
+        {"software", "সফটওয়্যার", "loanword", false},
+        {"doctor", "ডাক্তার", "loanword", false},
+        {"school", "স্কুল", "loanword", false},
+        {"college", "কলেজ", "loanword", false},
+        {"office", "অফিস", "loanword", false},
+        {"mobile", "মোবাইল", "loanword", false},
+        {"phone", "ফোন", "loanword", false},
+        {"hospital", "হাসপাতাল", "loanword", false},
+        {"police", "পুলিশ", "loanword", false},
+        {"bank", "ব্যাংক", "loanword", false},
+        {"video", "ভিডিও", "loanword", false},
+        {"internet", "ইন্টারনেট", "loanword", false},
+        {"university", "ইউনিভার্সিটি", "loanword", false},
+        {"bd", "বাংলাদেশ", "shortcut", false},
+        {"dhk", "ঢাকা", "shortcut", false}
+    };
+    for (const auto& e : defaults) {
+        entries_[e.typed] = AutocorrectEntry(e.typed, sanitize_bengali_nfc(e.replacement), e.category, false);
+    }
+}
+
+bool AutocorrectTable::load_defaults(const std::string& filepath) {
+    std::ifstream f(filepath);
+    if (!f.is_open()) return false;
+
+    entries_.clear();
+    loaded_defaults_path_ = filepath;
+
+    std::string line;
+    while (std::getline(f, line)) {
+        std::string trimmed = utf8::trim(line);
+        if (trimmed.empty() || trimmed[0] == '#') continue;
+
+        std::stringstream ss(trimmed);
+        std::string typed, repl, cat;
+        if (std::getline(ss, typed, '\t') && std::getline(ss, repl, '\t')) {
+            if (!std::getline(ss, cat, '\t') || cat.empty()) {
+                cat = "default";
+            }
+            typed = utf8::trim(typed);
+            repl = sanitize_bengali_nfc(utf8::trim(repl));
+            if (!typed.empty() && !repl.empty()) {
+                entries_[typed] = AutocorrectEntry(typed, repl, utf8::trim(cat), false);
+            }
+        }
+    }
+    return !entries_.empty();
+}
+
+void AutocorrectTable::reset_to_defaults() {
+    if (!loaded_defaults_path_.empty() && load_defaults(loaded_defaults_path_)) {
+        return;
+    }
+    init_builtin_defaults();
+}
+
+bool AutocorrectTable::add_or_update(const std::string& typed_text, const std::string& replacement, const std::string& category) {
+    std::string key = utf8::trim(typed_text);
+    std::string val = sanitize_bengali_nfc(utf8::trim(replacement));
+    if (key.empty() || val.empty()) return false;
+    // Never allow explicit control keys to be overridden silently; store exact key
+    entries_[key] = AutocorrectEntry(key, val, category.empty() ? "user" : category, true);
+    return true;
+}
+
+bool AutocorrectTable::remove(const std::string& typed_text) {
+    std::string key = utf8::trim(typed_text);
+    return entries_.erase(key) > 0;
+}
+
+void AutocorrectTable::clear() {
+    entries_.clear();
+}
+
+bool AutocorrectTable::contains(const std::string& typed_text) const {
+    if (!enabled_) return false;
+    if (has_explicit_control_keys(typed_text)) return false;
+    return entries_.find(typed_text) != entries_.end();
+}
+
+std::string AutocorrectTable::lookup(const std::string& typed_text) const {
+    if (!enabled_) return "";
+    if (has_explicit_control_keys(typed_text)) return "";
+    auto it = entries_.find(typed_text);
+    if (it == entries_.end()) return "";
+    return it->second.replacement;
+}
+
+std::vector<AutocorrectEntry> AutocorrectTable::get_all_entries() const {
+    std::vector<AutocorrectEntry> out;
+    out.reserve(entries_.size());
+    for (const auto& kv : entries_) {
+        out.push_back(kv.second);
+    }
+    std::sort(out.begin(), out.end(), [](const AutocorrectEntry& a, const AutocorrectEntry& b) {
+        return a.typed < b.typed;
+    });
+    return out;
+}
+
+bool AutocorrectTable::import_tsv(const std::string& filepath) {
+    std::ifstream f(filepath);
+    if (!f.is_open()) return false;
+
+    std::string line;
+    size_t imported = 0;
+    while (std::getline(f, line)) {
+        std::string trimmed = utf8::trim(line);
+        if (trimmed.empty() || trimmed[0] == '#') continue;
+
+        std::stringstream ss(trimmed);
+        std::string typed, repl, cat;
+        if (std::getline(ss, typed, '\t') && std::getline(ss, repl, '\t')) {
+            if (!std::getline(ss, cat, '\t') || cat.empty()) {
+                cat = "user";
+            }
+            if (add_or_update(typed, repl, utf8::trim(cat))) {
+                imported++;
+            }
+        }
+    }
+    return imported > 0 || f.eof();
+}
+
+bool AutocorrectTable::export_tsv(const std::string& filepath) const {
+    if (filepath.empty()) return false;
+    std::string tmp_path = filepath + ".tmp";
+    {
+        std::ofstream f(tmp_path, std::ios::trunc);
+        if (!f.is_open()) return false;
+        f << "# Amar Bangla Kotha — User-Editable Autocorrect Table\n";
+        f << "# Format: typed<TAB>replacement<TAB>category\n";
+        auto sorted = get_all_entries();
+        for (const auto& e : sorted) {
+            f << e.typed << "\t" << e.replacement << "\t" << e.category << "\n";
+        }
+        f.flush();
+    }
+    if (std::rename(tmp_path.c_str(), filepath.c_str()) != 0) {
+        std::remove(tmp_path.c_str());
+        return false;
+    }
+    return true;
+}
 
 Autocorrect::Autocorrect() {}
 

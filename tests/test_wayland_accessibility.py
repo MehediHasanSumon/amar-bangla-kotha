@@ -142,5 +142,33 @@ class TestLinuxWaylandAccessibility(unittest.TestCase):
         self.assertEqual(self.engine.buffer, "")
         self.assertEqual(len(self.engine.current_candidates), 0)
 
+    def test_tab_toggle_escape_close_and_remember_choice(self):
+        """Verifies Section 8 Tab setting, Esc closing window, and Remember my choice."""
+        for ch in "bari":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+        self.assertTrue(self.engine.lookup_window_shown)
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 0)
+
+        # Tab browses by default
+        self.assertTrue(self.engine.do_process_key_event(IBus.KEY_Tab, 0, 0))
+        self.assertEqual(self.engine.lookup_table.get_cursor_pos(), 1)
+
+        # Esc closes the candidate window first without clearing composition buffer
+        self.assertTrue(self.engine.do_process_key_event(IBus.KEY_Escape, 0, 0))
+        self.assertFalse(self.engine.lookup_window_shown)
+        self.assertEqual(self.engine.buffer, "bari")
+
+        # Second Esc cancels composition
+        self.assertTrue(self.engine.do_process_key_event(IBus.KEY_Escape, 0, 0))
+        self.assertEqual(self.engine.buffer, "")
+
+        # Disable Tab browsing for spreadsheets: Tab commits & passes through (returns False)
+        abk_lib.abk_engine_set_tab_browses(self.engine.engine_handle, 0)
+        for ch in "koi":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+        self.assertFalse(self.engine.do_process_key_event(IBus.KEY_Tab, 0, 0))
+        self.assertEqual(self.engine.buffer, "")
+        abk_lib.abk_engine_set_tab_browses(self.engine.engine_handle, 1)
+
 if __name__ == '__main__':
     unittest.main()

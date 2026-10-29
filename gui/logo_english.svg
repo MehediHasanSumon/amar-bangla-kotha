@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="56" height="56">
+  <defs>
+    <linearGradient id="bgGradEn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="circleGradEn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer rounded square plate matching mockup radius -->
+  <rect x="1" y="1" width="54" height="54" rx="12" fill="url(#bgGradEn)" stroke="#1E293B" stroke-width="1.5"/>
+  
+  <!-- Muted Circle in center -->
+  <circle cx="28" cy="28" r="16" fill="url(#circleGradEn)"/>
+  
+  <!-- Crisp white Bengali Character 'বা' -->
+  <text x="28" y="38" font-family="'Hind Siliguri', 'Kalpurush', 'Noto Sans Bengali', 'SolaimanLipi', sans-serif" font-size="28" font-weight="bold" fill="#E2E8F0" text-anchor="middle">বা</text>
+</svg>

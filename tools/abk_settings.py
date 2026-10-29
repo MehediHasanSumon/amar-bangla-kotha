@@ -14,10 +14,10 @@ from ctypes import c_void_p, c_char_p, c_size_t, c_int, c_double, Structure, POI
 # 1. Load libabk library for live interactive transliteration & QoL features
 def load_abk():
     paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "libabk.so"),
         os.path.expanduser("~/.local/lib/libabk.so"),
         "/usr/local/lib/libabk.so",
-        "/usr/lib/libabk.so",
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib", "libabk.so")
+        "/usr/lib/libabk.so"
     ]
     for p in paths:
         if os.path.exists(p):
@@ -54,6 +54,22 @@ def load_abk():
                 lib.abk_save_local_feedback.restype = c_int
                 lib.abk_save_local_feedback.argtypes = [c_char_p, c_char_p, c_char_p, c_char_p, c_char_p]
 
+                # Avro-Style Spec Sections 7 & 8 C API bindings
+                lib.abk_engine_set_suggestion_mode.restype = None
+                lib.abk_engine_set_suggestion_mode.argtypes = [c_void_p, c_int]
+                lib.abk_engine_get_suggestion_mode.restype = c_int
+                lib.abk_engine_get_suggestion_mode.argtypes = [c_void_p]
+                lib.abk_engine_set_tab_browses.restype = None
+                lib.abk_engine_set_tab_browses.argtypes = [c_void_p, c_int]
+                lib.abk_engine_is_tab_browses.restype = c_int
+                lib.abk_engine_is_tab_browses.argtypes = [c_void_p]
+                lib.abk_engine_reset_remembered_choices.restype = None
+                lib.abk_engine_reset_remembered_choices.argtypes = [c_void_p]
+                lib.abk_engine_set_window_pinned.restype = None
+                lib.abk_engine_set_window_pinned.argtypes = [c_void_p, c_int, c_int, c_int]
+                lib.abk_autocorrect_set_enabled.restype = None
+                lib.abk_autocorrect_set_enabled.argtypes = [c_void_p, c_int]
+
                 return lib
             except Exception:
                 pass
@@ -70,7 +86,13 @@ FEEDBACK_PATH = os.path.join(CONFIG_DIR, "feedback.jsonl")
 DEFAULT_SETTINGS = {
     "language_ui": "bn",          # "bn" or "en"
     "toggle_hotkey": "F12",        # F12, Ctrl+Space, Shift+Space
-    "number_mode": "en",           # "en" (0-9) or "bn" (০-৯)
+    "number_mode": "bn",           # "bn" (০-৯) or "en" (0-9)
+    "suggestion_mode": "character_first", # "character_first", "dictionary_first", "classic_phonetic"
+    "tab_browses_candidates": True,# Optional Tab browsing (off for spreadsheets/tables)
+    "remember_choice": True,       # Remember non-default candidate picks locally
+    "pipe_mode": "passthrough",    # "passthrough", "literal_dot", "bengali_dari"
+    "nukta_ja": True,              # Shift+J -> জ়
+    "window_pinned": False,        # Pin candidate window vs follow caret
     "candidate_count": 7,          # 3 - 10
     "theme": "light",              # "light" or "dark"
     "bypass_terminal_ide": True,   # Per-app profile bypass
@@ -84,6 +106,18 @@ DEFAULT_SETTINGS = {
         "addr": "ঢাকা, বাংলাদেশ"
     }
 }
+
+ONE_PAGE_CHEATSHEET_SUMMARY = (
+    "Vowels (Case-Sensitive): o=অ/(inherent), a=আ/া, i=ই/ি, I/ee=ঈ/ী, u/oo=উ/ু, U=ঊ/ূ, rri=ঋ/ৃ, "
+    "e=এ/ে, OI=ঐ/ৈ, O=ও/ো, OU=ঔ/ৌ  [koi -> কই | kOI -> কৈ | kou -> কউ | kOU -> কৌ]\n"
+    "Backtick (`) Separator: ek`i -> একই, ek`Ta -> একটা, am`ra -> আমরা, a` -> া, i` -> ি, I` -> ী, "
+    "t`` -> ৎ, .` -> ., :` -> :, $` -> $ (stray ` consumed)\n"
+    "Consonants & Phalas: k ক kh খ g গ gh ঘ Ng ঙ | c চ ch ছ j জ jh ঝ NG ঞ | T ট Th ঠ D ড Dh ঢ N ণ | "
+    "t ত th থ d দ dh ধ n ন | p প ph/f ফ b ব bh/v ভ m ম | z য r র l ল sh/S শ Sh ষ s স h হ | R ড় Rh ঢ় y/Y য় J জ় | "
+    "w=ব-ফলা, y/Z=য-ফলা, r=র-ফলা, m=ম-ফলা, rr=রেফ, ,,=হসন্ত (্)\n"
+    "Smart Guards & Autocorrect: . -> । (kept in 3.5, URLs, emails, paths, Dr., e.g.) | $ -> ৳ (kept in $PATH, ${HOME}) | "
+    "amra -> আমরা, software -> সফটওয়্যার (1st Backspace reverts; Down/Tab browse, 1-9 pick, Esc close)."
+)
 
 def load_settings():
     if os.path.exists(CONFIG_PATH):
@@ -104,7 +138,73 @@ def save_settings(settings):
         json.dump(settings, f, ensure_ascii=False, indent=2)
     os.replace(tmp_path, CONFIG_PATH)
 
+def _parse_toml_string_val(raw_val: str) -> str:
+    raw_val = raw_val.strip()
+    if len(raw_val) >= 2 and raw_val[0] == '"' and raw_val[-1] == '"':
+        inner = raw_val[1:-1]
+        return inner.replace('\\"', '"').replace('\\\\', '\\')
+    return raw_val
+
 def load_phonetic_rules_list():
+    toml_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "keymap_phonetic.toml"),
+        os.path.expanduser("~/.local/share/amar-bangla-kotha/keymap_phonetic.toml"),
+        "/usr/local/share/amar-bangla-kotha/keymap_phonetic.toml"
+    ]
+    rules = []
+    for tp in toml_paths:
+        if os.path.exists(tp):
+            cur = {}
+            in_rule = False
+            with open(tp, "r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if not s or s.startswith("#"):
+                        continue
+                    if s == "[[rules]]":
+                        if in_rule and "pattern" in cur:
+                            rules.append((
+                                cur.get("pattern", ""),
+                                cur.get("output", ""),
+                                cur.get("category", "CONSONANT"),
+                                f"[{cur.get('context', 'ANY')}] {cur.get('note', '')}".strip()
+                            ))
+                        cur = {}
+                        in_rule = True
+                        continue
+                    if s.startswith("["):
+                        if in_rule and "pattern" in cur:
+                            rules.append((
+                                cur.get("pattern", ""),
+                                cur.get("output", ""),
+                                cur.get("category", "CONSONANT"),
+                                f"[{cur.get('context', 'ANY')}] {cur.get('note', '')}".strip()
+                            ))
+                        in_rule = False
+                        cur = {}
+                        continue
+                    if in_rule and "=" in s:
+                        k, v = s.split("=", 1)
+                        # Strip inline comment outside quotes
+                        in_q = False
+                        clean_v = []
+                        for ch in v:
+                            if ch == '"':
+                                in_q = not in_q
+                            if ch == '#' and not in_q:
+                                break
+                            clean_v.append(ch)
+                        cur[k.strip()] = _parse_toml_string_val("".join(clean_v))
+                if in_rule and "pattern" in cur:
+                    rules.append((
+                        cur.get("pattern", ""),
+                        cur.get("output", ""),
+                        cur.get("category", "CONSONANT"),
+                        f"[{cur.get('context', 'ANY')}] {cur.get('note', '')}".strip()
+                    ))
+            if rules:
+                return rules
+
     rule_paths = [
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "phonetic_rules.tsv"),
         os.path.expanduser("~/.local/share/amar-bangla-kotha/phonetic_rules.tsv"),
@@ -206,10 +306,10 @@ STRINGS = {
 
         "tut_title": "প্রথমবার ব্যবহারের ইন্টারঅ্যাক্টিভ পাঠ",
         "tut_sub": "নিচের নিয়মগুলো দেখে ইনপুট বক্সে প্র্যাকটিস করুন:",
-        "tut_l1": "১. সাধারণ স্বরবর্ণ ও যুক্তস্বর: koi -> কই, কিন্তু kOI -> কৈ (বড় হাতের OI = ৈ)",
-        "tut_l2": "২. মূর্ধন্য ও দ্বিত্ব বর্ণ: Ta -> টা, Thik -> ঠিক, Daab -> ডাব, baRi -> বাড়ি (R = ড়)",
-        "tut_l3": "৩. যুক্তবর্ণ: ক + ত = k+t -> ক্ত, ক + ষ = k+S -> ক্ষ",
-        "tut_l4": "৪. এস্কেপ ওভাররাইড: Escape চাপলে লেখা বাতিল হয়; কমা (,) দিয়ে অক্ষর লিখলে সরাসরি বসে",
+        "tut_l1": "১. স্বরবর্ণ (কেস-সেনসিটিভ): koi -> কই, কিন্তু kOI -> কৈ; kou -> কউ, কিন্তু kOU -> কৌ (O = ও/ো)",
+        "tut_l2": "২. মূর্ধন্য ও খণ্ড-ত: Ta -> টা, Thik -> ঠিক, baRi -> বাড়ি (R = ড়), t`` -> ৎ (দুই ব্যাকটিক)",
+        "tut_l3": "৩. যুক্তাক্ষর ও ফলা: okkhor -> অক্ষর (kkh/kx = ক্ষ), bishwo -> বিশ্ব (w = ব-ফলা), orrko -> অর্ক (rr = রেফ)",
+        "tut_l4": "৪. ব্যাকটিক (`) ও হসন্ত: ek`i -> একই, ek`Ta -> একটা, ,, -> হসন্ত (্); Esc চাপলে সাজেশন উইন্ডো বন্ধ হয়",
         "lbl_practice": "নিচে টাইপ করে সরাসরি পরীক্ষা করুন:",
         "lbl_practice_out": "বাংলা আউটপুট:",
 
@@ -289,10 +389,10 @@ STRINGS = {
 
         "tut_title": "Interactive First-Run Tutorial",
         "tut_sub": "Master the core phonetic conventions by practicing in the live box below:",
-        "tut_l1": "1. Vowels & Diphthongs: 'koi' -> 'কই', while 'kOI' -> 'কৈ' (capital 'OI' produces ৈ)",
-        "tut_l2": "2. Retroflex Consonants: 'Ta' -> 'টা', 'Thik' -> 'ঠিক', 'Daab' -> 'ডাব', 'baRi' -> 'বাড়ি' ('R' = ড়)",
-        "tut_l3": "3. Conjuncts (Yuktakshar): 'k+t' -> 'ক্ত', 'k+S' -> 'ক্ষ', 'b+d' -> 'ব্দ'",
-        "tut_l4": "4. Escape Overrides: Pressing 'Escape' cancels composition; prefixing with comma (',') bypasses rules.",
+        "tut_l1": "1. Case-Sensitive Vowels: 'koi' -> 'কই' vs 'kOI' -> 'কৈ'; 'kou' -> 'কউ' vs 'kOU' -> 'কৌ' ('O' = ও/ো)",
+        "tut_l2": "2. Retroflex & Khanda-Ta: 'Ta' -> 'টা', 'Thik' -> 'ঠিক', 'baRi' -> 'বাড়ি' ('R' = ড়), 't``' -> 'ৎ'",
+        "tut_l3": "3. Conjuncts, Phalas & Reph: 'okkhor' -> 'অক্ষর' ('kkh'/'kx' = ক্ষ), 'bishwo' -> 'বিশ্ব', 'orrko' -> 'অর্ক'",
+        "tut_l4": "4. Backtick (`) & Hasanta: 'ek`i' -> 'একই', 'ek`Ta' -> 'একটা', ',,' -> '্'; 'Esc' closes candidate window.",
         "lbl_practice": "Type Latin input here to test live:",
         "lbl_practice_out": "Live Bangla Transliteration:",
 
@@ -599,7 +699,11 @@ def run_gui(start_tutorial=False):
     tab_cs = ttk.Frame(notebook)
     notebook.add(tab_cs, text=t["tab_cheat_sheet"])
 
-    ttk.Label(tab_cs, text=t["cs_title"], font=("Helvetica", 12, "bold")).pack(anchor=tk.W, padx=16, pady=(12, 6))
+    ttk.Label(tab_cs, text=t["cs_title"], font=("Helvetica", 12, "bold")).pack(anchor=tk.W, padx=16, pady=(12, 4))
+
+    frm_onepage = ttk.LabelFrame(tab_cs, text="One-Page Quick Cheat Sheet / এক নজরে সংক্ষিপ্ত তালিকা", padding=8)
+    frm_onepage.pack(fill=tk.X, padx=16, pady=(0, 6))
+    ttk.Label(frm_onepage, text=ONE_PAGE_CHEATSHEET_SUMMARY, font=("Helvetica", 9), justify=tk.LEFT, wraplength=740).pack(anchor=tk.W)
 
     frm_cs_filter = ttk.Frame(tab_cs, padding=6)
     frm_cs_filter.pack(fill=tk.X, padx=12, pady=4)
@@ -611,7 +715,7 @@ def run_gui(start_tutorial=False):
 
     ttk.Label(frm_cs_filter, text=t["lbl_cs_category"]).pack(side=tk.LEFT, padx=(16, 4))
     var_cs_cat = tk.StringVar(value="ALL")
-    cb_cs_cat = ttk.Combobox(frm_cs_filter, textvariable=var_cs_cat, values=["ALL", "CONSONANT", "VOWEL", "CONJUNCT", "MODIFIER"], state="readonly", width=14)
+    cb_cs_cat = ttk.Combobox(frm_cs_filter, textvariable=var_cs_cat, values=["ALL", "CONSONANT", "VOWEL", "CONJUNCT", "MODIFIER", "PUNCTUATION", "DIGIT"], state="readonly", width=14)
     cb_cs_cat.pack(side=tk.LEFT, padx=4)
 
     cs_cols = ("key", "bangla", "category", "desc")
@@ -839,6 +943,9 @@ def run_headless_test():
     assert "candidate_count" in settings
     assert "shortcuts" in settings
     assert "enable_correction_log" in settings
+    assert "suggestion_mode" in settings
+    assert "tab_browses_candidates" in settings
+    assert "remember_choice" in settings
     print("  ✓ Configuration load/save verified.")
 
     for lang in ["bn", "en"]:
@@ -852,8 +959,8 @@ def run_headless_test():
     print("  ✓ Bilingual string dictionaries complete.")
 
     rules = load_phonetic_rules_list()
-    assert len(rules) >= 20, f"Expected rules >= 20, got {len(rules)}"
-    print(f"  ✓ Keymap cheat sheet rules verified ({len(rules)} items loaded).")
+    assert len(rules) >= 100, f"Expected TOML rules >= 100, got {len(rules)}"
+    print(f"  ✓ Keymap TOML cheat sheet rules verified ({len(rules)} items loaded).")
 
     if abk_lib:
         eng = abk_lib.abk_engine_create()
@@ -910,6 +1017,10 @@ def run_headless_test():
 if __name__ == '__main__':
     if "--test" in sys.argv:
         sys.exit(run_headless_test())
+    elif "--cheatsheet" in sys.argv:
+        print("Amar Bangla Kotha (আমার বাংলা কথা) — One-Page Phonetic Cheat Sheet\n")
+        print(ONE_PAGE_CHEATSHEET_SUMMARY)
+        sys.exit(0)
     elif "--tutorial" in sys.argv:
         run_gui(start_tutorial=True)
     else:

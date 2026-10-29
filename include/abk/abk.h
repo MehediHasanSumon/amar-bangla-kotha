@@ -121,6 +121,38 @@ ABK_API int abk_engine_is_correction_logging_enabled(abk_engine_t engine);
 ABK_API void abk_engine_clear_correction_log(abk_engine_t engine);
 ABK_API int abk_save_local_feedback(const char* raw, const char* received, const char* expected, const char* app, const char* custom_path);
 
+// Workstream C & D: Avro-Style Autocorrect Table, Suggestion Modes, Window Pinning & Punctuation Settings
+ABK_API void abk_engine_set_suggestion_mode(abk_engine_t engine, int mode); // 0: Character-first, 1: Dictionary-first, 2: Classic
+ABK_API int abk_engine_get_suggestion_mode(abk_engine_t engine);
+ABK_API void abk_engine_set_tab_browses(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_tab_browses(abk_engine_t engine);
+ABK_API int abk_suggestion_browse_tab(abk_engine_t engine);
+ABK_API int abk_suggestion_close_window(abk_engine_t engine);
+ABK_API int abk_suggestion_commit_selected(abk_engine_t engine, int append_space, char* out_buf, size_t out_cap);
+
+ABK_API void abk_engine_set_window_pinned(abk_engine_t engine, int pinned, int x, int y);
+ABK_API int abk_engine_is_window_pinned(abk_engine_t engine);
+ABK_API int abk_engine_get_pinned_position(abk_engine_t engine, int* out_x, int* out_y);
+ABK_API void abk_engine_remember_choice(abk_engine_t engine, const char* raw_input, const char* chosen_word);
+ABK_API void abk_engine_reset_remembered_choices(abk_engine_t engine);
+ABK_API int abk_engine_revert_autocorrect(abk_engine_t engine, char* out_buf, size_t out_cap);
+
+ABK_API void abk_autocorrect_set_enabled(abk_engine_t engine, int enable);
+ABK_API int abk_autocorrect_is_enabled(abk_engine_t engine);
+ABK_API int abk_autocorrect_add(abk_engine_t engine, const char* typed_text, const char* replacement);
+ABK_API int abk_autocorrect_remove(abk_engine_t engine, const char* typed_text);
+ABK_API int abk_autocorrect_import_tsv(abk_engine_t engine, const char* filepath);
+ABK_API int abk_autocorrect_export_tsv(abk_engine_t engine, const char* filepath);
+
+ABK_API void abk_engine_set_bangla_digits(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_bangla_digits(abk_engine_t engine);
+ABK_API void abk_engine_set_nukta_ja(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_nukta_ja(abk_engine_t engine);
+ABK_API void abk_engine_set_taka_sign(abk_engine_t engine, int enable);
+ABK_API int abk_engine_is_taka_sign(abk_engine_t engine);
+ABK_API void abk_engine_set_pipe_mode(abk_engine_t engine, int mode); // 0: Passthrough, 1: '.', 2: '।'
+ABK_API int abk_engine_get_pipe_mode(abk_engine_t engine);
+
 // Get engine version
 ABK_API const char* abk_get_version(void);
 

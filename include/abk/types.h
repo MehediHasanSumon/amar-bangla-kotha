@@ -10,11 +10,19 @@ enum class CandidateType {
     EXACT_TRANSLITERATION,   // Exact rule-based transliteration
     DICTIONARY_EXACT,       // Direct match in the Bengali dictionary
     PREFIX_COMPLETION,      // Next letters / prefix completion from dictionary
-    AUTOCORRECT,            // Typo-corrected suggestion via edit distance
-    PHONETIC_ALTERNATIVE,  // Phonetic variant (e.g. sh/s, i/ee variations)
+    AUTOCORRECT,            // Autocorrect replacement table or typo-corrected suggestion
+    PHONETIC_ALTERNATIVE,   // Phonetic variant (e.g. sh/s, i/ee variations)
     SHORTCUT_EXPANSION,     // User defined shortcut / snippet (e.g. "amr" -> "আমার")
     NEXT_WORD_PREDICTION,   // Contextual next-word prediction from bigram model
-    EMOJI_SUGGESTION        // Quality of life: Emoji and symbol suggestion
+    EMOJI_SUGGESTION,       // Quality of life: Emoji and symbol suggestion
+    REMEMBERED_CHOICE       // Section 8: User's remembered non-default candidate choice
+};
+
+// Section 8: Suggestion / preview behavior modes
+enum class SuggestionMode {
+    CHARACTER_FIRST = 0,    // Default: Autocorrect -> Classic phonetic -> Dictionary/Skeleton
+    DICTIONARY_FIRST = 1,   // Autocorrect -> Dictionary/Skeleton -> Classic phonetic
+    CLASSIC_PHONETIC = 2    // Classic phonetic only with no suggestion window
 };
 
 struct Candidate {
@@ -39,6 +47,9 @@ struct SuggestionState {
     std::vector<Candidate> items;
     int selected_index = 0;
     bool visible = false;
+    bool pinned = false;
+    int pinned_x = 0;
+    int pinned_y = 0;
     std::string raw_input;
     std::string primary_transliteration;
 };
@@ -58,6 +69,16 @@ struct EngineConfig {
     size_t max_edit_distance = 2;
     bool auto_bypass_password_fields = true;
     bool clipboard_paste_fallback = false;
+
+    // Section 8: Suggestion / Preview Modes, Navigation & Window Placement
+    SuggestionMode suggestion_mode = SuggestionMode::CHARACTER_FIRST;
+    bool tab_browses_candidates = true;
+    bool enable_number_selection = true;
+    bool enable_remember_choice = true;
+    size_t max_remembered_choices = 2048;
+    bool window_pinned = false;
+    int window_pinned_x = 0;
+    int window_pinned_y = 0;
 
     // Workstream 3: Token Classification & Per-App Profiles
     bool enable_english_bypass = true;

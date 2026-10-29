@@ -1,0 +1,1265 @@
+# ==============================================================================
+# Amar Bangla Kotha — Avro-Compatible Phonetic Keymap & Rule Table
+# File: data/keymap_phonetic.toml
+# Authorship: Clean-room authored in-house for Amar Bangla Kotha (GPLv3).
+#             Zero copied text or tables from OmicronLab Avro or OpenBangla.
+# Normalization: Canonical Unicode NFC (UAX #15):
+#   - Two-part kars composed: ো (U+09CB), ৌ (U+09CC)
+#   - Nukta consonants decomposed per UAX #15:
+#       ড় = ড + ় (U+09A1 U+09BC)
+#       ঢ় = ঢ + ় (U+09A2 U+09BC)
+#       য় = য + ় (U+09AF U+09BC)
+#       জ় = জ + ় (U+099C U+09BC)
+#   - Assamese ৰ (U+09F0) and ৱ (U+09F1) are NEVER emitted.
+# ==============================================================================
+
+[metadata]
+name = "Amar Bangla Kotha Phonetic"
+version = "2.0.0"
+normalization = "NFC"
+stray_backtick = "silent_separator"
+
+# General C1 + U+09CD (্) + C2 phonotactic compatibility table for Bengali.
+# Adjacent consonants C1 followed by C2 automatically form C1 + ্ + C2 when C2
+# is a valid cluster partner of C1 in standard Bengali orthography.
+# Single র ('r') never initiates Reph; Reph is explicitly 'rr' before consonant.
+[phonotactics]
+"ক" = "কটতনবমযরলষস"
+"খ" = "বযর"
+"গ" = "গঘদধনবমযরল"
+"ঘ" = "নবযর"
+"ঙ" = "কখগঘময"
+"চ" = "চছঞবয"
+"ছ" = "বযর"
+"জ" = "জঝঞবযর"
+"ঝ" = "বযর"
+"ঞ" = "চছজঝয"
+"ট" = "টঠবমযর"
+"ঠ" = "বযর"
+"ড" = "গডঢবযর"
+"ঢ" = "বযর"
+"ণ" = "টঠডঢণবময"
+"ত" = "তথনবমযর"
+"থ" = "বযর"
+"দ" = "গঘদধবভমযর"
+"ধ" = "নবমযর"
+"ন" = "টঠডঢতথদধনবমযস"
+"প" = "টতনপফবমযরলস"
+"ফ" = "টফবযরল"
+"ব" = "জদধবভযরল"
+"ভ" = "বভযরল"
+"ম" = "নপফবভমযরল"
+"য" = "বযর"
+"র" = ""
+"ল" = "কগটডপফবভমযল"
+"শ" = "চছতনবমযরল"
+"ষ" = "কটঠণপফবময"
+"স" = "কখটতথনপফবমযরল"
+"হ" = "ণনবমযরল"
+
+# ==============================================================================
+# SECTION 2: ACCENT KEY (BACKTICK `) & EXPLICIT ESCAPES
+# ==============================================================================
+
+[[rule]]
+pattern = "t``"
+output = "ৎ"
+left = "ANY"
+category = "MODIFIER"
+priority = 580.0
+explicit = true
+
+[[rule]]
+pattern = "r``y"
+output = "র\u200D\u09CDয"
+left = "ANY"
+category = "PHALA"
+priority = 580.0
+explicit = true
+
+[[rule]]
+pattern = ".`"
+output = "."
+left = "ANY"
+category = "PUNCTUATION"
+priority = 560.0
+explicit = true
+
+[[rule]]
+pattern = ":`"
+output = ":"
+left = "ANY"
+category = "PUNCTUATION"
+priority = 560.0
+explicit = true
+
+[[rule]]
+pattern = "$`"
+output = "$"
+left = "ANY"
+category = "PUNCTUATION"
+priority = 560.0
+explicit = true
+
+[[rule]]
+pattern = ",,"
+output = "\u09CD"
+left = "ANY"
+category = "HASANTA"
+priority = 560.0
+explicit = true
+
+# `<vowel> forces INDEPENDENT vowel in any position (e.g. ek`i -> একই, sami`a -> সামিআ)
+[[rule]]
+pattern = "`rri"
+output = "ঋ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 540.0
+explicit = true
+
+[[rule]]
+pattern = "`ee"
+output = "ঈ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 530.0
+explicit = true
+
+[[rule]]
+pattern = "`oo"
+output = "উ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 530.0
+explicit = true
+
+[[rule]]
+pattern = "`OI"
+output = "ঐ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 530.0
+explicit = true
+
+[[rule]]
+pattern = "`OU"
+output = "ঔ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 530.0
+explicit = true
+
+[[rule]]
+pattern = "`o"
+output = "অ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`a"
+output = "আ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`i"
+output = "ই"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`I"
+output = "ঈ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`u"
+output = "উ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`U"
+output = "ঊ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`e"
+output = "এ"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+[[rule]]
+pattern = "`O"
+output = "ও"
+left = "ANY"
+category = "INDEPENDENT_VOWEL"
+priority = 520.0
+explicit = true
+
+# <vowel>` forces dependent KAR sign where normal rules would emit an independent vowel
+[[rule]]
+pattern = "rri`"
+output = "ৃ"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 460.0
+explicit = true
+
+[[rule]]
+pattern = "ee`"
+output = "ী"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 450.0
+explicit = true
+
+[[rule]]
+pattern = "oo`"
+output = "ু"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 450.0
+explicit = true
+
+[[rule]]
+pattern = "OI`"
+output = "ৈ"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 450.0
+explicit = true
+
+[[rule]]
+pattern = "OU`"
+output = "ৌ"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 450.0
+explicit = true
+
+[[rule]]
+pattern = "a`"
+output = "া"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "i`"
+output = "ি"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "I`"
+output = "ী"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "u`"
+output = "ু"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "U`"
+output = "ূ"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "e`"
+output = "ে"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "O`"
+output = "ো"
+left = "NOT_AFTER_CONSONANT"
+category = "KAR"
+priority = 440.0
+explicit = true
+
+[[rule]]
+pattern = "o`"
+output = ""
+left = "NOT_AFTER_CONSONANT"
+category = "INHERENT_VOWEL"
+priority = 440.0
+explicit = true
+
+# <consonant>`<consonant> separator breaks conjunct formation; stray ` is silent no-op
+[[rule]]
+pattern = "`"
+output = ""
+left = "AFTER_CONSONANT_LIKE"
+category = "SEPARATOR"
+priority = 420.0
+explicit = true
+
+[[rule]]
+pattern = "`"
+output = ""
+left = "ANY"
+category = "SEPARATOR"
+priority = 50.0
+explicit = true
+
+# ==============================================================================
+# SECTION 4: FORCED YA-PHALA (Z), BA-PHALA (w), REPH (rr)
+# ==============================================================================
+
+[[rule]]
+pattern = "rZ"
+output = "র\u200D\u09CDয"
+left = "ANY"
+category = "PHALA"
+priority = 560.0
+explicit = true
+
+[[rule]]
+pattern = "aZ"
+output = "অ্যা"
+left = "START_OR_SEPARATOR"
+category = "VOWEL_YA"
+priority = 500.0
+explicit = true
+
+[[rule]]
+pattern = "Z"
+output = "\u09CDয"
+left = "ANY"
+category = "PHALA"
+priority = 450.0
+explicit = true
+
+[[rule]]
+pattern = "rr"
+output = "র্"
+left = "NOT_AFTER_CONSONANT"
+right = "BEFORE_CONSONANT"
+category = "REPH"
+priority = 360.0
+
+[[rule]]
+pattern = "w"
+output = "\u09CDব"
+left = "AFTER_CONSONANT"
+category = "PHALA"
+priority = 220.0
+
+[[rule]]
+pattern = "w"
+output = "ও"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+# ==============================================================================
+# SECTION 1: VOWELS & DEPENDENT VOWEL SIGNS (CASE-SENSITIVE)
+# ==============================================================================
+
+[[rule]]
+pattern = "rri"
+output = "ৃ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 320.0
+
+[[rule]]
+pattern = "rri"
+output = "ঋ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 320.0
+
+[[rule]]
+pattern = "OI"
+output = "ৈ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 310.0
+explicit = true
+
+[[rule]]
+pattern = "OI"
+output = "ঐ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 310.0
+explicit = true
+
+[[rule]]
+pattern = "OU"
+output = "ৌ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 310.0
+explicit = true
+
+[[rule]]
+pattern = "OU"
+output = "ঔ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 310.0
+explicit = true
+
+[[rule]]
+pattern = "ee"
+output = "ী"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 300.0
+
+[[rule]]
+pattern = "ee"
+output = "ঈ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 300.0
+
+[[rule]]
+pattern = "oo"
+output = "ু"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 300.0
+
+[[rule]]
+pattern = "oo"
+output = "উ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 300.0
+
+[[rule]]
+pattern = "I"
+output = "ী"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "I"
+output = "ঈ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "U"
+output = "ূ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "U"
+output = "ঊ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "O"
+output = "ো"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "O"
+output = "ও"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 180.0
+explicit = true
+
+[[rule]]
+pattern = "o"
+output = ""
+left = "AFTER_CONSONANT_LIKE"
+category = "INHERENT_VOWEL"
+priority = 150.0
+
+[[rule]]
+pattern = "o"
+output = "অ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+[[rule]]
+pattern = "a"
+output = "া"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 150.0
+
+# Section 3 special rule: after a vowel or vowel sign, "a" gives য়া (samia -> সামিয়া)
+[[rule]]
+pattern = "a"
+output = "য়া"
+left = "AFTER_VOWEL"
+category = "VOWEL_YA"
+priority = 160.0
+
+[[rule]]
+pattern = "a"
+output = "আ"
+left = "START_OR_SEPARATOR"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+[[rule]]
+pattern = "i"
+output = "ি"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 150.0
+
+[[rule]]
+pattern = "i"
+output = "ই"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+[[rule]]
+pattern = "u"
+output = "ু"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 150.0
+
+[[rule]]
+pattern = "u"
+output = "উ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+[[rule]]
+pattern = "e"
+output = "ে"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 150.0
+
+[[rule]]
+pattern = "e"
+output = "এ"
+left = "NOT_AFTER_CONSONANT"
+category = "INDEPENDENT_VOWEL"
+priority = 150.0
+
+# ==============================================================================
+# SECTION 3 & 5: CONSONANTS, SPECIAL Y-RULES & MULTI-KEY CONJUNCT ROOTS
+# ==============================================================================
+
+[[rule]]
+pattern = "kkh"
+output = "ক্ষ"
+left = "ANY"
+category = "CONSONANT"
+priority = 380.0
+
+[[rule]]
+pattern = "kx"
+output = "ক্ষ"
+left = "ANY"
+category = "CONSONANT"
+priority = 380.0
+
+[[rule]]
+pattern = "jNG"
+output = "জ্ঞ"
+left = "ANY"
+category = "CONSONANT"
+priority = 380.0
+explicit = true
+
+[[rule]]
+pattern = "gg"
+output = "জ্ঞ"
+left = "ANY"
+category = "CONSONANT"
+priority = 370.0
+
+[[rule]]
+pattern = "nch"
+output = "ঞ্ছ"
+left = "ANY"
+category = "CONSONANT"
+priority = 370.0
+
+[[rule]]
+pattern = "njh"
+output = "ঞ্ঝ"
+left = "ANY"
+category = "CONSONANT"
+priority = 370.0
+
+[[rule]]
+pattern = "nc"
+output = "ঞ্চ"
+left = "ANY"
+category = "CONSONANT"
+priority = 350.0
+
+[[rule]]
+pattern = "nj"
+output = "ঞ্জ"
+left = "ANY"
+category = "CONSONANT"
+priority = 350.0
+
+# Two-character consonants
+[[rule]]
+pattern = "kh"
+output = "খ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "gh"
+output = "ঘ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "Ng"
+output = "ঙ"
+left = "ANY"
+category = "CONSONANT"
+priority = 400.0
+explicit = true
+
+[[rule]]
+pattern = "ng"
+output = "ং"
+left = "ANY"
+category = "MODIFIER"
+priority = 260.0
+
+[[rule]]
+pattern = "ch"
+output = "ছ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "jh"
+output = "ঝ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "NG"
+output = "ঞ"
+left = "ANY"
+category = "CONSONANT"
+priority = 275.0
+explicit = true
+
+[[rule]]
+pattern = "Th"
+output = "ঠ"
+left = "ANY"
+category = "CONSONANT"
+priority = 275.0
+explicit = true
+
+[[rule]]
+pattern = "th"
+output = "থ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "Dh"
+output = "ঢ"
+left = "ANY"
+category = "CONSONANT"
+priority = 275.0
+explicit = true
+
+[[rule]]
+pattern = "dh"
+output = "ধ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "ph"
+output = "ফ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "bh"
+output = "ভ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "Sh"
+output = "ষ"
+left = "ANY"
+category = "CONSONANT"
+priority = 275.0
+explicit = true
+
+[[rule]]
+pattern = "sh"
+output = "শ"
+left = "ANY"
+category = "CONSONANT"
+priority = 270.0
+
+[[rule]]
+pattern = "Rh"
+output = "ঢ়"
+left = "ANY"
+category = "Y_CONSONANT"
+priority = 275.0
+explicit = true
+
+# Special Y / y rules:
+# - Capital "Y" forces য় anywhere including word start and after consonants
+# - Lowercase "y" at word start -> ইয় (yahoo -> ইয়াহু); য় never starts a word
+# - Lowercase "y" after Reph -> য (karryo -> কার্য)
+# - Lowercase "y" after consonant -> য-ফলা (bybohar -> ব্যবহার)
+# - Lowercase "y" after vowel or separator -> য় (niyom -> নিয়ম, pray -> প্রায়)
+[[rule]]
+pattern = "Y"
+output = "য়"
+left = "ANY"
+category = "Y_CONSONANT"
+priority = 220.0
+explicit = true
+
+[[rule]]
+pattern = "y"
+output = "ইয়"
+left = "START"
+category = "Y_CONSONANT"
+priority = 200.0
+
+[[rule]]
+pattern = "y"
+output = "য"
+left = "AFTER_REPH"
+category = "CONSONANT"
+priority = 200.0
+
+[[rule]]
+pattern = "y"
+output = "\u09CDয"
+left = "AFTER_CONSONANT"
+category = "PHALA"
+priority = 200.0
+
+[[rule]]
+pattern = "y"
+output = "য়"
+left = "AFTER_VOWEL_OR_SEPARATOR"
+category = "Y_CONSONANT"
+priority = 150.0
+
+# Single-character consonants
+[[rule]]
+pattern = "k"
+output = "ক"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "g"
+output = "গ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "c"
+output = "চ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "j"
+output = "জ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "J"
+output = "জ়"
+left = "ANY"
+category = "Y_CONSONANT"
+priority = 160.0
+explicit = true
+setting = "nukta_ja"
+
+[[rule]]
+pattern = "T"
+output = "ট"
+left = "ANY"
+category = "CONSONANT"
+priority = 160.0
+explicit = true
+
+[[rule]]
+pattern = "t"
+output = "ত"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "D"
+output = "ড"
+left = "ANY"
+category = "CONSONANT"
+priority = 160.0
+explicit = true
+
+[[rule]]
+pattern = "d"
+output = "দ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "N"
+output = "ণ"
+left = "ANY"
+category = "CONSONANT"
+priority = 160.0
+explicit = true
+
+[[rule]]
+pattern = "n"
+output = "ন"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "p"
+output = "প"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "f"
+output = "ফ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "b"
+output = "ব"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "v"
+output = "ভ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "m"
+output = "ম"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "z"
+output = "য"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "r"
+output = "র"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "R"
+output = "ড়"
+left = "ANY"
+category = "Y_CONSONANT"
+priority = 160.0
+explicit = true
+
+[[rule]]
+pattern = "l"
+output = "ল"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "S"
+output = "শ"
+left = "ANY"
+category = "CONSONANT"
+priority = 160.0
+explicit = true
+
+[[rule]]
+pattern = "s"
+output = "স"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+[[rule]]
+pattern = "h"
+output = "হ"
+left = "ANY"
+category = "CONSONANT"
+priority = 150.0
+
+# ==============================================================================
+# SECTION 3 & 4: MODIFIERS, SYMBOLS, PUNCTUATION & CONFIGURABLE DIGITS
+# ==============================================================================
+
+[[rule]]
+pattern = "^"
+output = "ঁ"
+left = "ANY"
+category = "MODIFIER"
+priority = 300.0
+
+[[rule]]
+pattern = ":"
+output = "ঃ"
+left = "ANY"
+category = "MODIFIER"
+priority = 300.0
+
+[[rule]]
+pattern = "$"
+output = "৳"
+left = "ANY"
+category = "PUNCTUATION"
+priority = 300.0
+setting = "taka_sign"
+
+[[rule]]
+pattern = "."
+output = "।"
+left = "ANY"
+category = "PUNCTUATION"
+priority = 200.0
+
+[[rule]]
+pattern = "0"
+output = "০"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "1"
+output = "১"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "2"
+output = "২"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "3"
+output = "৩"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "4"
+output = "৪"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "5"
+output = "৫"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "6"
+output = "৬"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "7"
+output = "৭"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "8"
+output = "৮"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+[[rule]]
+pattern = "9"
+output = "৯"
+left = "ANY"
+category = "DIGIT"
+priority = 150.0
+setting = "bangla_digits"
+
+# ==============================================================================
+# SECTION 1 & 8: SECONDARY BEAM HYPOTHESES (SUGGESTION & DICTIONARY ALTERNATIVES)
+# Never win Top-1 in pure Character-First mode; never override explicit keys.
+# ==============================================================================
+
+# Bidirectional koi/kOI and kou/kOU candidates (Section 1 & Section 8)
+[[rule]]
+pattern = "oi"
+output = "ৈ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 410.0
+variant = true
+
+[[rule]]
+pattern = "OI"
+output = "ই"
+left = "AFTER_CONSONANT_LIKE"
+category = "INDEPENDENT_VOWEL"
+priority = 160.0
+variant = true
+overrides_explicit = true
+
+[[rule]]
+pattern = "ou"
+output = "ৌ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 410.0
+variant = true
+
+[[rule]]
+pattern = "OU"
+output = "উ"
+left = "AFTER_CONSONANT_LIKE"
+category = "INDEPENDENT_VOWEL"
+priority = 160.0
+variant = true
+overrides_explicit = true
+
+# Common phonological ambiguity variants for dictionary-backed candidate ranking
+[[rule]]
+pattern = "o"
+output = "ো"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "i"
+output = "ী"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "u"
+output = "ূ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "oo"
+output = "ূ"
+left = "AFTER_CONSONANT_LIKE"
+category = "KAR"
+priority = 525.0
+variant = true
+
+[[rule]]
+pattern = "ya"
+output = "\u09CDয"
+left = "AFTER_CONSONANT"
+category = "PHALA"
+priority = 410.0
+variant = true
+
+[[rule]]
+pattern = "r"
+output = "র্"
+left = "NOT_AFTER_CONSONANT"
+right = "BEFORE_CONSONANT"
+category = "REPH"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "r"
+output = "ড়"
+left = "ANY"
+category = "Y_CONSONANT"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "n"
+output = "ণ"
+left = "ANY"
+category = "CONSONANT"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "nn"
+output = "ন\u09CDয"
+left = "ANY"
+category = "PHALA"
+priority = 410.0
+variant = true
+
+[[rule]]
+pattern = "s"
+output = "শ"
+left = "ANY"
+category = "CONSONANT"
+priority = 195.0
+variant = true
+
+[[rule]]
+pattern = "sh"
+output = "স"
+left = "ANY"
+category = "CONSONANT"
+priority = 525.0
+variant = true
+
+[[rule]]
+pattern = "sh"
+output = "ষ"
+left = "ANY"
+category = "CONSONANT"
+priority = 525.0
+variant = true
+
+[[rule]]
+pattern = "ch"
+output = "চ"
+left = "ANY"
+category = "CONSONANT"
+priority = 525.0
+variant = true
+
+[[rule]]
+pattern = "chh"
+output = "ছ"
+left = "ANY"
+category = "CONSONANT"
+priority = 740.0
+variant = true
+
+[[rule]]
+pattern = "ngk"
+output = "ঙ্ক"
+left = "ANY"
+category = "CONSONANT"
+priority = 740.0
+variant = true
+
+[[rule]]
+pattern = "ngg"
+output = "ঙ্গ"
+left = "ANY"
+category = "CONSONANT"
+priority = 740.0
+variant = true

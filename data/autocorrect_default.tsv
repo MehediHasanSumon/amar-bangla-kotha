@@ -1,0 +1,78 @@
+# Amar Bangla Kotha — Clean-Room Default Autocorrect Replacement Table
+# Authored in-house for libabk. Zero entries copied from OmicronLab/Avro/OpenBangla.
+# Format: typed<TAB>replacement<TAB>category
+# Categories:
+#   conjunct_exception - Common Bangla words where adjacent consonants do not form a conjunct
+#   loanword           - Everyday English-spelled loanwords in Bangla script
+#   shortcut           - Built-in everyday abbreviations
+
+# (a) Conjunct-stop & everyday orthographic exceptions
+amra	আমরা	conjunct_exception
+tomra	তোমরা	conjunct_exception
+apnara	আপনারা	conjunct_exception
+amader	আমাদের	conjunct_exception
+tomader	তোমাদের	conjunct_exception
+apnader	আপনাদের	conjunct_exception
+ekta	একটা	conjunct_exception
+ekti	একটি	conjunct_exception
+ektu	একটু	conjunct_exception
+duita	দুইটা	conjunct_exception
+tinta	তিনটা	conjunct_exception
+aglano	আগলানো	conjunct_exception
+pagla	পাগলা	conjunct_exception
+korbo	করব	conjunct_exception
+bolbo	বলব	conjunct_exception
+dekhbo	দেখব	conjunct_exception
+jabo	যাব	conjunct_exception
+khabo	খাব	conjunct_exception
+ashbo	আসব	conjunct_exception
+porbo	পড়ব	conjunct_exception
+likhbo	লিখব	conjunct_exception
+shikhbo	শিখব	conjunct_exception
+korte	করতে	conjunct_exception
+bolte	বলতে	conjunct_exception
+dekhte	দেখতে	conjunct_exception
+jete	যেতে	conjunct_exception
+khete	খেতে	conjunct_exception
+ashte	আসতে	conjunct_exception
+boste	বসতে	conjunct_exception
+thakte	থাকতে	conjunct_exception
+rakhte	রাখতে	conjunct_exception
+shikhte	শিখতে	conjunct_exception
+bujhte	বুঝতে	conjunct_exception
+korlam	করলাম	conjunct_exception
+bollam	বললাম	conjunct_exception
+dekhlam	দেখলাম	conjunct_exception
+gelam	গেলাম	conjunct_exception
+ashlam	আসলাম	conjunct_exception
+korle	করলে	conjunct_exception
+bolle	বললে	conjunct_exception
+dekhle	দেখলে	conjunct_exception
+dorkar	দরকার	conjunct_exception
+sorkar	সরকার	conjunct_exception
+shorkar	সরকার	conjunct_exception
+tarpor	তারপর	conjunct_exception
+erpor	এরপর	conjunct_exception
+ajke	আজকে	conjunct_exception
+kalke	কালকে	conjunct_exception
+byakti	ব্যক্তি	conjunct_exception
+lokkhmi	লক্ষ্মী	conjunct_exception
+
+# (b) English-spelling loanwords
+software	সফটওয়্যার	loanword
+doctor	ডাক্তার	loanword
+school	স্কুল	loanword
+college	কলেজ	loanword
+office	অফিস	loanword
+mobile	মোবাইল	loanword
+phone	ফোন	loanword
+hospital	হাসপাতাল	loanword
+police	পুলিশ	loanword
+bank	ব্যাংক	loanword
+video	ভিডিও	loanword
+internet	ইন্টারনেট	loanword
+university	ইউনিভার্সিটি	loanword
+
+# (c) Everyday shortcuts
+bd	বাংলাদেশ	shortcut
+dhk	ঢাকা	shortcut

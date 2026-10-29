@@ -22,6 +22,13 @@ set(ABK_ENGINE_SOURCES
     src/trie.cpp
     src/dictionary.cpp
     src/autocorrect.cpp
+    src/token_classifier.cpp
+    src/bigram_model.cpp
+    src/personal_dictionary.cpp
+    src/legacy_converter.cpp
+    src/domain_packs.cpp
+    src/bangladesh_helpers.cpp
+    src/quality_of_life.cpp
     src/engine.cpp
     src/c_api.cpp
 )
@@ -38,7 +45,14 @@ add_executable(abk_cli cli/main.cpp)
 target_link_libraries(abk_cli PRIVATE abk_static)
 
 # Unit Test Runner (Catch2)
-add_executable(abk_tests tests/catch_main.cpp tests/test_engine.cpp)
+add_executable(abk_tests
+    tests/catch_main.cpp
+    tests/test_engine.cpp
+    tests/test_legacy_converter.cpp
+    tests/test_bangladesh_helpers.cpp
+    tests/test_quality_of_life.cpp
+    tests/test_avro_style.cpp
+)
 target_include_directories(abk_tests PRIVATE tests)
 target_link_libraries(abk_tests PRIVATE abk_static)
 
@@ -57,3 +71,4 @@ install(TARGETS abk_static abk_shared abk_cli
     ARCHIVE DESTINATION lib
 )
 install(DIRECTORY include/abk DESTINATION include)
+install(DIRECTORY data/ DESTINATION share/amar-bangla-kotha)

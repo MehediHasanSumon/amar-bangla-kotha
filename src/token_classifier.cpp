@@ -40,9 +40,10 @@ TokenClassifier::TokenClassifier() {
     // 3. Common technical and document file extensions
     common_file_extensions = {
         "cpp", "h", "c", "hpp", "py", "js", "ts", "jsx", "tsx", "html", "css", "scss",
-        "json", "xml", "yaml", "yml", "md", "txt", "pdf", "doc", "docx", "xls", "xlsx",
-        "png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "zip", "tar", "gz", "7z",
-        "sh", "bat", "ps1", "exe", "dll", "so", "dylib", "apk", "tsv", "csv", "log"
+        "json", "xml", "yaml", "yml", "toml", "ini", "cfg", "conf", "md", "txt", "pdf",
+        "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg", "gif", "svg", "webp", "ico",
+        "zip", "tar", "gz", "7z", "sh", "bat", "ps1", "exe", "dll", "so", "dylib",
+        "deb", "rpm", "apk", "tsv", "csv", "sql", "log"
     };
 
     // 4. Common Internet top-level domains
@@ -168,56 +169,73 @@ bool TokenClassifier::is_code_token(const std::string& token) const {
         }
     }
 
-    // Check individual code symbols: $, #, @, %, &, ;
-    for (char c : token) {
-        if (c == '$' || c == '#' || c == '%' || c == ';' || c == '{' || c == '}' ||
+    // Check individual code symbols: $, #, %, ;, {}, [], <>
+    // Note: standalone '$' or '$<digits>' is the Bengali Taka key ('$' -> '৳'),
+    // whereas '$identifier' (followed by letter or '_') is a code variable.
+    for (size_t i = 0; i < token.length(); ++i) {
+        char c = token[i];
+        if (c == '$') {
+            if (i + 1 < token.length()) {
+                unsigned char next = static_cast<unsigned char>(token[i + 1]);
+                if (std::isalpha(next) || next == '_' || next == '{' || next == '(' ||
+                    next == '[' || next == '?' || next == '@' || next == '#' ||
+                    next == '*' || next == '$' || next == '!') {
+                    return true;
+                }
+            }
+            if (i > 0) {
+                unsigned char prev = static_cast<unsigned char>(token[i - 1]);
+                if (std::isalpha(prev) || prev == '_' || prev == '\\') {
+                    return true;
+                }
+            }
+            continue;
+        }
+        if (c == '#' || c == '%' || c == ';' || c == '{' || c == '}' ||
             c == '[' || c == ']' || c == '<' || c == '>') {
             return true;
         }
     }
 
-    // 3. camelCase: Starts with lower, has uppercase letter inside (e.g. myVariable, getUserInfo)
+    auto is_non_avro_upper = [&](size_t idx) -> bool {
+        char c = token[idx];
+        switch (c) {
+            case 'A': case 'B': case 'C': case 'E': case 'F':
+            case 'H': case 'K': case 'L': case 'M': case 'P':
+            case 'Q': case 'V': case 'W': case 'X':
+                return true;
+            case 'G':
+                return !(idx > 0 && token[idx - 1] == 'N');
+            default:
+                return false;
+        }
+    };
+
+    // 3. camelCase: Starts with lower, has non-Avro uppercase letter inside (e.g. myVariable, handleKeyEvent)
     if (std::islower(static_cast<unsigned char>(token[0])) && token.length() >= 4) {
-        // Exclude Avro diphthongs "OI" and "OU" (e.g. kOI, kOU, dOUr)
-        if (token.find("OI") == std::string::npos && token.find("OU") == std::string::npos) {
-            for (size_t i = 1; i < token.length(); ++i) {
-                char c = token[i];
-                if (std::isupper(static_cast<unsigned char>(c))) {
-                    // Non-Avro uppercase characters indicate programming identifiers:
-                    if (c == 'V' || c == 'C' || c == 'K' || c == 'M' || c == 'P' ||
-                        c == 'L' || c == 'W' || c == 'F' || c == 'G' || c == 'H' ||
-                        c == 'X' || c == 'Q' || c == 'B' || c == 'E' || c == 'A' || c == 'I' || c == 'J') {
-                        return true;
-                    }
-                    // For T, D, N, R, S, Y, Z, check if it's followed by lowercase and length is substantial
-                    if (i + 1 < token.length() && std::islower(static_cast<unsigned char>(token[i + 1])) && token.length() >= 7) {
-                        return true;
-                    }
-                }
+        for (size_t i = 1; i < token.length(); ++i) {
+            if (std::isupper(static_cast<unsigned char>(token[i])) && is_non_avro_upper(i)) {
+                return true;
             }
         }
     }
 
-    // 4. PascalCase: Starts with capital, followed by lower and upper (e.g. AmarBanglaKotha, HTMLElement)
+    // 4. PascalCase: Starts with capital, followed by lower and upper with non-Avro uppercase (e.g. AmarBanglaKotha)
     if (std::isupper(static_cast<unsigned char>(token[0])) && token.length() >= 4) {
-        if (token.find("OI") == std::string::npos && token.find("OU") == std::string::npos) {
-            bool has_lower = false;
-            for (size_t i = 1; i < token.length(); ++i) {
-                if (std::islower(static_cast<unsigned char>(token[i]))) {
-                    has_lower = true;
-                } else if (std::isupper(static_cast<unsigned char>(token[i]))) {
-                    if (has_lower) {
-                        char c = token[i];
-                        if (c == 'V' || c == 'C' || c == 'K' || c == 'M' || c == 'P' ||
-                            c == 'L' || c == 'W' || c == 'F' || c == 'G' || c == 'H' ||
-                            c == 'X' || c == 'Q' || c == 'B' || c == 'E' || c == 'A' || c == 'I' || c == 'J') {
-                            return true;
-                        } else if (i + 1 < token.length() && std::islower(static_cast<unsigned char>(token[i + 1])) && token.length() >= 7) {
-                            return true;
-                        }
-                    }
-                }
+        bool has_lower = false;
+        bool has_later_upper = false;
+        bool any_non_avro_upper = is_non_avro_upper(0);
+        for (size_t i = 1; i < token.length(); ++i) {
+            unsigned char uc = static_cast<unsigned char>(token[i]);
+            if (std::islower(uc)) {
+                has_lower = true;
+            } else if (std::isupper(uc)) {
+                if (has_lower) has_later_upper = true;
+                if (is_non_avro_upper(i)) any_non_avro_upper = true;
             }
+        }
+        if (has_lower && has_later_upper && any_non_avro_upper) {
+            return true;
         }
     }
 
@@ -239,8 +257,8 @@ bool TokenClassifier::is_code_token(const std::string& token) const {
 bool TokenClassifier::is_explicit_override(const std::string& token) const {
     if (token.empty()) return false;
 
-    // Explicit Avro-compatible escape override starts with comma ',' (e.g. ,k, ,o, ,i)
-    if (token[0] == ',') {
+    // Explicit Avro-compatible escape overrides: backtick (`), double-comma (,,), or leading ','
+    if (token[0] == ',' || token.find('`') != std::string::npos || token.find(",,") != std::string::npos) {
         return true;
     }
 
@@ -314,12 +332,38 @@ TokenClassification TokenClassifier::classify(const std::string& token) const {
         return result;
     }
 
-    // 6. English words
+    // 6. English words & standard dotted abbreviations (Dr., Mr., e.g., i.e., Ph.D., U.S.A.)
     if (is_english_word(token)) {
         result.type = TokenType::ENGLISH_WORD;
         result.should_bypass_transliteration = true;
         result.reason = "english_word";
         return result;
+    }
+    if (token.length() >= 2 && token.back() == '.') {
+        if (token == "Dr." || token == "Mr." || token == "Mrs." || token == "Ms." ||
+            token == "Prof." || token == "Jr." || token == "Sr." || token == "St." ||
+            token == "vs." || token == "etc." || token == "Ph.D." || token == "B.Sc." ||
+            token == "M.Sc.") {
+            result.type = TokenType::ENGLISH_WORD;
+            result.should_bypass_transliteration = true;
+            result.reason = "abbreviation";
+            return result;
+        }
+        if (token.length() >= 4 && (token.length() % 2 == 0)) {
+            bool pairs = true;
+            for (size_t i = 0; i < token.length(); i += 2) {
+                if (!std::isalpha(static_cast<unsigned char>(token[i])) || token[i + 1] != '.') {
+                    pairs = false;
+                    break;
+                }
+            }
+            if (pairs) {
+                result.type = TokenType::ENGLISH_WORD;
+                result.should_bypass_transliteration = true;
+                result.reason = "abbreviation";
+                return result;
+            }
+        }
     }
 
     // Default: Banglish phonetic input

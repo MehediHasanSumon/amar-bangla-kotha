@@ -87,6 +87,67 @@ std::vector<UserShortcut> PersonalDictionary::get_all_shortcuts() const {
     return list;
 }
 
+void PersonalDictionary::remember_choice(const std::string& raw_input, const std::string& chosen_word) {
+    std::string key = utf8::trim(raw_input);
+    std::string val = utf8::normalize_nfc(utf8::trim(chosen_word));
+    if (key.empty() || val.empty() || max_remembered_choices == 0) return;
+
+    auto it = remembered_choices.find(key);
+    if (it != remembered_choices.end()) {
+        it->second.chosen_word = val;
+        it->second.seq = ++choice_seq_counter;
+        return;
+    }
+
+    while (remembered_choices.size() >= max_remembered_choices && !remembered_choices.empty()) {
+        auto oldest_it = remembered_choices.begin();
+        for (auto cur = remembered_choices.begin(); cur != remembered_choices.end(); ++cur) {
+            if (cur->second.seq < oldest_it->second.seq) {
+                oldest_it = cur;
+            }
+        }
+        remembered_choices.erase(oldest_it);
+    }
+
+    remembered_choices[key] = RememberedEntry{val, ++choice_seq_counter};
+}
+
+bool PersonalDictionary::has_remembered_choice(const std::string& raw_input) const {
+    std::string key = utf8::trim(raw_input);
+    if (key.empty()) return false;
+    return remembered_choices.find(key) != remembered_choices.end();
+}
+
+std::string PersonalDictionary::get_remembered_choice(const std::string& raw_input) const {
+    std::string key = utf8::trim(raw_input);
+    if (key.empty()) return "";
+    auto it = remembered_choices.find(key);
+    if (it == remembered_choices.end()) return "";
+    return it->second.chosen_word;
+}
+
+void PersonalDictionary::clear_remembered_choices() {
+    remembered_choices.clear();
+    choice_seq_counter = 0;
+}
+
+void PersonalDictionary::set_max_remembered_choices(size_t max_choices) {
+    max_remembered_choices = max_choices;
+    if (max_remembered_choices == 0) {
+        remembered_choices.clear();
+        return;
+    }
+    while (remembered_choices.size() > max_remembered_choices && !remembered_choices.empty()) {
+        auto oldest_it = remembered_choices.begin();
+        for (auto cur = remembered_choices.begin(); cur != remembered_choices.end(); ++cur) {
+            if (cur->second.seq < oldest_it->second.seq) {
+                oldest_it = cur;
+            }
+        }
+        remembered_choices.erase(oldest_it);
+    }
+}
+
 bool PersonalDictionary::parse_line(const std::string& line) {
     std::string trimmed = utf8::trim(line);
     if (trimmed.empty() || trimmed[0] == '#') return true; // valid comment or blank
@@ -114,6 +175,12 @@ bool PersonalDictionary::parse_line(const std::string& line) {
             std::string shortcut, expansion;
             if (std::getline(ss, shortcut, '\t') && std::getline(ss, expansion, '\t')) {
                 add_shortcut(shortcut, expansion);
+                return true;
+            }
+        } else if (type == "CHOICE") {
+            std::string raw_in, chosen;
+            if (std::getline(ss, raw_in, '\t') && std::getline(ss, chosen, '\t')) {
+                remember_choice(raw_in, chosen);
                 return true;
             }
         }
@@ -181,10 +248,15 @@ bool PersonalDictionary::save_to_file(const std::string& filepath) const {
         file << "WORD\t" << w.first << "\t" << w.second << "\n";
     }
 
-    // Write shortcuts
-    for (const auto& pair : shortcuts) {
-        file << "SHORTCUT\t" << pair.second.shortcut << "\t" << pair.second.expansion << "\n";
-    }
+        // Write shortcuts
+        for (const auto& pair : shortcuts) {
+            file << "SHORTCUT\t" << pair.second.shortcut << "\t" << pair.second.expansion << "\n";
+        }
+
+        // Write remembered choices
+        for (const auto& pair : remembered_choices) {
+            file << "CHOICE\t" << pair.first << "\t" << pair.second.chosen_word << "\n";
+        }
 
     return true;
 }
@@ -197,7 +269,7 @@ bool PersonalDictionary::save_atomic(const std::string& filepath) const {
         if (!file.is_open()) return false;
 
         file << "# Amar Bangla Kotha - Personal Dictionary & User Shortcuts\n";
-        file << "# Format: WORD<TAB>word<TAB>frequency OR SHORTCUT<TAB>shortcut<TAB>expansion\n";
+        file << "# Format: WORD<TAB>word<TAB>frequency | SHORTCUT<TAB>shortcut<TAB>expansion | CHOICE<TAB>raw<TAB>word\n";
 
         auto words = user_trie.find_by_prefix("", max_user_words);
         for (const auto& w : words) {
@@ -206,6 +278,10 @@ bool PersonalDictionary::save_atomic(const std::string& filepath) const {
 
         for (const auto& pair : shortcuts) {
             file << "SHORTCUT\t" << pair.second.shortcut << "\t" << pair.second.expansion << "\n";
+        }
+
+        for (const auto& pair : remembered_choices) {
+            file << "CHOICE\t" << pair.first << "\t" << pair.second.chosen_word << "\n";
         }
         file.flush();
     }
@@ -230,6 +306,8 @@ bool PersonalDictionary::import_from_tsv(const std::string& filepath) {
 void PersonalDictionary::clear() {
     user_trie.clear();
     shortcuts.clear();
+    remembered_choices.clear();
+    choice_seq_counter = 0;
 }
 
 bool PersonalDictionary::reset_storage(const std::string& filepath) {

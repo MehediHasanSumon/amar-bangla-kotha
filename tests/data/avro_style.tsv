@@ -1,0 +1,269 @@
+# Amar Bangla Kotha — Avro-Style Phonetic Test Suite (Clean-Room Authored)
+# Format: category<TAB>input<TAB>expected<TAB>mode<TAB>notes
+# Modes:
+#   strict      - Pure character-first lattice parser (dict == nullptr) must match Top-1
+#   dictionary  - Dictionary-backed transliterate(input, &dict) matches Top-1 (beam contains expected)
+#   autocorrect - Requires Workstream C autocorrect table or dictionary; expected is in beam
+
+# ==============================================================================
+# 1. VOWELS (vowel) — Section 1 & Section 6
+# ==============================================================================
+vowel	o	অ	strict	independent_o
+vowel	a	আ	strict	independent_a
+vowel	i	ই	strict	independent_i
+vowel	I	ঈ	strict	independent_I
+vowel	ee	ঈ	strict	independent_ee
+vowel	u	উ	strict	independent_u
+vowel	oo	উ	strict	independent_oo
+vowel	U	ঊ	strict	independent_U
+vowel	rri	ঋ	strict	independent_rri
+vowel	e	এ	strict	independent_e
+vowel	OI	ঐ	strict	independent_OI
+vowel	O	ও	strict	independent_O
+vowel	OU	ঔ	strict	independent_OU
+vowel	ko	ক	strict	inherent_o_after_consonant
+vowel	ka	কা	strict	a_kar
+vowel	ki	কি	strict	i_kar
+vowel	kI	কী	strict	guide_sec6_I_kar
+vowel	kee	কী	strict	guide_sec6_ee_kar
+vowel	ku	কু	strict	u_kar
+vowel	koo	কু	strict	oo_kar
+vowel	kU	কূ	strict	U_kar
+vowel	krri	কৃ	strict	rri_kar
+vowel	ke	কে	strict	e_kar
+vowel	kOI	কৈ	strict	guide_sec6_OI_kar
+vowel	kO	কো	strict	O_kar
+vowel	kOU	কৌ	strict	OU_kar
+vowel	onek	অনেক	strict	guide_sec6
+vowel	omor	অমর	strict	guide_sec6
+vowel	amar	আমার	strict	guide_sec6
+vowel	iti	ইতি	strict	guide_sec6
+vowel	Igol	ঈগল	strict	guide_sec6
+vowel	eegol	ঈগল	strict	guide_sec6
+vowel	ujan	উজান	strict	guide_sec6
+vowel	oojan	উজান	strict	guide_sec6
+vowel	bujhi	বুঝি	strict	guide_sec6
+vowel	boojhi	বুঝি	strict	guide_sec6
+vowel	Unocollish	ঊনচল্লিশ	strict	guide_sec6
+vowel	dUr	দূর	strict	guide_sec6
+vowel	rriju	ঋজু	strict	guide_sec6
+vowel	grriho	গৃহ	strict	guide_sec6
+vowel	emon	এমন	strict	guide_sec6
+vowel	keno	কেন	strict	guide_sec6
+vowel	OIrabot	ঐরাবত	strict	guide_sec6
+vowel	koi	কই	strict	guide_sec6_inherent_o_plus_i
+vowel	kou	কউ	strict	sec1_inherent_o_plus_u
+vowel	oi	অই	strict	sec1_lowercase_oi_not_OI
+vowel	ou	অউ	strict	sec1_lowercase_ou_not_OU
+vowel	OtoprOto	ওতপ্রোত	strict	guide_sec6
+vowel	OUpodeshik	ঔপদেশিক	strict	guide_sec6
+vowel	bOU	বৌ	strict	guide_sec6
+vowel	eki	একি	strict	guide_sec6
+
+# ==============================================================================
+# 2. ACCENT / BACKTICK SEPARATOR (accent) — Section 2 & Section 6
+# ==============================================================================
+accent	ek`i	একই	strict	guide_sec6_force_independent_i
+accent	k`o	কঅ	strict	force_independent_o_after_consonant
+accent	k`a	কআ	strict	force_independent_a_after_consonant
+accent	k`I	কঈ	strict	force_independent_I_after_consonant
+accent	k`ee	কঈ	strict	force_independent_ee_after_consonant
+accent	k`u	কউ	strict	force_independent_u_after_consonant
+accent	k`oo	কউ	strict	force_independent_oo_after_consonant
+accent	k`U	কঊ	strict	force_independent_U_after_consonant
+accent	k`rri	কঋ	strict	force_independent_rri_after_consonant
+accent	k`e	কএ	strict	force_independent_e_after_consonant
+accent	k`OI	কঐ	strict	force_independent_OI_after_consonant
+accent	k`O	কও	strict	force_independent_O_after_consonant
+accent	k`OU	কঔ	strict	force_independent_OU_after_consonant
+accent	sami`a	সামিআ	strict	sec3_force_plain_a_after_vowel
+accent	i`a	ইআ	strict	force_plain_a_after_initial_i
+accent	a`a	আআ	strict	force_plain_a_after_initial_a
+accent	a`	া	strict	sec2_force_a_kar
+accent	i`	ি	strict	sec2_force_i_kar
+accent	I`	ী	strict	sec2_force_I_kar
+accent	u`	ু	strict	sec2_force_u_kar
+accent	U`	ূ	strict	sec2_force_U_kar
+accent	rri`	ৃ	strict	sec2_force_rri_kar
+accent	e`	ে	strict	sec2_force_e_kar
+accent	OI`	ৈ	strict	sec2_force_OI_kar
+accent	O`	ো	strict	sec2_force_O_kar
+accent	OU`	ৌ	strict	sec2_force_OU_kar
+accent	o`		strict	sec2_o_backtick_outputs_nothing
+accent	`		strict	sec2_stray_backtick_silent_noop
+accent	ek`Ta	একটা	strict	guide_sec6_break_conjunct
+accent	am`ra	আমরা	strict	guide_sec6_break_conjunct
+accent	ag`lanO	আগলানো	strict	sec5_break_conjunct_with_explicit_O
+accent	t``	ৎ	strict	sec2_khanda_ta
+accent	bhobiShyot``	ভবিষ্যৎ	strict	khanda_ta_in_word
+accent	hoThat``	হঠাৎ	strict	khanda_ta_strict
+accent	.`	.	strict	sec2_literal_dot
+accent	:`	:	strict	sec2_literal_colon
+
+# ==============================================================================
+# 3. CONSONANTS (consonant) — Section 3
+# ==============================================================================
+consonant	k	ক	strict	ka
+consonant	kh	খ	strict	kha
+consonant	g	গ	strict	ga
+consonant	gh	ঘ	strict	gha
+consonant	Ng	ঙ	strict	nga
+consonant	c	চ	strict	ca
+consonant	ch	ছ	strict	cha
+consonant	j	জ	strict	ja
+consonant	jh	ঝ	strict	jha
+consonant	NG	ঞ	strict	nya
+consonant	T	ট	strict	tta
+consonant	Th	ঠ	strict	ttha
+consonant	D	ড	strict	dda
+consonant	Dh	ঢ	strict	ddha
+consonant	N	ণ	strict	nna
+consonant	t	ত	strict	ta
+consonant	th	থ	strict	tha
+consonant	d	দ	strict	da
+consonant	dh	ধ	strict	dha
+consonant	n	ন	strict	na
+consonant	p	প	strict	pa
+consonant	ph	ফ	strict	pha
+consonant	f	ফ	strict	pha_alt
+consonant	b	ব	strict	ba
+consonant	bh	ভ	strict	bha
+consonant	v	ভ	strict	bha_alt
+consonant	m	ম	strict	ma
+consonant	z	য	strict	ja_phala_root
+consonant	r	র	strict	ra
+consonant	l	ল	strict	la
+consonant	sh	শ	strict	sha
+consonant	S	শ	strict	sha_alt_cap
+consonant	Sh	ষ	strict	ssa
+consonant	s	স	strict	sa
+consonant	h	হ	strict	ha
+consonant	R	ড়	strict	rra_nukta
+consonant	Rh	ঢ়	strict	rha_nukta
+consonant	J	জ়	strict	ja_nukta
+consonant	ng	ং	strict	anusvara
+consonant	:	ঃ	strict	visarga
+consonant	^	ঁ	strict	chandrabindu
+consonant	ca^d	চাঁদ	strict	chandrabindu_in_word
+consonant	du:kho	দুঃখ	strict	visarga_in_word
+consonant	baRi	বাড়ি	strict	rra_in_word
+consonant	gaRh	গাঢ়	strict	rha_in_word
+consonant	gg	জ্ঞ	strict	sec3_gg
+consonant	jNG	জ্ঞ	strict	sec3_jNG
+consonant	kkh	ক্ষ	strict	sec3_kkh
+consonant	kx	ক্ষ	strict	sec3_kx
+
+# ==============================================================================
+# 4. Y-RULES & VOWEL+A RULES (y-rules) — Section 3 & Section 6
+# ==============================================================================
+y-rules	yahoo	ইয়াহু	strict	guide_sec6_word_initial_y
+y-rules	Y	য়	strict	sec3_capital_Y_standalone
+y-rules	Yogi	য়গি	strict	sec3_capital_Y_forces_y_at_start
+y-rules	niyom	নিয়ম	strict	guide_sec6_intervocalic_y
+y-rules	pray	প্রায়	strict	guide_sec6_postvocalic_y
+y-rules	samia	সামিয়া	strict	guide_sec6_a_after_vowel_sign
+y-rules	doa	দয়া	strict	a_after_inherent_o
+y-rules	dOa	দোয়া	strict	a_after_O_kar
+y-rules	khaOa	খাওয়া	strict	a_after_independent_O
+
+# ==============================================================================
+# 5. PHALAS (phala) — Section 4 & Section 6
+# ==============================================================================
+phala	bishwo	বিশ্ব	strict	guide_sec6_ba_phala_w
+phala	udwayI	উদ্বায়ী	strict	guide_sec6_ba_phala_w
+phala	ambia	আম্বিয়া	strict	guide_sec6_ba_phala_plain_b
+phala	balb	বাল্ব	strict	guide_sec6_ba_phala_plain_b
+phala	bybohar	ব্যবহার	strict	guide_sec6_ya_phala
+phala	byokti	ব্যক্তি	strict	strict_keystrokes_for_byakti
+phala	aZDmin	অ্যাডমিন	strict	guide_sec6_forced_Z_after_a
+phala	aZrOmeTik	অ্যারোমেটিক	strict	strict_keystrokes_for_aZromeTik
+phala	rZ	র‍্য	strict	zwj_ra_ya_phala_Z
+phala	r``yab	র‍্যাব	strict	zwj_ra_ya_phala_backticks
+phala	prosonno	প্রসন্ন	strict	guide_sec6_ra_phala
+phala	protidin	প্রতিদিন	strict	guide_sec6_ra_phala
+phala	podma	পদ্মা	strict	guide_sec6_ma_phala
+
+# ==============================================================================
+# 6. REPH (reph) — Section 4 & Section 6
+# ==============================================================================
+reph	orrko	অর্ক	strict	guide_sec6_reph
+reph	arrtonad	আর্তনাদ	strict	guide_sec6_reph
+reph	orrthohIn	অর্থহীন	strict	guide_sec6_reph
+reph	sorrbo	সর্ব	strict	medial_reph
+reph	karryo	কার্য	strict	reph_before_y
+reph	sorkar	সরকার	strict	single_r_does_not_form_reph
+
+# ==============================================================================
+# 7. CONJUNCTS (conjunct) — Section 5 & Section 6
+# ==============================================================================
+conjunct	okkhor	অক্ষর	strict	guide_sec6
+conjunct	onto	অন্ত	strict	guide_sec6
+conjunct	biggo	বিজ্ঞ	strict	guide_sec6
+conjunct	brahmoN	ব্রাহ্মণ	strict	guide_sec6
+conjunct	lokkhmI	লক্ষ্মী	strict	strict_keystrokes_for_lokkhmi
+conjunct	sombol	সম্বল	strict	guide_sec6
+conjunct	glOb	গ্লোব	strict	guide_sec6
+conjunct	okTOpas	অক্টোপাস	strict	guide_sec6
+conjunct	raShTro	রাষ্ট্র	strict	three_consonant_cluster
+conjunct	montrI	মন্ত্রী	strict	three_consonant_cluster
+conjunct	ujjwol	উজ্জ্বল	strict	geminate_plus_ba_phala
+
+# ==============================================================================
+# 8. PUNCTUATION, HASANTA, SYMBOLS & DIGITS (punctuation) — Section 4
+# ==============================================================================
+punctuation	,,	্	strict	sec4_explicit_hasanta
+punctuation	m,,	ম্	strict	sec4_word_final_hasanta
+punctuation	.	।	strict	sec4_bengali_dari
+punctuation	ami.	আমি।	strict	sentence_final_dari
+punctuation	3.5	৩.৫	strict	sec4_decimal_dot_preserved
+punctuation	0.25	০.২৫	strict	sec4_decimal_dot_leading_zero
+punctuation	...	...	strict	ellipsis_preserved
+punctuation	Dr.	Dr.	strict	abbreviation_dr_preserved
+punctuation	Mr.	Mr.	strict	abbreviation_mr_preserved
+punctuation	Mrs.	Mrs.	strict	abbreviation_mrs_preserved
+punctuation	Prof.	Prof.	strict	abbreviation_prof_preserved
+punctuation	e.g.	e.g.	strict	abbreviation_dots_preserved
+punctuation	i.e.	i.e.	strict	abbreviation_ie_preserved
+punctuation	Ph.D.	Ph.D.	strict	abbreviation_phd_preserved
+punctuation	U.S.A.	U.S.A.	strict	abbreviation_usa_preserved
+punctuation	https://example.com	https://example.com	strict	sec4_url_preserved
+punctuation	www.bangladesh.gov.bd	www.bangladesh.gov.bd	strict	sec4_www_url_preserved
+punctuation	user@mail.org	user@mail.org	strict	sec4_email_preserved
+punctuation	/usr/local/bin	/usr/local/bin	strict	workstream_d_unix_path_preserved
+punctuation	~/notes.txt	~/notes.txt	strict	workstream_d_home_path_preserved
+punctuation	./build.sh	./build.sh	strict	workstream_d_rel_path_preserved
+punctuation	main.cpp	main.cpp	strict	workstream_d_filename_preserved
+punctuation	C:\Windows\System32	C:\Windows\System32	strict	workstream_d_windows_path_preserved
+punctuation	$	৳	strict	sec4_taka_sign
+punctuation	$500	৳৫০০	strict	taka_with_bangla_digits
+punctuation	$3.50	৳৩.৫০	strict	taka_with_decimal_bangla_digits
+punctuation	500$	৫০০৳	strict	trailing_taka_sign
+punctuation	$`500	$৫০০	strict	escaped_literal_dollar
+punctuation	$PATH	$PATH	strict	workstream_d_env_var_preserved
+punctuation	${HOME}	${HOME}	strict	workstream_d_braced_var_preserved
+punctuation	$(pwd)	$(pwd)	strict	workstream_d_subshell_preserved
+punctuation	$my_var	$my_var	strict	workstream_d_ident_var_preserved
+punctuation	$$	$$	strict	workstream_d_shell_pid_preserved
+punctuation	$?	$?	strict	workstream_d_shell_status_preserved
+punctuation	foo$bar	foo$bar	strict	workstream_d_midword_dollar_preserved
+punctuation	0123456789	০১২৩৪৫৬৭৮৯	strict	sec4_bangla_digits
+punctuation	;?!(){}[]/\+-*%	;?!(){}[]/\+-*%	strict	sec4_passthrough_punctuation
+
+# ==============================================================================
+# 9. AUTOCORRECT / DICTIONARY LAYER VECTORS (autocorrect) — Section 6 & 7
+# ==============================================================================
+autocorrect	byakti	ব্যক্তি	engine_autocorrect	guide_sec6_conjunct_ya_exception
+autocorrect	amra	আমরা	engine_autocorrect	sec7_conjunct_exception_amra
+autocorrect	ekta	একটা	engine_autocorrect	sec7_conjunct_exception_ekta
+autocorrect	aglano	আগলানো	engine_autocorrect	sec7_conjunct_exception_aglano
+autocorrect	lokkhmi	লক্ষ্মী	engine_autocorrect	guide_sec6_lokkhmi_via_autocorrect
+autocorrect	software	সফটওয়্যার	engine_autocorrect	sec7_loanword_software
+autocorrect	doctor	ডাক্তার	engine_autocorrect	sec7_loanword_doctor
+autocorrect	school	স্কুল	engine_autocorrect	sec7_loanword_school
+autocorrect	college	কলেজ	engine_autocorrect	sec7_loanword_college
+autocorrect	mobile	মোবাইল	engine_autocorrect	sec7_loanword_mobile
+autocorrect	internet	ইন্টারনেট	engine_autocorrect	sec7_loanword_internet
+autocorrect	bhalo	ভালো	dictionary	cholito_o_kar_via_dict
+autocorrect	dhonnobad	ধন্যবাদ	dictionary	nya_cluster_via_dict
+autocorrect	aZromeTik	অ্যারোমেটিক	autocorrect	guide_sec6_uppercase_control_not_overridden
+autocorrect	ag`lano	আগলানো	autocorrect	guide_sec6_backtick_control_not_overridden

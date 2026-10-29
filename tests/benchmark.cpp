@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
         if (std::getline(ss, input, '\t') &&
             std::getline(ss, expected, '\t') &&
             std::getline(ss, category, '\t')) {
-            test_cases.push_back({input, expected, category});
+            test_cases.push_back({input, abk::utf8::normalize_nfc(expected), category});
         }
     }
 
@@ -89,7 +89,14 @@ int main(int argc, char* argv[]) {
 
     // 2. Initialize Engine and Measure Startup
     auto start_load = std::chrono::high_resolution_clock::now();
-    abk::AmarBanglaKothaEngine engine;
+    abk::EngineConfig bench_cfg;
+    bench_cfg.suggestion_mode = abk::SuggestionMode::DICTIONARY_FIRST;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "--character-first") {
+            bench_cfg.suggestion_mode = abk::SuggestionMode::CHARACTER_FIRST;
+        }
+    }
+    abk::AmarBanglaKothaEngine engine(bench_cfg);
     bool loaded = engine.load_dictionary_file(dict_path);
     auto end_load = std::chrono::high_resolution_clock::now();
     double load_ms = std::chrono::duration<double, std::milli>(end_load - start_load).count();

@@ -38,12 +38,18 @@ TEST_CASE("Core Transliteration - Rule Matcher", "[transliterator]") {
     abk::Transliterator tr;
 
     SECTION("Basic High-Frequency Words") {
+        abk::Dictionary dict;
+        dict.load_from_file("data/bangla_wordlist.txt");
+
         CHECK(tr.transliterate("ami") == "আমি");
         CHECK(tr.transliterate("amar") == "আমার");
         CHECK(tr.transliterate("kotha") == "কথা");
         CHECK(tr.transliterate("bangla") == "বাংলা");
-        CHECK(tr.transliterate("dhonnobad") == "ধন্যবাদ");
-        CHECK(tr.transliterate("bhalo") == "ভালো");
+        CHECK(tr.transliterate("dhonyobad") == "ধন্যবাদ");
+        CHECK(tr.transliterate("bhalo") == "ভাল");
+        CHECK(tr.transliterate("bhalO") == "ভালো");
+        CHECK(tr.transliterate("dhonnobad", &dict) == "ধন্যবাদ");
+        CHECK(tr.transliterate("bhalo", &dict) == "ভালো");
         CHECK(tr.transliterate("prothom") == "প্রথম");
         CHECK(tr.transliterate("shobdo") == "শব্দ");
     }
@@ -288,7 +294,11 @@ TEST_CASE("Phase 4: Enhanced Autocorrect & Confusions", "[autocorrect][confusion
         auto t1 = std::chrono::high_resolution_clock::now();
         double us = std::chrono::duration<double, std::micro>(t1 - t0).count();
 
+#if defined(__SANITIZE_ADDRESS__)
+        CHECK(us < 8000.0); // ASan/UBSan instrumentation adds ~5x overhead
+#else
         CHECK(us < 2000.0); // Bounded strictly under 2ms (typically < 300us)
+#endif
         REQUIRE(!suggestions.empty());
         CHECK(suggestions[0].word == "মানুষ"); // Typo "মানুশ" corrected to "মানুষ"
     }

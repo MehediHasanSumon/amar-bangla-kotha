@@ -42,6 +42,15 @@ public:
     std::string get_expansion(const std::string& shortcut) const;
     std::vector<UserShortcut> get_all_shortcuts() const;
 
+    // Section 8: "Remember my choice" (local only, size-capped, resettable)
+    void remember_choice(const std::string& raw_input, const std::string& chosen_word);
+    bool has_remembered_choice(const std::string& raw_input) const;
+    std::string get_remembered_choice(const std::string& raw_input) const;
+    void clear_remembered_choices();
+    void set_max_remembered_choices(size_t max_choices);
+    size_t get_max_remembered_choices() const { return max_remembered_choices; }
+    size_t remembered_choice_count() const { return remembered_choices.size(); }
+
     // Export & Import
     bool export_to_tsv(const std::string& filepath) const;
     bool import_from_tsv(const std::string& filepath);
@@ -60,11 +69,19 @@ public:
     const Trie& get_user_trie() const { return user_trie; }
 
 private:
+    struct RememberedEntry {
+        std::string chosen_word;
+        uint64_t seq = 0;
+    };
+
     size_t max_user_words = 10000;
+    size_t max_remembered_choices = 2048;
+    uint64_t choice_seq_counter = 0;
     Trie user_trie;
     std::unordered_map<std::string, UserShortcut> shortcuts;
+    std::unordered_map<std::string, RememberedEntry> remembered_choices;
 
-    // Line parser handling both WORD records and SHORTCUT records
+    // Line parser handling WORD, SHORTCUT, and CHOICE records
     bool parse_line(const std::string& line);
 };
 
