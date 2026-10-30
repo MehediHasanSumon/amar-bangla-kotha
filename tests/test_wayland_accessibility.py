@@ -170,5 +170,46 @@ class TestLinuxWaylandAccessibility(unittest.TestCase):
         self.assertEqual(self.engine.buffer, "")
         abk_lib.abk_engine_set_tab_browses(self.engine.engine_handle, 1)
 
+    def test_bengali_dari_dot_and_punctuation(self):
+        """Verifies '.' outputs Bengali Dari '।' standalone, in words, and toggles on '..'."""
+        # 1. Standalone '.' when buffer is empty outputs Dari '।'
+        handled = self.engine.do_process_key_event(ord('.'), 0, 0)
+        self.assertTrue(handled)
+        self.assertEqual(self.engine.last_committed_text, "।")
+        self.assertEqual(self.engine.last_committed_char, "।")
+
+        # 2. Consecutive '.' (..) toggles Dari '।' to ASCII '.'
+        handled_double = self.engine.do_process_key_event(ord('.'), 0, 0)
+        self.assertTrue(handled_double)
+        self.assertEqual(self.engine.last_committed_text, ".")
+        self.assertEqual(self.engine.last_committed_char, ".")
+
+        # 3. Pipe '|' outputs Dari '।'
+        handled_pipe = self.engine.do_process_key_event(ord('|'), 0, 0)
+        self.assertTrue(handled_pipe)
+        self.assertEqual(self.engine.last_committed_text, "।")
+
+        # 4. Word ending with '.' (e.g. 'ami.') commits 'আমি।'
+        for ch in "ami":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+        self.assertEqual(self.engine.buffer, "ami")
+        handled_word_dot = self.engine.do_process_key_event(ord('.'), 0, 0)
+        self.assertTrue(handled_word_dot)
+        self.assertEqual(self.engine.buffer, "")
+        self.assertEqual(self.engine.last_committed_text, "আমি।")
+
+        # 5. Escaped dot with backtick (e.g. 'amra`.') commits literal '.'
+        for ch in "amra`":
+            self.engine.do_process_key_event(ord(ch), 0, 0)
+        handled_esc = self.engine.do_process_key_event(ord('.'), 0, 0)
+        self.assertTrue(handled_esc)
+        self.assertEqual(self.engine.buffer, "")
+        self.assertTrue(self.engine.last_committed_text.endswith("."))
+
+        # 6. Dollar sign '$' outputs Taka symbol '৳'
+        handled_taka = self.engine.do_process_key_event(ord('$'), 0, 0)
+        self.assertTrue(handled_taka)
+        self.assertEqual(self.engine.last_committed_text, "৳")
+
 if __name__ == '__main__':
     unittest.main()

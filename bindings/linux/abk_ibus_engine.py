@@ -164,6 +164,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
         self.lookup_window_shown = False
         self.lookup_table = IBus.LookupTable.new(9, 0, True, True)
         self.is_secure_mode = False
+        self.last_committed_char = ""
+        self.last_committed_text = ""
 
         dict_paths = [
             os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "bangla_wordlist.txt"),
@@ -346,6 +348,8 @@ class AmarBanglaKothaEngine(IBus.Engine):
         # 5. Commit text cleanly in a single call
         if text_to_commit:
             self.commit_text(IBus.Text.new_from_string(text_to_commit))
+            self.last_committed_text = text_to_commit
+            self.last_committed_char = " " if append_space else text_to_commit[-1]
 
     def do_set_content_type(self, purpose, hints):
         # Workstream 2: Auto-detect password / PIN / sensitive fields
@@ -518,17 +522,78 @@ class AmarBanglaKothaEngine(IBus.Engine):
                 self.commit_word(self.current_candidates[idx], append_space=True, explicit_index=idx)
                 return True
 
-        # 6. Latin characters & special phonetic symbols
+        # Map keypad decimal or ASCII characters
         char = chr(keyval) if keyval < 128 else None
+        if keyval == IBus.KEY_KP_Decimal:
+            char = '.'
+
+        # 6. Bengali Dari (.) and Pipe (|)
+        if char in ('.', '|'):
+            if self.buffer:
+                if self.buffer.endswith('`'):
+                    # User escaped with backtick: commit target with literal '.'
+                    base_buf = self.buffer[:-1]
+                    target = self.current_primary or base_buf
+                    self.commit_word(target + ".", append_space=False)
+                    self.last_committed_char = "."
+                elif self.buffer[-1].isdigit():
+                    # Preceded by a digit: keep in buffer for decimal numbers (e.g. 12.5)
+                    self.buffer += '.'
+                    self.update_preedit_and_lookup()
+                else:
+                    target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
+                    self.commit_word(target + "।", append_space=False)
+                    self.last_committed_char = "।"
+                return True
+            else:
+                # Buffer is empty:
+                # Double-dot (..) toggle: if immediately following Dari '।', convert it to literal '.'
+                if getattr(self, "last_committed_char", "") == "।" and char == '.':
+                    try:
+                        self.delete_surrounding_text(-1, 1)
+                    except Exception:
+                        pass
+                    self.commit_text(IBus.Text.new_from_string("."))
+                    self.last_committed_char = "."
+                    self.last_committed_text = "."
+                    return True
+
+                # If preceded by space, trim space so Dari '।' attaches to the word cleanly
+                if getattr(self, "last_committed_char", "") == " ":
+                    try:
+                        self.delete_surrounding_text(-1, 1)
+                    except Exception:
+                        pass
+
+                self.commit_text(IBus.Text.new_from_string("।"))
+                self.last_committed_char = "।"
+                self.last_committed_text = "।"
+                return True
+
+        # 7. Bengali Taka Symbol ($ -> ৳)
+        if char == '$':
+            if self.buffer:
+                target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
+                self.commit_word(target + "৳", append_space=False)
+                self.last_committed_char = "৳"
+            else:
+                self.commit_text(IBus.Text.new_from_string("৳"))
+                self.last_committed_char = "৳"
+                self.last_committed_text = "৳"
+            return True
+
+        # 8. Latin characters & special phonetic symbols
         if char and (char.isalnum() or char in "^:`"):
+            self.last_committed_char = ""
             self.buffer += char
             self.update_preedit_and_lookup()
             return True
 
-        # 7. Punctuation (commit pending word with punctuation)
-        if self.buffer and char and char in ".,!?;:-()":
+        # 9. Other Punctuation (commit pending word with punctuation)
+        if self.buffer and char and char in ",!?;:-()":
             target = self.current_candidates[0] if self.current_candidates else (self.current_primary or self.buffer)
             self.commit_word(target + char, append_space=False)
+            self.last_committed_char = char
             return True
 
         return False
