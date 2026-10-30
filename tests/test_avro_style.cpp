@@ -236,6 +236,20 @@ TEST_CASE("Avro Style Spec: Configurable Digits, Nukta-Ja, Pipe Mode, and Punctu
         CHECK(tr.transliterate("Dr.") == "Dr.");
         CHECK(tr.transliterate("...") == "...");
     }
+
+    SECTION("Chandrabindu with 'qq' and '^' supports prefix, infix, and standalone notation") {
+        std::string expected_dari = abk::utf8::normalize_nfc("দাঁড়ি");
+        CHECK(tr.transliterate("qqdaRi") == expected_dari);
+        CHECK(tr.transliterate("daqqRi") == expected_dari);
+        CHECK(tr.transliterate("dqqaRi") == expected_dari);
+        CHECK(tr.transliterate("qqcad") == abk::utf8::normalize_nfc("চাঁদ"));
+        CHECK(tr.transliterate("caqqd") == abk::utf8::normalize_nfc("চাঁদ"));
+        CHECK(tr.transliterate("cqqad") == abk::utf8::normalize_nfc("চাঁদ"));
+        CHECK(tr.transliterate("qqidur") == abk::utf8::normalize_nfc("ইঁদুর"));
+        CHECK(tr.transliterate("qq") == abk::utf8::normalize_nfc("ঁ"));
+        CHECK(tr.transliterate("QQ") == abk::utf8::normalize_nfc("ঁ"));
+        CHECK(tr.transliterate("qqdaRi.") == abk::utf8::normalize_nfc("দাঁড়ি।"));
+    }
 }
 
 TEST_CASE("Avro Style Spec: Golden TSV Suite Across All Categories", "[avro][tsv]") {

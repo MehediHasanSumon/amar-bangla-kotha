@@ -993,6 +993,20 @@ category = "MODIFIER"
 priority = 300.0
 
 [[rule]]
+pattern = "qq"
+output = "ঁ"
+left = "ANY"
+category = "MODIFIER"
+priority = 320.0
+
+[[rule]]
+pattern = "QQ"
+output = "ঁ"
+left = "ANY"
+category = "MODIFIER"
+priority = 320.0
+
+[[rule]]
 pattern = ":"
 output = "ঃ"
 left = "ANY"

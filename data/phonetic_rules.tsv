@@ -18,6 +18,8 @@ OI	ঐ	AFTER_VOWEL	INDEPENDENT_VOWEL	430	explicit_vowel_oi_override
 OU	ঔ	AFTER_VOWEL	INDEPENDENT_VOWEL	430	explicit_vowel_ou_override
 
 ^	ঁ	ANY	MODIFIER	300	chandrabindu
+qq	ঁ	ANY	MODIFIER	320	chandrabindu_qq
+QQ	ঁ	ANY	MODIFIER	320	chandrabindu_qq_upper
 :	ঃ	ANY	MODIFIER	300	visarga
 ,,	্	ANY	MODIFIER	300	explicit_hasant
 `		ANY	MODIFIER	200	escape_char

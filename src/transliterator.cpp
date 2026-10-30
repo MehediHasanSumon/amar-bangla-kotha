@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cmath>
 #include <cctype>
+#include <cstring>
 #include <cstdlib>
 
 namespace abk {
@@ -534,6 +535,142 @@ OutputCategory Transliterator::parse_category(const std::string& str) {
     return OutputCategory::OTHER;
 }
 
+bool is_phonetic_vowel_char(char c) {
+    char lc = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return (lc == 'a' || lc == 'e' || lc == 'i' || lc == 'o' || lc == 'u');
+}
+
+std::string match_vowel_token(const std::string& s, size_t pos) {
+    static const char* VOWEL_TOKENS[] = {
+        "oi", "OI", "ou", "OU", "ee", "oo", "rri",
+        "a", "e", "i", "o", "u",
+        "A", "E", "I", "O", "U"
+    };
+    for (const char* v : VOWEL_TOKENS) {
+        size_t len = std::strlen(v);
+        if (pos + len <= s.length() && s.compare(pos, len, v) == 0) {
+            return std::string(v);
+        }
+    }
+    return "";
+}
+
+// Normalizes Chandrabindu prefix and infix notation:
+// e.g. qqdaRi -> da^Ri (দাঁড়ি), qqcad -> ca^d (চাঁদ), daqqRi -> da^Ri (দাঁড়ি)
+// Standalone qq -> ^ (ঁ)
+std::string normalize_chandrabindu_qq(const std::string& input) {
+    const size_t n = input.length();
+    if (n == 0) return input;
+
+    bool has_marker = false;
+    for (size_t k = 0; k < n; ++k) {
+        if (input[k] == '^' || input[k] == 'q' || input[k] == 'Q') {
+            has_marker = true;
+            break;
+        }
+    }
+    if (!has_marker) return input;
+
+    std::string res;
+    res.reserve(n + 4);
+    size_t i = 0;
+
+    while (i < n) {
+        bool is_qq = (i + 1 < n &&
+                      (input[i] == 'q' || input[i] == 'Q') &&
+                      (input[i + 1] == 'q' || input[i + 1] == 'Q'));
+        bool is_caret = (input[i] == '^');
+
+        if (!is_qq && !is_caret) {
+            res.push_back(input[i]);
+            i++;
+            continue;
+        }
+
+        size_t step = is_qq ? 2 : 1;
+
+        // 1. Infix notation following consonant: e.g. dqqa -> da^
+        if (!res.empty() && std::isalpha(static_cast<unsigned char>(res.back())) &&
+            !is_phonetic_vowel_char(res.back())) {
+            size_t j = i + step;
+            std::string vt = (j < n) ? match_vowel_token(input, j) : "";
+            if (!vt.empty()) {
+                res.append(vt);
+                res.push_back('^');
+                i = j + vt.length();
+                continue;
+            } else {
+                res.push_back('^');
+                i += step;
+                continue;
+            }
+        }
+
+        // 2. Post-vowel notation: e.g. daqqRi -> da^Ri
+        if (!res.empty() && std::isalpha(static_cast<unsigned char>(res.back()))) {
+            res.push_back('^');
+            i += step;
+            continue;
+        }
+
+        // 3. Prefix notation: at beginning of token or after non-letter (e.g. qqdaRi, ^daRi, qqcad, qqidur)
+        size_t j = i + step;
+        if (j >= n) {
+            res.push_back('^');
+            i = j;
+            continue;
+        }
+
+        // If next is another q, Q or ^, just emit ^ and let next iteration handle it (e.g. qqqq -> ^^)
+        if (input[j] == 'q' || input[j] == 'Q' || input[j] == '^') {
+            res.push_back('^');
+            i = j;
+            continue;
+        }
+
+        // Check if followed by standalone vowel: qq + vowel -> vowel + ^ (e.g. qqidur -> i^dur)
+        std::string vt = match_vowel_token(input, j);
+        if (!vt.empty()) {
+            res.append(vt);
+            res.push_back('^');
+            i = j + vt.length();
+            continue;
+        }
+
+        // Check if followed by consonant cluster: qq + C+ [V*] -> C+ [V*] + ^
+        if (std::isalpha(static_cast<unsigned char>(input[j]))) {
+            size_t c_start = j;
+            while (j < n && std::isalpha(static_cast<unsigned char>(input[j]))) {
+                if (input[j] == 'q' || input[j] == 'Q' || !match_vowel_token(input, j).empty()) {
+                    break;
+                }
+                j++;
+            }
+            std::string consonants = input.substr(c_start, j - c_start);
+            std::string fol_v = (j < n) ? match_vowel_token(input, j) : "";
+            if (!fol_v.empty()) {
+                j += fol_v.length();
+                res.append(consonants);
+                res.append(fol_v);
+                res.push_back('^');
+                i = j;
+                continue;
+            } else {
+                res.append(consonants);
+                res.push_back('^');
+                i = j;
+                continue;
+            }
+        } else {
+            res.push_back('^');
+            i = j;
+            continue;
+        }
+    }
+
+    return res;
+}
+
 void Transliterator::sort_rules() {
     std::stable_sort(rules.begin(), rules.end(), [](const PhoneticRule& a, const PhoneticRule& b) {
         if (a.pattern.length() != b.pattern.length()) {
@@ -889,6 +1026,8 @@ void Transliterator::init_default_rules() {
 
     // Modifiers, symbols, digits
     add("^", "ঁ", RuleContext::ANY, RightContext::ANY, OutputCategory::MODIFIER, 300);
+    add("qq", "ঁ", RuleContext::ANY, RightContext::ANY, OutputCategory::MODIFIER, 320);
+    add("QQ", "ঁ", RuleContext::ANY, RightContext::ANY, OutputCategory::MODIFIER, 320);
     add(":", "ঃ", RuleContext::ANY, RightContext::ANY, OutputCategory::MODIFIER, 300);
     add("$", "৳", RuleContext::ANY, RightContext::ANY, OutputCategory::PUNCTUATION, 300, false, false, false, "taka_sign");
     add(".", "।", RuleContext::ANY, RightContext::ANY, OutputCategory::PUNCTUATION, 200);
@@ -1031,12 +1170,14 @@ std::vector<LatticeEdge> Transliterator::find_matching_edges(const std::string& 
 }
 
 std::vector<std::pair<std::string, double>> Transliterator::transliterate_chunk_beam(
-    const std::string& input,
+    const std::string& raw_input,
     const Dictionary* dict,
     size_t beam_width
 ) const {
     std::vector<std::pair<std::string, double>> results;
-    if (input.empty()) return results;
+    if (raw_input.empty()) return results;
+
+    std::string input = normalize_chandrabindu_qq(raw_input);
 
     if (is_url_or_email(input) || is_file_path_span(input) ||
         is_abbreviation_span(input) || is_uppercase_acronym(input) ||
@@ -1349,11 +1490,13 @@ std::vector<std::pair<std::string, double>> Transliterator::transliterate_chunk_
 }
 
 std::vector<std::pair<std::string, double>> Transliterator::transliterate_beam(
-    const std::string& input,
+    const std::string& raw_input,
     const Dictionary* dict,
     size_t beam_width
 ) const {
-    if (input.empty()) return {};
+    if (raw_input.empty()) return {};
+
+    std::string input = normalize_chandrabindu_qq(raw_input);
 
     // Check if input contains whitespace; if it is a single token <= MAX_CHUNK_BYTES, run full beam directly
     constexpr size_t MAX_CHUNK_BYTES = 256;
